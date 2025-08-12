@@ -230,3 +230,104 @@ export function TeamsClient() {
   )
 }
 ```
+'use client'
+
+import { useState, useEffect } from 'react'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Plus, Users, Settings, Trash2 } from 'lucide-react'
+
+interface Team {
+  id: string
+  name: string
+  description?: string
+  created_at: string
+}
+
+export function TeamsClient() {
+  const [teams, setTeams] = useState<Team[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    fetchTeams()
+  }, [])
+
+  const fetchTeams = async () => {
+    try {
+      const response = await fetch('/api/teams')
+      if (response.ok) {
+        const data = await response.json()
+        setTeams(data)
+      }
+    } catch (error) {
+      console.error('Failed to fetch teams:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  if (loading) {
+    return <div className="p-6">Loading teams...</div>
+  }
+
+  return (
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <div>
+          <h2 className="text-2xl font-bold">Your Teams</h2>
+          <p className="text-muted-foreground">
+            Manage your teams and collaborators
+          </p>
+        </div>
+        <Button>
+          <Plus className="mr-2 h-4 w-4" />
+          Create Team
+        </Button>
+      </div>
+
+      <div className="grid gap-4">
+        {teams.length === 0 ? (
+          <Card>
+            <CardContent className="p-8 text-center">
+              <Users className="mx-auto h-16 w-16 text-muted-foreground mb-4" />
+              <h3 className="text-xl font-semibold mb-2">No teams yet</h3>
+              <p className="text-muted-foreground mb-4">
+                Create your first team to start collaborating with others.
+              </p>
+              <Button>
+                <Plus className="mr-2 h-4 w-4" />
+                Create Your First Team
+              </Button>
+            </CardContent>
+          </Card>
+        ) : (
+          teams.map((team) => (
+            <Card key={team.id} className="hover:shadow-md transition-shadow">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-lg font-medium">
+                  {team.name}
+                </CardTitle>
+                <div className="flex space-x-2">
+                  <Button variant="ghost" size="sm">
+                    <Settings className="h-4 w-4" />
+                  </Button>
+                  <Button variant="ghost" size="sm">
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent>
+                {team.description && (
+                  <p className="text-muted-foreground">{team.description}</p>
+                )}
+                <p className="text-xs text-muted-foreground mt-2">
+                  Created {new Date(team.created_at).toLocaleDateString()}
+                </p>
+              </CardContent>
+            </Card>
+          ))
+        )}
+      </div>
+    </div>
+  )
+}
