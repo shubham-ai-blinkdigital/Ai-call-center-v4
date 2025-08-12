@@ -1,0 +1,13 @@
+ChunkLoadError
+    at __webpack_require__.f.j (https://6a273470-c0ab-48ec-a2b6-52ab406e90ca-00-es9cafnz17ex.sisko.replit.dev/_next/static/chunks/webpack.js?v=1753956687514:858:29)
+    at https://6a273470-c0ab-48ec-a2b6-52ab406e90ca-00-es9cafnz17ex.sisko.replit.dev/_next/static/chunks/webpack.js?v=1753956687514:153:40
+    at Array.reduce (<anonymous>)
+    at __webpack_require__.e (https://6a273470-c0ab-48ec-a2b6-52ab406e90ca-00-es9cafnz17ex.sisko.replit.dev/_next/static/chunks/webpack.js?v=1753956687514:152:67)
+    at fn.e (https://6a273470-c0ab-48ec-a2b6-52ab406e90ca-00-es9cafnz17ex.sisko.replit.dev/_next/static/chunks/webpack.js?v=1753956687514:389:50)
+    at loadChunk (webpack-internal:///(app-pages-browser)/./node_modules/.pnpm/next@15.2.4_react-dom@19.0.0_react@19.0.0__react@19.0.0/node_modules/next/dist/compiled/react-server-dom-webpack/cjs/react-server-dom-webpack-client.browser.development.js:126:34)
+    at preloadModule (webpack-internal:///(app-pages-browser)/./node_modules/.pnpm/next@15.2.4_react-dom@19.0.0_react@19.0.0__react@19.0.0/node_modules/next/dist/compiled/react-server-dom-webpack/cjs/react-server-dom-webpack-client.browser.development.js:93:31)
+    at resolveModule (webpack-internal:///(app-pages-browser)/./node_modules/.pnpm/next@15.2.4_react-dom@19.0.0_react@19.0.0__react@19.0.0/node_modules/next/dist/compiled/react-server-dom-webpack/cjs/react-server-dom-webpack-client.browser.development.js:1607:20)
+    at processFullStringRow (webpack-internal:///(app-pages-browser)/./node_modules/.pnpm/next@15.2.4_react-dom@19.0.0_react@19.0.0__react@19.0.0/node_modules/next/dist/compiled/react-server-dom-webpack/cjs/react-server-dom-webpack-client.browser.development.js:2218:11)
+    at processFullBinaryRow (webpack-internal:///(app-pages-browser)/./node_modules/.pnpm/next@15.2.4_react-dom@19.0.0_react@19.0.0__react@19.0.0/node_modules/next/dist/compiled/react-server-dom-webpack/cjs/react-server-dom-webpack-client.browser.development.js:2213:7)
+    at progress (webpack-internal:///(app-pages-browser)/./node_modules/.pnpm/next@15.2.4_react-dom@19.0.0_react@19.0.0__react@19.0.0/node_modules/next/dist/compiled/react-server-dom-webpack/cjs/react-server-dom-webpack-client.browser.development.js:2459:17)
+    at RootLayout (rsc://React/Server/webpack-internal:///(rsc)/./app/layout.tsx?17:28:98)

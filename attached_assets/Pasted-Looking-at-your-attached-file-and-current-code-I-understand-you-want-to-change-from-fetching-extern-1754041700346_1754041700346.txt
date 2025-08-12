@@ -1,0 +1,46 @@
+Looking at your attached file and current code, I understand you want to change from fetching external API data to using a 2-step Twilio + Bland.ai integration flow. Let me explain the process and differences:
+
+Current Flow vs. Proposed Flow
+Current Flow (What you have now):
+User visits /purchase → Fetch from external mock API → Display available numbers → Purchase via PayPal
+Proposed Flow (From your attached file):
+User searches with filters → Fetch real Twilio numbers → User selects → Purchase via Bland.ai API → Store in your DB
+Key Differences & Process Explanation
+1. Search Step (New)
+Current: No search, just shows pre-fetched numbers
+Proposed: Add search filters (area code, region, country) to query Twilio's real available numbers
+API: Use Twilio's availablePhoneNumbers API to get real available numbers
+2. Data Source Change
+Current: https://v0-mock-phone-number-api.vercel.app/api/bland-ai/available-numbers (mock data)
+Proposed: Twilio API client.availablePhoneNumbers(countryCode).local.list() (real data)
+3. Purchase Method Change
+Current: PayPal subscription for mock numbers
+Proposed: Direct API call to https://api.bland.ai/numbers/purchase with the selected Twilio number
+4. Required Environment Variables
+You'll need to add:
+
+TWILIO_ACCOUNT_SID=your_twilio_sid
+TWILIO_AUTH_TOKEN=your_twilio_token
+BLAND_API_KEY=your_bland_api_key
+Implementation Plan
+Step 1: Replace the current /api/bland-ai/available-numbers/route.ts
+Remove external API fetch
+Add Twilio SDK integration
+Return real Twilio numbers instead of mock data
+Step 2: Update the purchase flow
+Replace PayPal integration with Bland.ai API call
+Create new /api/bland-ai/purchase-number/route.ts
+Store purchased numbers in your PostgreSQL database
+Step 3: Add search functionality (optional enhancement)
+Add search form with area code, region filters
+Update the purchase page to include search capabilities
+Benefits of This Change
+Real Numbers: Get actual available Twilio numbers instead of mock data
+Proper Integration: Direct integration with Bland.ai's number provisioning
+Better UX: Users see real available numbers they can actually purchase
+Database Storage: Properly store purchased numbers in your existing PostgreSQL setup
+Files That Need Changes
+app/api/bland-ai/available-numbers/route.ts - Replace external API with Twilio
+app/api/bland-ai/purchase-number/route.ts - New file for Bland.ai purchase
+app/dashboard/phone-numbers/purchase/page.tsx - Update purchase flow UI
+components/paypal-subscription-button.tsx - Replace with Bland.ai purchase button
