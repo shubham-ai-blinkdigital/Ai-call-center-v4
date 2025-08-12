@@ -1,6 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { getUserFromRequest } from "@/lib/auth-utils"
 import { getTeamById, updateTeam, deleteTeam, checkTeamPermission } from "@/lib/db-utils"
+import { Client } from "pg"
 
 // Get a specific team
 export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
@@ -84,8 +85,6 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
     return NextResponse.json({ error: "Failed to delete team" }, { status: 500 })
   }
 }
-import { NextResponse } from "next/server"
-import { Client } from "pg"
 
 export async function GET(
   request: Request,
