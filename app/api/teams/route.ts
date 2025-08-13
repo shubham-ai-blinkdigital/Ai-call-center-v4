@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server"
 import { Client } from "pg"
 import { NextRequest } from "next/server";
-import { getUserFromRequest } from "@/lib/auth";
+import { getUserFromRequest } from "@/lib/auth-utils";
 
 export async function GET(req: NextRequest) {
   try {
