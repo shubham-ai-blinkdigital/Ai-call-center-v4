@@ -92,7 +92,7 @@ export async function POST(request: Request) {
 
     console.log("[AUTH/SIGNUP] External signup successful:", externalResult)
 
-    // Store user data locally with unverified status
+    // Store user data locally
     const client = new Client({
       connectionString: process.env.DATABASE_URL
     })
@@ -107,22 +107,10 @@ export async function POST(request: Request) {
       )
 
       if (existingUser.rows.length > 0) {
-        const user = existingUser.rows[0]
-        console.log("[AUTH/SIGNUP] User already exists locally:", email, "verified:", user.is_verified)
-        
-        if (!user.is_verified) {
-          // User exists but not verified - redirect to verification
-          return NextResponse.json({
-            success: false,
-            message: "Account exists but not verified",
-            requiresVerification: true,
-            redirectToVerification: true
-          }, { status: 200 }) // Use 200 so frontend can handle the redirect
-        }
-        
+        console.log("[AUTH/SIGNUP] User already exists locally:", email)
         return NextResponse.json({
           success: false,
-          message: "User already exists and is verified"
+          message: "User already exists"
         }, { status: 400 })
       }
 
@@ -140,7 +128,7 @@ export async function POST(request: Request) {
           'user',
           externalResult.data._id || externalResult.data.id,
           externalResult.data.token,
-          false, // Not verified until email verification
+          true, // Set as verified since no verification needed
           'AI Call',
           password // Store password as entered by user
         ]
@@ -149,10 +137,10 @@ export async function POST(request: Request) {
       const localUser = insertResult.rows[0]
       console.log("[AUTH/SIGNUP] Local user record created:", localUser.id)
 
-      // Return success with verification required message
+      // Return success with external API message
       return NextResponse.json({
         success: true,
-        message: "Account created successfully. Please check your email for verification.",
+        message: externalResult.message || "Account created successfully",
         user: {
           id: localUser.id,
           email: localUser.email,
@@ -160,8 +148,7 @@ export async function POST(request: Request) {
           lastName: localUser.last_name,
           company: localUser.company,
           phoneNumber: localUser.phone_number,
-          isVerified: false,
-          requiresVerification: true
+          isVerified: true
         }
       })
 

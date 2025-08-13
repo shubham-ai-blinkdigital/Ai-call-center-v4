@@ -152,43 +152,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const result = await response.json()
 
       if (!result.success) {
-        // Check if user exists but is not verified
-        if (result.requiresVerification && result.redirectToVerification) {
-          console.log("🔄 [AUTH-CONTEXT] User exists but not verified, redirecting to verification pending")
-          router.push(`/verification-pending?email=${encodeURIComponent(data.email)}`)
-          return { 
-            success: false, 
-            message: "You have not verified your email yet. Please check your inbox for the verification link."
-          }
-        }
-        
         console.error("❌ [AUTH-CONTEXT] Signup error:", result.message)
         return { success: false, message: result.message }
       }
 
       console.log("✅ [AUTH-CONTEXT] Signup successful")
 
-      // Check if user requires verification
-      if (result.user?.requiresVerification) {
-        // Don't set authenticated state yet - user needs to verify email
-        setUser(null)
-        setIsAuthenticated(false)
-
-        // Redirect to verification page instead of dashboard
-        router.push(`/verify-email?email=${encodeURIComponent(data.email)}`)
-
-        return { 
-          success: true, 
-          message: result.message || "Account created successfully. Please check your email for verification."
-        }
-      }
-
-      // For backward compatibility - if no verification required
+      // Set user as authenticated and redirect to dashboard
       setUser(result.user)
       setIsAuthenticated(true)
       router.push("/dashboard")
 
-      return { success: true, message: "Account created successfully" }
+      return { success: true, message: result.message || "Account created successfully" }
     } catch (error: any) {
       console.error("❌ [AUTH-CONTEXT] Unexpected signup error:", error)
       return { success: false, message: error.message || "An unexpected error occurred" }
