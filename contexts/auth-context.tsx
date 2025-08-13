@@ -156,11 +156,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       console.log("✅ [AUTH-CONTEXT] Signup successful")
 
-      // Update user state and isAuthenticated
+      // Check if user requires verification
+      if (result.user?.requiresVerification) {
+        // Don't set authenticated state yet - user needs to verify email
+        setUser(null)
+        setIsAuthenticated(false)
+        
+        // Redirect to verification page instead of dashboard
+        router.push(`/verify-email?email=${encodeURIComponent(data.email)}`)
+        
+        return { 
+          success: true, 
+          message: result.message || "Account created successfully. Please check your email for verification."
+        }
+      }
+
+      // For backward compatibility - if no verification required
       setUser(result.user)
       setIsAuthenticated(true)
-
-      // Redirect to dashboard
       router.push("/dashboard")
 
       return { success: true, message: "Account created successfully" }
