@@ -11,11 +11,17 @@ import { toast } from "@/components/ui/use-toast"
 import { convertApiResponseToFlowchart } from "@/utils/api-to-flowchart-converter"
 import { FullScreenContainer } from "@/components/layout/full-screen-container"
 
+// Assume convertReactFlowToBland is defined elsewhere or imported
+// For example: import { convertReactFlowToBland } from "@/utils/flowchart-converter";
+declare function convertReactFlowToBland(flowchartData: any): any;
+
+
 export default function FlowchartEditorPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const source = searchParams.get("source")
   const phoneNumber = searchParams.get("phoneNumber")
+  const pathwayId = searchParams.get("pathwayId") // Added pathwayId
 
   const [flowName, setFlowName] = useState("")
   const [flowData, setFlowData] = useState(null)
@@ -24,63 +30,81 @@ export default function FlowchartEditorPage() {
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    // If there's a phone number, redirect to the specific pathway
-    if (phoneNumber) {
-      router.replace(`/dashboard/pathway/${phoneNumber}${source ? `?source=${source}` : ""}`)
-    } else {
-      // Otherwise, redirect to the general pathway page
-      router.replace("/dashboard/pathway")
-    }
+    async function loadPathwayData() {
+      setIsLoading(true)
 
-    // Check if we have a generated pathway in localStorage
-    if (source === "generated") {
       try {
-        const generatedData = JSON.parse(localStorage.getItem("generatedPathway") || "{}")
+        if (source === "generate") {
+          // Load data from AI generation
+          const generatedData = JSON.parse(localStorage.getItem("generatedPathway") || "{}")
 
-        if (generatedData) {
-          if (generatedData.flowchartData) {
-            // If we already have converted flowchart data, use it
-            setFlowData(generatedData.flowchartData)
-            setApiResponse(generatedData.apiResponse)
-            setFlowName(generatedData.flowName || "Generated Flow")
-          } else if (generatedData.apiResponse || generatedData.pathway) {
-            // If we only have the API response, convert it
-            const apiData = generatedData.apiResponse || generatedData.pathway
-            try {
-              const convertedData = convertApiResponseToFlowchart(apiData)
-              setFlowData(convertedData)
-              setApiResponse(apiData)
-              setFlowName(generatedData.flowName || "Generated Flow")
+          if (generatedData && generatedData.flowchartData) {
+            console.log("Loading generated data:", generatedData)
 
-              // Update localStorage with the converted data
-              localStorage.setItem(
-                "generatedPathway",
-                JSON.stringify({
-                  ...generatedData,
-                  flowchartData: convertedData,
-                }),
-              )
-            } catch (conversionError) {
-              console.error("Error converting API response:", conversionError)
-              setError("Failed to convert API response to flowchart format")
+            if (generatedData.flowchartData.nodes && generatedData.flowchartData.edges) {
+              setFlowData(generatedData.flowchartData)
+              setFlowName(generatedData.name || "Generated Pathway")
+
+              // Convert to ReactFlow format if needed
+              try {
+                // Ensure convertReactFlowToBland is imported or defined
+                const convertedData = convertReactFlowToBland(generatedData.flowchartData)
+
+                // Update localStorage with the converted data
+                localStorage.setItem(
+                  "generatedPathway",
+                  JSON.stringify({
+                    ...generatedData,
+                    flowchartData: convertedData,
+                  }),
+                )
+              } catch (conversionError) {
+                console.error("Error converting API response:", conversionError)
+                setError("Failed to convert API response to flowchart format")
+              }
+            } else {
+              setError("No valid pathway data found")
             }
           } else {
-            setError("No valid pathway data found")
+            setError("No generated pathway found")
+          }
+        } else if (pathwayId && source === "pathway") {
+          // Load existing pathway from database
+          console.log("Loading existing pathway:", pathwayId)
+
+          const response = await fetch(`/api/pathways/load-flowchart?pathwayId=${pathwayId}`, {
+            credentials: 'include'
+          })
+
+          if (response.ok) {
+            const result = await response.json()
+            if (result.success && result.pathway) {
+              setFlowData(result.pathway.flowchart_data || { nodes: [], edges: [] })
+              setFlowName(result.pathway.name || "Untitled Pathway")
+              console.log("Successfully loaded pathway:", result.pathway.name)
+            } else {
+              setError("Failed to load pathway data")
+            }
+          } else {
+            const errorText = await response.text()
+            console.error("Failed to load pathway:", response.status, errorText)
+            setError("Failed to load pathway from server")
           }
         } else {
-          setError("No generated pathway found")
+          // New pathway or direct access
+          setFlowData({ nodes: [], edges: [] })
+          setFlowName("")
         }
       } catch (error) {
-        console.error("Error loading generated pathway:", error)
-        setError("Failed to load the generated pathway")
+        console.error("Error loading pathway:", error)
+        setError("Failed to load pathway data")
       } finally {
         setIsLoading(false)
       }
-    } else {
-      // Handle other sources or direct access
-      setIsLoading(false)
     }
-  }, [router, phoneNumber, source])
+
+    loadPathwayData()
+  }, [router, phoneNumber, source, pathwayId]) // Added pathwayId to dependency array
 
   const handleSave = () => {
     if (!flowData) {

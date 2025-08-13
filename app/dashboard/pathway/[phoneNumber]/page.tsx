@@ -9,6 +9,7 @@ import { useAuth } from "@/contexts/auth-context"
 import dynamic from "next/dynamic"
 import { NodeEditorDrawer } from "@/components/flowchart-builder/node-editor-drawer"
 import { FlowchartBuilder } from "@/components/flowchart-builder/flowchart-builder"
+import { toast } from "sonner"
 
 // FlowchartBuilder removed
 
@@ -201,6 +202,24 @@ export default function PathwayEditorPage({ params, searchParams }: PathwayEdito
     router.push(`/dashboard/call-flows/generate?phoneNumber=${phoneNumber}`)
   }
 
+  const handleEditPathway = () => {
+    if (!phoneNumber || phoneNumber === "undefined") {
+      toast.error("Invalid phone number")
+      return
+    }
+
+    const cleanNumber = phoneNumber.replace(/\D/g, "")
+    const pathwayId = pathwayInfo?.pathway_id
+
+    if (pathwayId) {
+      // If pathway exists, load it in the editor
+      router.push(`/dashboard/call-flows/editor?phone=${cleanNumber}&pathwayId=${pathwayId}&source=pathway`)
+    } else {
+      // If no pathway exists, open editor for new pathway creation
+      router.push(`/dashboard/call-flows/editor?phone=${cleanNumber}&source=pathway`)
+    }
+  }
+
   // ✅ CRITICAL: Only show loading if we're actually loading AND not initialized, or if params aren't resolved yet
   if ((authLoading && !isInitialized) || phoneNumber === null) {
     return (
@@ -282,7 +301,7 @@ export default function PathwayEditorPage({ params, searchParams }: PathwayEdito
 
       {/* Full-height FlowchartBuilder */}
       <div className="flex-1 overflow-hidden">
-        <FlowchartBuilder 
+        <FlowchartBuilder
           phoneNumber={phoneNumber}
           pathwayInfo={pathwayInfo}
         />

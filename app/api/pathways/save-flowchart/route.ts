@@ -52,6 +52,8 @@ export async function POST(request: NextRequest) {
 
     console.log("[SAVE-FLOWCHART] Phone number query result:", phoneNumberRecord)
 
+    let phoneRecord
+
     if (phoneNumberRecord.length === 0) {
       console.log("[SAVE-FLOWCHART] Phone number not found for user, creating it")
       
@@ -73,8 +75,6 @@ export async function POST(request: NextRequest) {
     } else {
       phoneRecord = phoneNumberRecord[0]
     }
-
-    let phoneRecord
 
     // Check if a pathway already exists for this phone number
     let existingPathway = []

@@ -164,90 +164,56 @@ export default function PathwayListingPage() {
         </Card>
       ) : (
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {phoneNumbers.map((number) => {
-            return (
-              <Card key={number.id} className="hover:shadow-lg transition-shadow">
-                <CardHeader>
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <CardTitle className="text-xl">{formatPhoneNumber(number.number)}</CardTitle>
-                      <CardDescription>
-                        {number.location || "Unknown Location"} • {number.type || "Voice"}
-                      </CardDescription>
-                    </div>
-                    <Badge
-                      variant={
-                        number.status?.toLowerCase() === "active" || number.status?.toLowerCase() === "purchased"
-                          ? "default"
-                          : "outline"
-                      }
-                    >
-                      {number.status || "Available"}
-                    </Badge>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    <div className="flex items-center text-sm text-gray-600">
-                      <Phone className="mr-2 h-4 w-4" />
-                      <span>One pathway per phone number</span>
-                    </div>
+          {phoneNumbers.map((phone) => {
+                const associatedPathway = pathways.find(p => 
+                  p.phone_number === phone.number || 
+                  p.phone_number === `+${phone.number}` ||
+                  p.phone_number === phone.number.replace(/^\+/, '')
+                )
 
-                    {/* Pathway ID Section */}
-                    <div className="border-t pt-3">
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <div className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">PATHWAY ID</div>
-                          {number.pathway_id ? (
-                            <div className="flex items-center gap-2">
-                              <code className="bg-green-50 text-green-700 px-2 py-1 rounded text-xs font-mono border border-green-200 flex-1 break-all">
-                                {number.pathway_id}
-                              </code>
+                return (
+                  <Card key={phone.id} className="hover:shadow-md transition-shadow">
+                    <CardContent className="p-6">
+                      <div className="flex items-center justify-between">
+                        <div className="space-y-2">
+                          <div className="flex items-center gap-2">
+                            <Phone className="h-4 w-4 text-blue-600" />
+                            <span className="font-medium">+{phone.number}</span>
+                            <Badge variant={phone.status === "active" ? "default" : "secondary"}>
+                              {phone.status}
+                            </Badge>
+                          </div>
+                          <p className="text-sm text-gray-600">
+                            {phone.location} • {phone.type}
+                          </p>
+                          {associatedPathway ? (
+                            <div className="flex items-center gap-2 text-sm">
+                              <div className="h-2 w-2 bg-green-500 rounded-full"></div>
+                              <span className="text-green-700">
+                                Pathway: {associatedPathway.name}
+                              </span>
                               <Button
-                                variant="outline"
+                                variant="ghost"
                                 size="sm"
-                                className="h-7 px-2 flex-shrink-0"
-                                onClick={() => copyPathwayId(number.pathway_id)}
+                                className="h-6 w-6 p-0"
+                                onClick={() => copyPathwayId(associatedPathway.id)}
+                                title="Copy Pathway ID"
                               >
-                                <Copy size={12} />
+                                <Copy className="h-3 w-3" />
                               </Button>
                             </div>
                           ) : (
-                            <span className="text-gray-400 italic text-sm">Not Assigned</span>
+                            <div className="flex items-center gap-2 text-sm">
+                              <div className="h-2 w-2 bg-gray-400 rounded-full"></div>
+                              <span className="text-gray-500">No pathway configured</span>
+                            </div>
                           )}
                         </div>
                       </div>
-
-                      {/* Pathway Name */}
-                      {number.pathway_name && (
-                        <div className="mt-2">
-                          <div className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">
-                            PATHWAY NAME
-                          </div>
-                          <span className="text-sm text-gray-700">{number.pathway_name}</span>
-                        </div>
-                      )}
-                    </div>
-
-                    {number.created_at && (
-                      <div className="text-xs text-gray-500 border-t pt-2">
-                        Purchased: {new Date(number.created_at).toLocaleDateString()}
-                      </div>
-                    )}
-                  </div>
-                </CardContent>
-                <CardFooter>
-                  <Button
-                    className="w-full flex items-center justify-center gap-2"
-                    onClick={() => handleManagePathway(number.number)}
-                  >
-                    Manage Pathway
-                    <ArrowRight className="h-4 w-4" />
-                  </Button>
-                </CardFooter>
-              </Card>
-            )
-          })}
+                    </CardContent>
+                  </Card>
+                )
+              })}
         </div>
       )}
       <div className="flex items-center justify-center h-64">

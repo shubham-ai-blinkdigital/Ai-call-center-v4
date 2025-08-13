@@ -20,11 +20,17 @@ export function RecentFlows() {
         setLoading(true)
         setError(null)
 
-        if (!isAuthenticated || !user) {
-          console.error("[RECENT-FLOWS] No authenticated user")
-          setError("No authenticated user found. Please log in.")
+        if (!isAuthenticated) {
+          console.log("[RECENT-FLOWS] User not authenticated, skipping load")
           return
         }
+
+        if (!user) {
+          console.log("[RECENT-FLOWS] User data not loaded yet, waiting...")
+          return
+        }
+
+        console.log("[RECENT-FLOWS] Loading flows for user:", user.email)
 
         // Fetch user's pathways from the API route
         const response = await fetch(`/api/pathways`, {
@@ -34,33 +40,48 @@ export function RecentFlows() {
           },
           credentials: 'include'
         });
+        
         if (!response.ok) {
           const errorText = await response.text();
           console.error("[RECENT-FLOWS] API error response:", response.status, errorText);
-          throw new Error(`Failed to fetch pathways: ${response.status}`);
+          
+          if (response.status === 401) {
+            setError("Please log in to view your pathways.")
+          } else if (response.status === 500) {
+            setError("Server error. Please try again later.")
+          } else {
+            setError(`Failed to fetch pathways: ${response.status}`)
+          }
+          return
         }
 
         const data = await response.json();
+        console.log("[RECENT-FLOWS] Received data:", data)
 
-        setFlows(data || [])
+        setFlows(Array.isArray(data) ? data : [])
       } catch (error) {
-        console.error("Error loading recent flows:", error)
-        setError("An unexpected error occurred. Please try again later.")
+        console.error("[RECENT-FLOWS] Error loading recent flows:", error)
+        setError("Network error. Please check your connection.")
       } finally {
         setLoading(false)
       }
     }
 
-    // Only load flows if we're not on the login page
-    if (window.location.pathname !== "/login") {
+    // Only load flows if we're authenticated and not on the login page
+    if (typeof window !== "undefined" && window.location.pathname !== "/login") {
       loadFlows()
     } else {
       setLoading(false)
     }
   }, [isAuthenticated, user])
 
-  const handleEditFlow = (id: string) => {
-    router.push(`/dashboard/call-flows/editor?id=${id}`)
+  const handleEditFlow = (pathway: any) => {
+    if (pathway.phone_number) {
+      const cleanNumber = pathway.phone_number.replace(/\D/g, "")
+      router.push(`/dashboard/call-flows/editor?phone=${cleanNumber}&pathwayId=${pathway.id}&source=pathway`)
+    } else {
+      router.push(`/dashboard/call-flows/editor?pathwayId=${pathway.id}&source=pathway`)
+    }
   }
 
   if (loading) {
@@ -132,7 +153,7 @@ export function RecentFlows() {
                 Last updated: {new Date(flow.updated_at).toLocaleDateString()}
               </p>
             </div>
-            <Button variant="outline" size="sm" onClick={() => handleEditFlow(flow.id)}>
+            <Button variant="outline" size="sm" onClick={() => handleEditFlow(flow)}>
               Edit
             </Button>
           </div>
