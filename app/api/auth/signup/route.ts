@@ -114,22 +114,20 @@ export async function POST(request: Request) {
         }, { status: 400 })
       }
 
-      // Create local user record with external reference
-      const userId = `user_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+      // Create local user record with external reference (let database generate UUID)
       const insertResult = await client.query(
-        `INSERT INTO users (id, email, first_name, last_name, company, phone_number, role, created_at, updated_at, external_id, external_token, is_verified, platform)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, NOW(), NOW(), $8, $9, $10, $11)
+        `INSERT INTO users (email, first_name, last_name, company, phone_number, role, external_id, external_token, is_verified, platform)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
          RETURNING *`,
         [
-          userId,
           email,
           firstName,
           lastName,
           company || '',
           phoneNumber || '',
           'user',
-          externalResult._id || externalResult.id,
-          externalResult.token,
+          externalResult.data._id || externalResult.data.id,
+          externalResult.data.token,
           false, // Not verified until email verification
           'AI Call'
         ]
