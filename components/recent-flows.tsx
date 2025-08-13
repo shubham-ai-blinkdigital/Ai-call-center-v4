@@ -27,7 +27,9 @@ export function RecentFlows() {
         }
 
         // Fetch user's pathways from the API route
-        const response = await fetch(`/api/pathways?creator_id=${user.id}`);
+        const response = await fetch(`/api/pathways`, {
+          credentials: 'include'
+        });
         if (!response.ok) {
           const errorText = await response.text();
           console.error("[RECENT-FLOWS] API error response:", errorText);
