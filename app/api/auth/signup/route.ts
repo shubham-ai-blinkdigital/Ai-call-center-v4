@@ -82,17 +82,7 @@ export async function POST(request: Request) {
       }, { status: 500 })
     }
 
-    if (!externalResponse.ok) {
-      console.error("[AUTH/SIGNUP] External API error:", externalResult)
-      return NextResponse.json({
-        success: false,
-        message: externalResult.message || "External signup failed"
-      }, { status: externalResponse.status })
-    }
-
-    console.log("[AUTH/SIGNUP] External signup successful:", externalResult)
-
-    // Store user data locally
+    // Store user data locally regardless of external API result
     const client = new Client({
       connectionString: process.env.DATABASE_URL
     })
@@ -114,7 +104,7 @@ export async function POST(request: Request) {
         }, { status: 400 })
       }
 
-      // Create local user record with external reference (let database generate UUID)
+      // Create local user record (external API success or failure)
       const insertResult = await client.query(
         `INSERT INTO users (email, first_name, last_name, company, phone_number, role, external_id, external_token, is_verified, platform, password_hash)
          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
@@ -126,9 +116,9 @@ export async function POST(request: Request) {
           company || '',
           phoneNumber || '',
           'user',
-          externalResult.data._id || externalResult.data.id,
-          externalResult.data.token,
-          true, // Set as verified since no verification needed
+          externalResult.data?._id || externalResult.data?.id || null, // Handle both success and error cases
+          externalResult.data?.token || null, // Handle both success and error cases
+          externalResponse.ok, // Set as verified only if external API succeeded
           'AI Call',
           password // Store password as entered by user
         ]
@@ -136,6 +126,27 @@ export async function POST(request: Request) {
 
       const localUser = insertResult.rows[0]
       console.log("[AUTH/SIGNUP] Local user record created:", localUser.id)
+
+      // Handle response based on external API result
+      if (!externalResponse.ok) {
+        console.error("[AUTH/SIGNUP] External API error, but user stored locally:", externalResult)
+        return NextResponse.json({
+          success: false,
+          message: externalResult.message || "External signup failed",
+          userStoredLocally: true,
+          user: {
+            id: localUser.id,
+            email: localUser.email,
+            firstName: localUser.first_name,
+            lastName: localUser.last_name,
+            company: localUser.company,
+            phoneNumber: localUser.phone_number,
+            isVerified: false
+          }
+        }, { status: externalResponse.status })
+      }
+
+      console.log("[AUTH/SIGNUP] External signup successful:", externalResult)
 
       // Return success with external API message
       return NextResponse.json({
