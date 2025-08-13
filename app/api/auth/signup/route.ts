@@ -8,21 +8,16 @@ const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key"
 
 export async function POST(request: Request) {
   try {
-    const { email, password, name, company, phoneNumber } = await request.json()
+    const { email, password, firstName, lastName, company, phoneNumber } = await request.json()
 
-    if (!email || !password || !name) {
+    if (!email || !password || !firstName || !lastName) {
       return NextResponse.json({ 
         success: false, 
-        message: "Email, password, and name are required" 
+        message: "Email, password, first name, and last name are required" 
       }, { status: 400 })
     }
 
     console.log("[AUTH/SIGNUP] Attempting external signup for:", email)
-
-    // Split name into firstName and lastName
-    const nameParts = name.trim().split(' ')
-    const firstName = nameParts[0] || name
-    const lastName = nameParts.slice(1).join(' ') || ''
 
     // Call external API for signup
     const externalApiUrl = process.env.FOREX_URL || process.env.EXTERNAL_API_URL
@@ -89,6 +84,7 @@ export async function POST(request: Request) {
 
       // Create local user record with external reference
       const userId = `user_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+      const fullName = `${firstName} ${lastName}`.trim()
       const insertResult = await client.query(
         `INSERT INTO users (id, email, name, company, phone_number, role, created_at, updated_at, external_id, external_token, is_verified, platform)
          VALUES ($1, $2, $3, $4, $5, $6, NOW(), NOW(), $7, $8, $9, $10)
@@ -96,7 +92,7 @@ export async function POST(request: Request) {
         [
           userId,
           email,
-          name,
+          fullName,
           company || '',
           phoneNumber || '',
           'user',

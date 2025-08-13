@@ -15,7 +15,8 @@ import { AlertCircle } from "lucide-react"
 
 export default function SignupPage() {
   const [formData, setFormData] = useState<SignupData>({
-    name: "",
+    firstName: "",
+    lastName: "",
     email: "",
     password: "",
     company: "",
@@ -29,7 +30,8 @@ export default function SignupPage() {
   const validateForm = () => {
     const newErrors: Record<string, string> = {}
 
-    if (!formData.name) newErrors.name = "Name is required"
+    if (!formData.firstName) newErrors.firstName = "First name is required"
+    if (!formData.lastName) newErrors.lastName = "Last name is required"
     if (!formData.email) newErrors.email = "Email is required"
     if (!/\S+@\S+\.\S+/.test(formData.email)) newErrors.email = "Email is invalid"
 
@@ -92,17 +94,32 @@ export default function SignupPage() {
               </Alert>
             )}
 
-            <div className="space-y-2">
-              <Label htmlFor="name">Full Name</Label>
-              <Input
-                id="name"
-                name="name"
-                placeholder="John Doe"
-                value={formData.name}
-                onChange={handleChange}
-                className={errors.name ? "border-red-500" : ""}
-              />
-              {errors.name && <p className="text-sm text-red-500">{errors.name}</p>}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="firstName">First Name</Label>
+                <Input
+                  id="firstName"
+                  name="firstName"
+                  placeholder="John"
+                  value={formData.firstName}
+                  onChange={handleChange}
+                  className={errors.firstName ? "border-red-500" : ""}
+                />
+                {errors.firstName && <p className="text-sm text-red-500">{errors.firstName}</p>}
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="lastName">Last Name</Label>
+                <Input
+                  id="lastName"
+                  name="lastName"
+                  placeholder="Doe"
+                  value={formData.lastName}
+                  onChange={handleChange}
+                  className={errors.lastName ? "border-red-500" : ""}
+                />
+                {errors.lastName && <p className="text-sm text-red-500">{errors.lastName}</p>}
+              </div>
             </div>
 
             <div className="space-y-2">

@@ -23,9 +23,10 @@ interface AuthContextType {
 }
 
 export interface SignupData {
+  firstName: string
+  lastName: string
   email: string
   password: string
-  name: string
   company?: string
   phoneNumber?: string
 }
@@ -161,10 +162,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         // Don't set authenticated state yet - user needs to verify email
         setUser(null)
         setIsAuthenticated(false)
-        
+
         // Redirect to verification page instead of dashboard
         router.push(`/verify-email?email=${encodeURIComponent(data.email)}`)
-        
+
         return { 
           success: true, 
           message: result.message || "Account created successfully. Please check your email for verification."
