@@ -53,14 +53,28 @@ export async function POST(request: NextRequest) {
     console.log("[SAVE-FLOWCHART] Phone number query result:", phoneNumberRecord)
 
     if (phoneNumberRecord.length === 0) {
-      console.log("[SAVE-FLOWCHART] Phone number not found for user")
-      return NextResponse.json({ 
-        error: "Phone number not found or not owned by user" 
-      }, { status: 404 })
+      console.log("[SAVE-FLOWCHART] Phone number not found for user, creating it")
+      
+      // Create the phone number record for this user
+      const createPhoneResult = await executeQuery(`
+        INSERT INTO phone_numbers (phone_number, user_id, created_at, updated_at)
+        VALUES ($1, $2, NOW(), NOW())
+        RETURNING id, phone_number, pathway_id
+      `, [formattedPhone, userId])
+
+      if (createPhoneResult.length === 0) {
+        return NextResponse.json({ 
+          error: "Failed to create phone number record" 
+        }, { status: 500 })
+      }
+
+      phoneRecord = createPhoneResult[0]
+      console.log("[SAVE-FLOWCHART] Created phone record:", phoneRecord)
+    } else {
+      phoneRecord = phoneNumberRecord[0]
     }
 
-    const phoneRecord = phoneNumberRecord[0]
-    console.log("[SAVE-FLOWCHART] Found phone record:", phoneRecord)
+    let phoneRecord
 
     // Check if a pathway already exists for this phone number
     let existingPathway = []

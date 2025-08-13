@@ -20,14 +20,9 @@ export async function GET(request: NextRequest) {
     }
 
     const userId = authResult.user.id
-    const searchParams = request.nextUrl.searchParams
-    const creatorId = searchParams.get("creator_id")
 
-    // Use the authenticated user's ID if no creator_id specified
-    const targetUserId = creatorId || userId
-
-    // Get pathways for the user
-    const pathways = await getPathwaysByUserId(targetUserId)
+    // Get pathways for the authenticated user only
+    const pathways = await getPathwaysByUserId(userId)
 
     return NextResponse.json(pathways)
   } catch (error) {

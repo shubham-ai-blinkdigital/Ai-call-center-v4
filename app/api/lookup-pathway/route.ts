@@ -1,4 +1,3 @@
-
 import { NextRequest, NextResponse } from "next/server"
 import { getUserFromRequest } from "@/lib/auth-utils"
 import { Client } from "pg"
@@ -33,8 +32,10 @@ export async function GET(request: NextRequest) {
     await pgClient.connect()
 
     try {
-      // Format the phone number consistently
-      const formattedPhone = `+1${phone.replace(/\D/g, '')}`
+      // Format the phone number consistently (remove all non-digits first)
+      const cleanPhone = phone.replace(/\D/g, '')
+      // Only add +1 if it doesn't already start with 1
+      const formattedPhone = cleanPhone.startsWith('1') ? `+${cleanPhone}` : `+1${cleanPhone}`
 
       console.log(`[LOOKUP-PATHWAY] Looking up pathway for phone: ${formattedPhone}`)
 

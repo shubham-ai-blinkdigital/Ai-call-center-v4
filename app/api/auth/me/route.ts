@@ -24,7 +24,7 @@ export async function GET() {
     // Get user from database
     const user = await db.get(`user:${decoded.email}`)
 
-    console.log(`🔍 [AUTH/ME] Database lookup for user ${decoded.email}:`, {
+    console.log("🔍 [AUTH/ME] Database lookup for user", decoded.email + ":", {
       found: !!user,
       userType: typeof user,
       userKeys: user ? Object.keys(user) : 'no user'
@@ -42,11 +42,11 @@ export async function GET() {
     // Remove sensitive data
     const { passwordHash: _, ...safeUser } = user
 
-    console.log(`✅ [AUTH/ME] User retrieved: ${user.email}`, {
+    console.log("✅ [AUTH/ME] User retrieved:", {
       id: safeUser.id,
       email: safeUser.email,
       role: safeUser.role,
-      keys: Object.keys(safeUser)
+      name: safeUser.name
     })
     return NextResponse.json({ user: safeUser })
 

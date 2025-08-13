@@ -28,11 +28,15 @@ export function RecentFlows() {
 
         // Fetch user's pathways from the API route
         const response = await fetch(`/api/pathways`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
           credentials: 'include'
         });
         if (!response.ok) {
           const errorText = await response.text();
-          console.error("[RECENT-FLOWS] API error response:", errorText);
+          console.error("[RECENT-FLOWS] API error response:", response.status, errorText);
           throw new Error(`Failed to fetch pathways: ${response.status}`);
         }
 
