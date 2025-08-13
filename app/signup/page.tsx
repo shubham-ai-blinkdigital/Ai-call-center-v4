@@ -69,8 +69,8 @@ export default function SignupPage() {
     const result = await signup(formData)
 
     if (result.success) {
-      // Redirect to dashboard immediately after successful signup
-      router.push("/dashboard")
+      // The auth context will handle redirection to verification page or dashboard
+      // based on whether the user needs email verification
     } else {
       setErrors((prev) => ({ ...prev, form: result.message }))
     }
