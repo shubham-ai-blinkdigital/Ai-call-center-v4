@@ -107,17 +107,29 @@ export async function POST(request: Request) {
       )
 
       if (existingUser.rows.length > 0) {
-        console.log("[AUTH/SIGNUP] User already exists locally:", email)
+        const user = existingUser.rows[0]
+        console.log("[AUTH/SIGNUP] User already exists locally:", email, "verified:", user.is_verified)
+        
+        if (!user.is_verified) {
+          // User exists but not verified - redirect to verification
+          return NextResponse.json({
+            success: false,
+            message: "Account exists but not verified",
+            requiresVerification: true,
+            redirectToVerification: true
+          }, { status: 200 }) // Use 200 so frontend can handle the redirect
+        }
+        
         return NextResponse.json({
           success: false,
-          message: "User already exists"
+          message: "User already exists and is verified"
         }, { status: 400 })
       }
 
       // Create local user record with external reference (let database generate UUID)
       const insertResult = await client.query(
-        `INSERT INTO users (email, first_name, last_name, company, phone_number, role, external_id, external_token, is_verified, platform)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+        `INSERT INTO users (email, first_name, last_name, company, phone_number, role, external_id, external_token, is_verified, platform, password_hash)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
          RETURNING *`,
         [
           email,
@@ -129,7 +141,8 @@ export async function POST(request: Request) {
           externalResult.data._id || externalResult.data.id,
           externalResult.data.token,
           false, // Not verified until email verification
-          'AI Call'
+          'AI Call',
+          password // Store password as entered by user
         ]
       )
 

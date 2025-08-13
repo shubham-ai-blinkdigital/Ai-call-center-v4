@@ -152,6 +152,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const result = await response.json()
 
       if (!result.success) {
+        // Check if user exists but is not verified
+        if (result.requiresVerification && result.redirectToVerification) {
+          console.log("🔄 [AUTH-CONTEXT] User exists but not verified, redirecting to verification pending")
+          router.push(`/verification-pending?email=${encodeURIComponent(data.email)}`)
+          return { 
+            success: false, 
+            message: "You have not verified your email yet. Please check your inbox for the verification link."
+          }
+        }
+        
         console.error("❌ [AUTH-CONTEXT] Signup error:", result.message)
         return { success: false, message: result.message }
       }
