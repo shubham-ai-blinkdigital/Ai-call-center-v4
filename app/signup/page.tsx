@@ -18,11 +18,11 @@ export default function SignupPage() {
     firstName: "",
     lastName: "",
     email: "",
-    password: "",
     company: "",
     phoneNumber: "",
+    password: "",
+    confirmPassword: "",
   })
-  const [confirmPassword, setConfirmPassword] = useState("")
   const [errors, setErrors] = useState<Record<string, string>>({})
   const { signup, isLoading } = useAuth()
   const router = useRouter()
@@ -41,7 +41,7 @@ export default function SignupPage() {
       newErrors.password = "Password must be at least 8 characters"
     }
 
-    if (formData.password !== confirmPassword) {
+    if (formData.password !== formData.confirmPassword) { // Changed from confirmPassword state
       newErrors.confirmPassword = "Passwords do not match"
     }
 
@@ -68,7 +68,17 @@ export default function SignupPage() {
 
     if (!validateForm()) return
 
-    const result = await signup(formData)
+    // Construct signup data object correctly
+    const signupData = {
+      firstName: formData.firstName,
+      lastName: formData.lastName,
+      email: formData.email,
+      password: formData.password,
+      company: formData.company,
+      phoneNumber: formData.phoneNumber,
+    }
+
+    const result = await signup(signupData)
 
     if (result.success) {
       // The auth context will handle redirection to verification page or dashboard
@@ -178,8 +188,8 @@ export default function SignupPage() {
                 id="confirmPassword"
                 name="confirmPassword"
                 type="password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
+                value={formData.confirmPassword} // Corrected to use formData.confirmPassword
+                onChange={handleChange} // Keep handleChange to update formData
                 className={errors.confirmPassword ? "border-red-500" : ""}
               />
               {errors.confirmPassword && <p className="text-sm text-red-500">{errors.confirmPassword}</p>}

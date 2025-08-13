@@ -142,9 +142,15 @@ export default function ProfilePage() {
               )}
 
               <form onSubmit={handleProfileUpdate} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="name">Full Name</Label>
-                  <Input id="name" name="name" value={profileData.name || ""} onChange={handleChange} />
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="firstName">First Name</Label>
+                    <Input id="firstName" name="firstName" value={profileData.firstName || ""} onChange={handleChange} />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="lastName">Last Name</Label>
+                    <Input id="lastName" name="lastName" value={profileData.lastName || ""} onChange={handleChange} />
+                  </div>
                 </div>
 
                 <div className="space-y-2">

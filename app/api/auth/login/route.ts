@@ -34,7 +34,7 @@ export async function POST(request: Request) {
     let user = null
     try {
       await client.connect()
-      
+
       // Query user from PostgreSQL
       const result = await client.query(
         'SELECT * FROM users WHERE email = $1',
@@ -51,7 +51,7 @@ export async function POST(request: Request) {
 
       user = result.rows[0]
       console.log("[AUTH/LOGIN] User found in PostgreSQL:", user.email)
-      
+
     } finally {
       await client.end()
     }
@@ -81,21 +81,21 @@ export async function POST(request: Request) {
     const updateClient = new Client({
       connectionString: process.env.DATABASE_URL
     })
-    
+
     try {
       await updateClient.connect()
       await updateClient.query(
         'UPDATE users SET last_login = NOW(), updated_at = NOW() WHERE email = $1',
         [email]
       )
-      
+
       // Get updated user data
       const updatedResult = await updateClient.query(
         'SELECT * FROM users WHERE email = $1',
         [email]
       )
       user = updatedResult.rows[0]
-      
+
     } finally {
       await updateClient.end()
     }
@@ -120,10 +120,17 @@ export async function POST(request: Request) {
     })
 
     // Return user data (without password)
-    const { password_hash: _, ...safeUser } = user
     return NextResponse.json({
       success: true,
-      user: safeUser
+      user: {
+          id: user.id,
+          email: user.email,
+          firstName: user.first_name,
+          lastName: user.last_name,
+          company: user.company,
+          phoneNumber: user.phone_number,
+          role: user.role
+        }
     })
 
   } catch (error: any) {

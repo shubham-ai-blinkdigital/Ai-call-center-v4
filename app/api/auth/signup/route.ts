@@ -84,15 +84,15 @@ export async function POST(request: Request) {
 
       // Create local user record with external reference
       const userId = `user_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
-      const fullName = `${firstName} ${lastName}`.trim()
       const insertResult = await client.query(
-        `INSERT INTO users (id, email, name, company, phone_number, role, created_at, updated_at, external_id, external_token, is_verified, platform)
-         VALUES ($1, $2, $3, $4, $5, $6, NOW(), NOW(), $7, $8, $9, $10)
+        `INSERT INTO users (id, email, first_name, last_name, company, phone_number, role, created_at, updated_at, external_id, external_token, is_verified, platform)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, NOW(), NOW(), $8, $9, $10, $11)
          RETURNING *`,
         [
           userId,
           email,
-          fullName,
+          firstName,
+          lastName,
           company || '',
           phoneNumber || '',
           'user',
@@ -113,7 +113,8 @@ export async function POST(request: Request) {
         user: {
           id: localUser.id,
           email: localUser.email,
-          name: localUser.name,
+          firstName: localUser.first_name,
+          lastName: localUser.last_name,
           company: localUser.company,
           phoneNumber: localUser.phone_number,
           isVerified: false,

@@ -6,7 +6,8 @@ import { useRouter, usePathname } from 'next/navigation'
 export interface User {
   id: string
   email?: string | null
-  name?: string | null
+  firstName?: string | null
+  lastName?: string | null
   company?: string | null
   phoneNumber?: string | null
   role?: string

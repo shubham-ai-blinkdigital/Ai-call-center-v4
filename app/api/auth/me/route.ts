@@ -26,7 +26,8 @@ async function getUserFromRequest(req: NextRequest) {
     const userData = {
       id: user.id, // This should be the UUID from database
       email: user.email,
-      name: user.name,
+      firstName: user.first_name,
+      lastName: user.last_name,
       company: user.company,
       role: user.role,
       phone_number: user.phone_number, // Assuming phone_number is the correct key in db
@@ -58,7 +59,8 @@ export async function GET(req: NextRequest) {
     const userData = {
       id: user.id,
       email: user.email,
-      name: user.name || 'User',
+      firstName: user.firstName || 'User',
+      lastName: user.lastName || '',
       company: user.company || '',
       role: user.role || 'user',
       phoneNumber: user.phoneNumber || user.phone_number || '',
