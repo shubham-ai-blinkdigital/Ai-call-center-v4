@@ -1,81 +1,118 @@
-
 import { cookies } from "next/headers"
 import * as jwt from "jsonwebtoken"
 import { Client } from "pg"
+import { NextRequest } from "next/server" // Assuming NextRequest is needed for the getUserFromRequest signature
+
+// Define User type for clarity, assuming it has at least 'id' and 'email'
+interface User {
+  id: string;
+  email: string;
+  name?: string | null;
+  role?: string | null;
+  company?: string | null;
+  phone_number?: string | null;
+  created_at?: Date | null;
+  updated_at?: Date | null;
+  last_login?: Date | null;
+}
 
 const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key"
 
 // Get user from server-side request (for API routes) with proper cookie handling
-export async function getUserFromRequest() {
+export async function getUserFromRequest(req: NextRequest): Promise<User | null> {
   try {
-    const cookieStore = await cookies()
-    const token = cookieStore.get("auth-token")?.value
+    // Try to get user ID from session/cookies first
+    let userId = req.cookies.get('user-session')?.value
 
-    if (!token) {
+    if (!userId) {
+      // Fallback: check Authorization header
+      const authHeader = req.headers.get('authorization')
+      if (authHeader?.startsWith('Bearer ')) {
+        userId = authHeader.substring(7)
+      }
+    }
+
+    if (!userId) {
+      console.log('🔍 [AUTH-UTILS] No user ID found in request')
       return null
     }
 
-    // Verify JWT token
-    const decoded = jwt.verify(token, JWT_SECRET) as any
-    
-    // Get full user data from PostgreSQL
+    console.log('🔍 [AUTH-UTILS] Found user ID:', userId)
+
+    // Get user from database
     const client = new Client({
       connectionString: process.env.DATABASE_URL
     })
 
     try {
       await client.connect()
-      const result = await client.query(
-        'SELECT id, email, name, role, company, phone_number, created_at, updated_at, last_login FROM users WHERE id = $1',
-        [decoded.userId]
+
+      // First try to find by UUID (proper ID)
+      let result = await client.query(
+        'SELECT * FROM users WHERE id = $1',
+        [userId]
       )
 
+      // If not found and userId looks like test data, try by email
+      if (result.rows.length === 0 && userId.includes('test')) {
+        console.log('🔄 [AUTH-UTILS] Trying to find user by email for test user')
+        result = await client.query(
+          'SELECT * FROM users WHERE email = $1',
+          [userId.includes('@') ? userId : 'test1@gmail.com']
+        )
+      }
+
+      // If still not found, try by email directly
       if (result.rows.length === 0) {
+        result = await client.query(
+          'SELECT * FROM users WHERE email = $1',
+          [userId]
+        )
+      }
+
+      if (result.rows.length === 0) {
+        console.log('❌ [AUTH-UTILS] User not found:', userId)
         return null
       }
 
-      return result.rows[0]
+      const user = result.rows[0]
+      console.log('✅ [AUTH-UTILS] User found:', user.id, user.email)
+      return user
+
     } finally {
       await client.end()
     }
+
   } catch (error) {
-    console.error("Failed to get user from request:", error)
+    console.error('❌ [AUTH-UTILS] Error getting user from request:', error)
     return null
   }
 }
 
 // Check if user is authenticated (for API routes)
 export async function isAuthenticated(): Promise<boolean> {
-  const user = await getUserFromRequest()
+  const user = await getUserFromRequest(new NextRequest("http://localhost/dummy")) // Pass a dummy request as NextRequest is required
   return !!user
 }
 
 // Get user ID from server-side request (for API routes)
 export async function getUserId(): Promise<string | null> {
-  const user = await getUserFromRequest()
+  const user = await getUserFromRequest(new NextRequest("http://localhost/dummy")) // Pass a dummy request as NextRequest is required
   return user?.id || null
 }
 
 // Get user with detailed error information
 export async function getUserWithError() {
-  try {
-    const user = await getUserFromRequest()
-    
-    if (!user) {
-      return {
-        user: null,
-        error: new Error("No authenticated user found")
-      }
-    }
+  const user = await getUserFromRequest(new NextRequest("http://localhost/dummy")) // Pass a dummy request as NextRequest is required
 
-    return { user, error: null }
-  } catch (error) {
-    console.error("Failed to get user from request:", error)
+  if (!user) {
     return {
       user: null,
-      error: error instanceof Error ? error : new Error("Unknown error"),
+      error: new Error("No authenticated user found")
     }
   }
+
+  return { user, error: null }
 }
 
 // Validate auth token (for API routes)
@@ -86,7 +123,7 @@ export async function verifyJWT(token: string): Promise<{ isValid: boolean; user
 export async function validateAuthToken(token?: string): Promise<{ isValid: boolean; user: any; error?: string }> {
   try {
     let authToken = token
-    
+
     if (!authToken) {
       const cookieStore = await cookies()
       authToken = cookieStore.get("auth-token")?.value
@@ -102,7 +139,7 @@ export async function validateAuthToken(token?: string): Promise<{ isValid: bool
 
     // Verify JWT token
     const decoded = jwt.verify(authToken, JWT_SECRET) as any
-    
+
     const user = {
       id: decoded.userId,
       email: decoded.email

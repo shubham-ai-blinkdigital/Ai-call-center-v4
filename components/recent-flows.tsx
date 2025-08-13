@@ -16,64 +16,46 @@ export function RecentFlows() {
 
   useEffect(() => {
     async function loadFlows() {
+      if (!user?.email) {
+        console.log('[RECENT-FLOWS] No user email available')
+        return
+      }
+
+      console.log('[RECENT-FLOWS] Loading flows for user:', user.email)
+
       try {
-        setLoading(true)
-        setError(null)
+        const response = await fetch('/api/pathways', {
+          credentials: 'include',
+        })
 
-        if (!isAuthenticated) {
-          console.log("[RECENT-FLOWS] User not authenticated, skipping load")
-          return
-        }
-
-        if (!user) {
-          console.log("[RECENT-FLOWS] User data not loaded yet, waiting...")
-          return
-        }
-
-        console.log("[RECENT-FLOWS] Loading flows for user:", user.email)
-
-        // Fetch user's pathways from the API route
-        const response = await fetch(`/api/pathways`, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          credentials: 'include'
-        });
-        
         if (!response.ok) {
-          const errorText = await response.text();
-          console.error("[RECENT-FLOWS] API error response:", response.status, errorText);
-          
           if (response.status === 401) {
-            setError("Please log in to view your pathways.")
-          } else if (response.status === 500) {
-            setError("Server error. Please try again later.")
-          } else {
-            setError(`Failed to fetch pathways: ${response.status}`)
+            console.log('[RECENT-FLOWS] Authentication required')
+            setFlows([])
+            return
           }
-          return
+          throw new Error(`Failed to fetch flows: ${response.status}`)
         }
 
-        const data = await response.json();
-        console.log("[RECENT-FLOWS] Received data:", data)
+        const data = await response.json()
+        console.log('[RECENT-FLOWS] Received data:', data.pathways)
 
-        setFlows(Array.isArray(data) ? data : [])
+        if (data.success && data.pathways) {
+          setFlows(data.pathways)
+        } else if (data.code === "AUTH_ID_FORMAT_ERROR") {
+          console.log('[RECENT-FLOWS] Auth format error - user needs to re-login')
+          setFlows([])
+        } else {
+          setFlows([])
+        }
       } catch (error) {
-        console.error("[RECENT-FLOWS] Error loading recent flows:", error)
-        setError("Network error. Please check your connection.")
-      } finally {
-        setLoading(false)
+        console.error('[RECENT-FLOWS] Error loading flows:', error)
+        setFlows([])
       }
     }
 
-    // Only load flows if we're authenticated and not on the login page
-    if (typeof window !== "undefined" && window.location.pathname !== "/login") {
-      loadFlows()
-    } else {
-      setLoading(false)
-    }
-  }, [isAuthenticated, user])
+    loadFlows()
+  }, [user])
 
   const handleEditFlow = (pathway: any) => {
     if (pathway.phone_number) {
