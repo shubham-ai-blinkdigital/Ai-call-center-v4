@@ -1,4 +1,3 @@
-
 import { NextResponse } from "next/server"
 import { Client } from "pg"
 import * as jwt from "jsonwebtoken"
@@ -11,9 +10,9 @@ export async function POST(request: Request) {
     const { email, password } = await request.json()
 
     if (!email || !password) {
-      return NextResponse.json({ 
-        success: false, 
-        message: "Email and password are required" 
+      return NextResponse.json({
+        success: false,
+        message: "Email and password are required"
       }, { status: 400 })
     }
 
@@ -32,7 +31,7 @@ export async function POST(request: Request) {
     // Prepare external API login request
     const cleanApiUrl = externalApiUrl.endsWith('/') ? externalApiUrl.slice(0, -1) : externalApiUrl
     const apiEndpoint = `${cleanApiUrl}/api/accounts/login`
-    
+
     const externalLoginData = {
       email,
       password,
@@ -97,16 +96,16 @@ export async function POST(request: Request) {
       if (existingUserResult.rows.length > 0) {
         // Update existing user with latest data from external API
         const updateResult = await client.query(
-          `UPDATE users SET 
-           first_name = $1, 
-           last_name = $2, 
-           phone_number = $3, 
-           role = $4, 
-           external_id = $5, 
-           external_token = $6, 
+          `UPDATE users SET
+           first_name = $1,
+           last_name = $2,
+           phone_number = $3,
+           role = $4,
+           external_id = $5,
+           external_token = $6,
            is_verified = $7,
-           platforms = $8,
-           last_login = NOW(), 
+           platform = $8,
+           last_login = NOW(),
            updated_at = NOW()
            WHERE email = $9
            RETURNING *`,
@@ -118,7 +117,7 @@ export async function POST(request: Request) {
             externalUserData._id,
             externalUserData.token,
             Boolean(externalUserData.verified), // Ensure boolean conversion
-            JSON.stringify(externalUserData.platforms || []),
+            'AI Call', // Corrected platform
             email
           ]
         )
@@ -128,8 +127,8 @@ export async function POST(request: Request) {
         // Create new local user record
         const insertResult = await client.query(
           `INSERT INTO users (
-            email, first_name, last_name, phone_number, role, 
-            external_id, external_token, is_verified, platforms, 
+            email, first_name, last_name, phone_number, role,
+            external_id, external_token, is_verified, platform,
             password_hash, created_at, updated_at, last_login
           ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, NOW(), NOW(), NOW())
           RETURNING *`,
@@ -142,7 +141,7 @@ export async function POST(request: Request) {
             externalUserData._id,
             externalUserData.token,
             Boolean(externalUserData.verified), // Ensure boolean conversion
-            JSON.stringify(externalUserData.platforms || []),
+            'AI Call', // Corrected platform
             password // Store password as backup
           ]
         )
@@ -156,8 +155,8 @@ export async function POST(request: Request) {
 
     // Create local JWT token for compatibility
     const localToken = jwt.sign(
-      { 
-        userId: localUser.id, 
+      {
+        userId: localUser.id,
         email: localUser.email,
         externalId: externalUserData._id,
         externalToken: externalUserData.token,
@@ -200,7 +199,7 @@ export async function POST(request: Request) {
 
   } catch (error: any) {
     console.error("[AUTH/LOGIN] Error:", error)
-    
+
     // Handle network errors
     if (error.message?.includes('fetch')) {
       return NextResponse.json({
@@ -209,9 +208,9 @@ export async function POST(request: Request) {
       }, { status: 503 })
     }
 
-    return NextResponse.json({ 
-      success: false, 
-      message: "Internal server error" 
+    return NextResponse.json({
+      success: false,
+      message: "Internal server error"
     }, { status: 500 })
   }
 }
