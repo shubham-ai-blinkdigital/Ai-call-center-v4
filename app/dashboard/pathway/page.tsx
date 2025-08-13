@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useRouter } from "next/navigation"
@@ -12,7 +13,6 @@ import { toast } from "sonner"
 import { useEffect, useState } from "react"
 import { useAuth } from "@/contexts/auth"
 
-
 interface PhoneNumber {
   id: string
   number: string
@@ -26,17 +26,19 @@ interface PhoneNumber {
   pathway_description?: string | null
 }
 
-// Placeholder for pathways, assuming it will be fetched and set elsewhere or handled differently
-let pathways: any[] = [];
-const setPathways = (data: any[]) => {
-  pathways = data;
-};
-
+interface Pathway {
+  id: string
+  name: string
+  description?: string
+  created_at: string
+  updated_at: string
+}
 
 export default function PathwayListingPage() {
   const router = useRouter()
   const { user } = useAuth()
   const [phoneNumbers, setPhoneNumbers] = useState<PhoneNumber[]>([])
+  const [pathways, setPathways] = useState<Pathway[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
@@ -48,7 +50,34 @@ export default function PathwayListingPage() {
         setLoading(true)
         setError(null)
 
-        // Fetch pathways using API (don't pass creator_id, let the API get it from auth)
+        console.log("🔍 [PATHWAY-PAGE] Fetching data for user:", user.email)
+
+        // Fetch phone numbers first - this contains the pathway associations
+        const phoneResponse = await fetch('/api/user/phone-numbers', {
+          credentials: 'include'
+        })
+
+        if (!phoneResponse.ok) {
+          const errorText = await phoneResponse.text()
+          console.error('❌ [PATHWAY-PAGE] Error fetching phone numbers:', phoneResponse.status, errorText)
+          setError(`Failed to load phone numbers: ${phoneResponse.status}`)
+          return
+        }
+
+        const phoneData = await phoneResponse.json()
+        const phoneNumbers = phoneData.phoneNumbers || []
+        
+        console.log("✅ [PATHWAY-PAGE] Phone numbers loaded:", phoneNumbers)
+        
+        // Clean phone number formatting (remove extra + signs)
+        const cleanedPhoneNumbers = phoneNumbers.map((phone: PhoneNumber) => ({
+          ...phone,
+          number: phone.number.replace(/^\+\+/, '+') // Remove double plus signs
+        }))
+        
+        setPhoneNumbers(cleanedPhoneNumbers)
+
+        // Fetch pathways for additional details if needed
         const pathwaysResponse = await fetch('/api/pathways', {
           credentials: 'include'
         })
@@ -58,25 +87,11 @@ export default function PathwayListingPage() {
           console.log('✅ [PATHWAY-PAGE] Pathways loaded:', pathwaysData)
           setPathways(pathwaysData || [])
         } else {
-          const errorText = await pathwaysResponse.text()
-          console.error('❌ [PATHWAY-PAGE] Error fetching pathways:', pathwaysResponse.status, errorText)
-          setError(`Failed to load pathways: ${pathwaysResponse.status}`)
+          console.warn('⚠️ [PATHWAY-PAGE] Could not fetch pathways, but phone numbers loaded successfully')
         }
 
-        // Fetch phone numbers using API
-        const phoneResponse = await fetch('/api/user/phone-numbers', {
-          credentials: 'include'
-        })
-
-        if (phoneResponse.ok) {
-          const phoneData = await phoneResponse.json()
-          setPhoneNumbers(phoneData.phoneNumbers || [])
-        } else {
-          console.error('Error fetching phone numbers:', phoneResponse.status)
-          setError('Failed to load phone numbers')
-        }
       } catch (err) {
-        console.error('Error fetching data:', err)
+        console.error('❌ [PATHWAY-PAGE] Error fetching data:', err)
         setError('Failed to load data')
       } finally {
         setLoading(false)
@@ -87,8 +102,9 @@ export default function PathwayListingPage() {
   }, [user])
 
   const handleManagePathway = (phoneNumber: string) => {
-    const normalizedNumber = phoneNumber.replace(/\D/g, "")
-    router.push(`/dashboard/pathway/${normalizedNumber}`)
+    // Clean the phone number before navigation
+    const cleanNumber = phoneNumber.replace(/^\+\+/, '+').replace(/\D/g, "")
+    router.push(`/dashboard/pathway/${cleanNumber}`)
   }
 
   const copyPathwayId = (pathwayId: string) => {
@@ -167,69 +183,75 @@ export default function PathwayListingPage() {
       ) : (
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {phoneNumbers.map((phone) => {
-                // Find pathway using the pathway_id from phone_numbers table
-                const associatedPathway = phone.pathway_id ? 
-                  pathways.find(p => p.id === phone.pathway_id) : null
-
-                return (
-                  <Card key={phone.id} className="hover:shadow-md transition-shadow">
-                    <CardContent className="p-6">
-                      <div className="flex items-center justify-between">
-                        <div className="space-y-2">
-                          <div className="flex items-center gap-2">
-                            <Phone className="h-4 w-4 text-blue-600" />
-                            <span className="font-medium">+{phone.number}</span>
-                            <Badge variant={phone.status === "active" ? "default" : "secondary"}>
-                              {phone.status}
-                            </Badge>
-                          </div>
-                          <p className="text-sm text-gray-600">
-                            {phone.location} • {phone.type}
-                          </p>
-                          {associatedPathway ? (
-                            <div className="flex items-center gap-2 text-sm">
-                              <div className="h-2 w-2 bg-green-500 rounded-full"></div>
-                              <span className="text-green-700">
-                                Pathway: {associatedPathway.name}
-                              </span>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                className="h-6 w-6 p-0"
-                                onClick={() => copyPathwayId(associatedPathway.id)}
-                                title="Copy Pathway ID"
-                              >
-                                <Copy className="h-3 w-3" />
-                              </Button>
-                            </div>
-                          ) : (
-                            <div className="flex items-center gap-2 text-sm">
-                              <div className="h-2 w-2 bg-gray-400 rounded-full"></div>
-                              <span className="text-gray-500">No pathway configured</span>
-                            </div>
-                          )}
-                        </div>
+            // Use pathway info from phone_numbers table (which comes from the JOIN in the API)
+            const hasPathway = phone.pathway_id && phone.pathway_name
+            
+            return (
+              <Card key={phone.id} className="hover:shadow-md transition-shadow">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2">
+                        <Phone className="h-4 w-4 text-blue-600" />
+                        <span className="font-medium">{phone.number}</span>
+                        <Badge variant={phone.status === "active" ? "default" : "secondary"}>
+                          {phone.status}
+                        </Badge>
                       </div>
-                    </CardContent>
-                    <CardFooter className="pt-4">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleManagePathway(phone.number)}
-                        className="w-full"
-                      >
-                        <ArrowRight className="h-4 w-4 mr-2" />
-                        {associatedPathway ? 'Edit Pathway' : 'Create Pathway'}
-                      </Button>
-                    </CardFooter>
-                  </Card>
-                )
-              })}
+                      <p className="text-sm text-gray-600">
+                        {phone.location} • {phone.type}
+                      </p>
+                      {hasPathway ? (
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-2 text-sm">
+                            <div className="h-2 w-2 bg-green-500 rounded-full"></div>
+                            <span className="text-green-700">
+                              Pathway: {phone.pathway_name}
+                            </span>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-6 w-6 p-0"
+                              onClick={() => copyPathwayId(phone.pathway_id!)}
+                              title="Copy Pathway ID"
+                            >
+                              <Copy className="h-3 w-3" />
+                            </Button>
+                          </div>
+                          {phone.pathway_description && (
+                            <p className="text-xs text-gray-500 ml-4">
+                              {phone.pathway_description}
+                            </p>
+                          )}
+                          <p className="text-xs text-gray-400 ml-4">
+                            ID: {phone.pathway_id}
+                          </p>
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-2 text-sm">
+                          <div className="h-2 w-2 bg-gray-400 rounded-full"></div>
+                          <span className="text-gray-500">No pathway configured</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </CardContent>
+                <CardFooter className="pt-4">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleManagePathway(phone.number)}
+                    className="w-full"
+                  >
+                    <ArrowRight className="h-4 w-4 mr-2" />
+                    {hasPathway ? 'Edit Pathway' : 'Create Pathway'}
+                  </Button>
+                </CardFooter>
+              </Card>
+            )
+          })}
         </div>
       )}
-      <div className="flex items-center justify-center h-64">
-            <p className="text-gray-500">Flowchart builder has been removed</p>
-          </div>
     </div>
   )
 }
