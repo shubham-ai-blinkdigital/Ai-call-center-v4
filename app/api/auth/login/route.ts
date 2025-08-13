@@ -117,7 +117,7 @@ export async function POST(request: Request) {
             externalUserData.role || 'client',
             externalUserData._id,
             externalUserData.token,
-            externalUserData.verified || true,
+            Boolean(externalUserData.verified), // Ensure boolean conversion
             JSON.stringify(externalUserData.platforms || []),
             email
           ]
@@ -141,7 +141,7 @@ export async function POST(request: Request) {
             externalUserData.role || 'client',
             externalUserData._id,
             externalUserData.token,
-            externalUserData.verified || true,
+            Boolean(externalUserData.verified), // Ensure boolean conversion
             JSON.stringify(externalUserData.platforms || []),
             password // Store password as backup
           ]
