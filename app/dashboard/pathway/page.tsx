@@ -48,17 +48,19 @@ export default function PathwayListingPage() {
         setLoading(true)
         setError(null)
 
-        // Fetch pathways using API
-        const pathwaysResponse = await fetch(`/api/pathways?creator_id=${user.id}`, {
+        // Fetch pathways using API (don't pass creator_id, let the API get it from auth)
+        const pathwaysResponse = await fetch('/api/pathways', {
           credentials: 'include'
         })
 
         if (pathwaysResponse.ok) {
           const pathwaysData = await pathwaysResponse.json()
-          setPathways(pathwaysData.pathways || [])
+          console.log('✅ [PATHWAY-PAGE] Pathways loaded:', pathwaysData)
+          setPathways(pathwaysData || [])
         } else {
-          console.error('Error fetching pathways:', pathwaysResponse.status)
-          setError('Failed to load pathways')
+          const errorText = await pathwaysResponse.text()
+          console.error('❌ [PATHWAY-PAGE] Error fetching pathways:', pathwaysResponse.status, errorText)
+          setError(`Failed to load pathways: ${pathwaysResponse.status}`)
         }
 
         // Fetch phone numbers using API
@@ -165,11 +167,9 @@ export default function PathwayListingPage() {
       ) : (
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {phoneNumbers.map((phone) => {
-                const associatedPathway = pathways.find(p => 
-                  p.phone_number === phone.number || 
-                  p.phone_number === `+${phone.number}` ||
-                  p.phone_number === phone.number.replace(/^\+/, '')
-                )
+                // Find pathway using the pathway_id from phone_numbers table
+                const associatedPathway = phone.pathway_id ? 
+                  pathways.find(p => p.id === phone.pathway_id) : null
 
                 return (
                   <Card key={phone.id} className="hover:shadow-md transition-shadow">
@@ -211,6 +211,17 @@ export default function PathwayListingPage() {
                         </div>
                       </div>
                     </CardContent>
+                    <CardFooter className="pt-4">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleManagePathway(phone.number)}
+                        className="w-full"
+                      >
+                        <ArrowRight className="h-4 w-4 mr-2" />
+                        {associatedPathway ? 'Edit Pathway' : 'Create Pathway'}
+                      </Button>
+                    </CardFooter>
                   </Card>
                 )
               })}
