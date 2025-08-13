@@ -36,7 +36,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
   const [isInitialized, setIsInitialized] = useState(false)
-  const isAuthenticated = !!user
+  const [isAuthenticated, setIsAuthenticated] = useState(false) // Explicitly manage isAuthenticated state
   const initializedRef = useRef(false)
   const router = useRouter()
   const pathname = usePathname()
@@ -46,30 +46,36 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       const response = await fetch("/api/auth/me", {
         credentials: "include",
+        cache: 'no-cache' // Added to ensure fresh data
       })
 
       if (response.ok) {
         const data = await response.json()
         console.log("🔍 [AUTH-CONTEXT] Auth response data:", data)
 
-        // Expect direct user object
-        const userData = data.user
+        // Expect direct user object or nested user object with a 'value' property
+        const userData = data.user?.value || data.user
 
         if (userData && typeof userData === 'object' && userData.id) {
           console.log("✅ [AUTH-CONTEXT] User authenticated:", userData.id, userData.email)
           setUser(userData)
+          setIsAuthenticated(true) // Update isAuthenticated state
           setLoading(false)
           return
         }
 
         console.log("❌ [AUTH-CONTEXT] No valid user data in response", { userData, rawData: data })
-      } else {
         setUser(null)
+        setIsAuthenticated(false) // Update isAuthenticated state
+      } else {
         console.log("❌ [AUTH-CONTEXT] Auth check failed:", response.status)
+        setUser(null)
+        setIsAuthenticated(false) // Update isAuthenticated state
       }
     } catch (error: any) {
       console.error("❌ [AUTH-CONTEXT] Auth check error:", error.message)
       setUser(null)
+      setIsAuthenticated(false) // Update isAuthenticated state
     } finally {
       setLoading(false)
     }
@@ -114,8 +120,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       console.log("✅ [AUTH-CONTEXT] Login successful")
 
-      // Update user state
+      // Update user state and isAuthenticated
       setUser(result.user)
+      setIsAuthenticated(true)
 
       // Redirect to dashboard
       router.push("/dashboard")
@@ -149,8 +156,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       console.log("✅ [AUTH-CONTEXT] Signup successful")
 
-      // Update user state
+      // Update user state and isAuthenticated
       setUser(result.user)
+      setIsAuthenticated(true)
 
       // Redirect to dashboard
       router.push("/dashboard")
@@ -170,10 +178,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       })
 
       setUser(null)
+      setIsAuthenticated(false) // Update isAuthenticated state
       router.push("/login")
     } catch (err) {
       console.error("Logout error:", err)
       setUser(null)
+      setIsAuthenticated(false) // Update isAuthenticated state
       router.push("/login")
     }
   }
@@ -204,6 +214,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       // Update local state
       setUser((prev) => (prev ? { ...prev, ...data } : null))
+      // isAuthenticated state remains true if user was already logged in
 
       console.log("✅ [AUTH-CONTEXT] Profile updated successfully")
       return { success: true, message: "Profile updated successfully" }

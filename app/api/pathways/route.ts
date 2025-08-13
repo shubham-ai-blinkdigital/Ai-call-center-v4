@@ -5,71 +5,73 @@ import { validateAuthToken } from "@/lib/auth-utils"
 import { Client } from "pg"
 import { getUserFromRequest } from "@/lib/auth-utils"
 
-export async function GET(request: NextRequest) {
+export async function GET(req: NextRequest) {
   try {
-    console.log('🔄 [PATHWAYS-API] Processing request...')
+    const user = await getUserFromRequest(req)
 
-    const user = await getUserFromRequest(request)
     if (!user) {
-      console.log('❌ [PATHWAYS-API] No authenticated user')
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    console.log('✅ [PATHWAYS-API] Authenticated user:', user.id, user.email)
+    const { searchParams } = new URL(req.url)
+    const creatorId = searchParams.get('creator_id')
+
+    console.log('[PATHWAYS-API] 🔍 Getting pathways for creator:', creatorId)
+    console.log('[PATHWAYS-API] 👤 Authenticated user:', user.id)
+
+    // Validate UUID format if creatorId is provided
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+
+    if (creatorId && !uuidRegex.test(creatorId)) {
+      console.log('[PATHWAYS-API] ❌ Invalid UUID format for creator_id:', creatorId)
+      return NextResponse.json({ error: "Invalid creator ID format" }, { status: 400 })
+    }
+
+    if (creatorId && creatorId !== user.id) {
+      return NextResponse.json({ error: "Access denied" }, { status: 403 })
+    }
 
     const client = new Client({
       connectionString: process.env.DATABASE_URL
     })
 
-    try {
-      await client.connect()
+    await client.connect()
 
-      // Get pathways for this user - include team pathways and personal pathways
-      const result = await client.query(`
-        SELECT DISTINCT p.*, pn.phone_number, pn.id as phone_number_id
+    try {
+      // Get pathways for the authenticated user using their actual UUID
+      const query = `
+        SELECT 
+          p.*,
+          pn.phone_number,
+          pn.display_name as phone_display_name
         FROM pathways p
         LEFT JOIN phone_numbers pn ON p.phone_number_id = pn.id
-        WHERE p.creator_id = $1 
-           OR p.team_id IN (
-             SELECT team_id FROM team_members WHERE user_id = $1
-           )
-           OR p.team_id IN (
-             SELECT id FROM teams WHERE owner_id = $1
-           )
+        WHERE p.creator_id = $1
         ORDER BY p.updated_at DESC
-      `, [user.id])
+      `
 
-      console.log('✅ [PATHWAYS-API] Found pathways:', result.rows.length)
+      const result = await client.query(query, [user.id])
+      console.log('[PATHWAYS-API] ✅ Found pathways:', result.rows.length)
 
-      return NextResponse.json({
-        success: true,
-        pathways: result.rows
+      return NextResponse.json({ 
+        pathways: result.rows,
+        count: result.rows.length 
       })
-
-    } catch (dbError: any) {
-      console.error("❌ [PATHWAYS-API] Database error:", dbError)
-
-      // If there's a UUID error, it means we have a user ID mismatch
-      if (dbError.message?.includes('invalid input syntax for type uuid')) {
-        console.log('🔧 [PATHWAYS-API] UUID error detected, user ID format issue')
-        return NextResponse.json({
-          success: false,
-          error: "User authentication issue - please log in again",
-          code: "AUTH_ID_FORMAT_ERROR"
-        }, { status: 401 })
-      }
-
-      throw dbError
     } finally {
       await client.end()
     }
+  } catch (error) {
+    console.error("Error fetching pathways:", error)
 
-  } catch (error: any) {
-    console.error("❌ [PATHWAYS-API] Error:", error)
-    return NextResponse.json(
-      { success: false, error: error.message },
-      { status: 500 }
-    )
+    // Check if it's a UUID validation error
+    if (error instanceof Error && error.message.includes('invalid input syntax for type uuid')) {
+      return NextResponse.json({ 
+        error: "Invalid user ID format", 
+        details: "User ID must be a valid UUID" 
+      }, { status: 400 })
+    }
+
+    return NextResponse.json({ error: "Failed to fetch pathways" }, { status: 500 })
   }
 }
 

@@ -18,98 +18,128 @@ interface User {
 
 const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key"
 
-// Get user from server-side request (for API routes) with proper cookie handling
-export async function getUserFromRequest(req: NextRequest): Promise<User | null> {
-  try {
-    // Try to get user ID from session/cookies first
-    let userId = req.cookies.get('user-session')?.value
+// Helper function to get user by ID from the database
+async function getUserById(userId: string): Promise<any | null> {
+  const client = new Client({
+    connectionString: process.env.DATABASE_URL
+  })
 
-    if (!userId) {
-      // Fallback: check Authorization header
-      const authHeader = req.headers.get('authorization')
-      if (authHeader?.startsWith('Bearer ')) {
-        userId = authHeader.substring(7)
-      }
+  try {
+    await client.connect()
+
+    // Try to find by UUID (proper ID)
+    let result = await client.query(
+      'SELECT * FROM users WHERE id = $1',
+      [userId]
+    )
+
+    // If not found and userId looks like test data, try by email
+    if (result.rows.length === 0 && userId.includes('test')) {
+      console.log('🔄 [AUTH-UTILS] Trying to find user by email for test user')
+      result = await client.query(
+        'SELECT * FROM users WHERE email = $1',
+        [userId.includes('@') ? userId : 'test1@gmail.com']
+      )
     }
 
-    if (!userId) {
-      console.log('🔍 [AUTH-UTILS] No user ID found in request')
+    // If still not found, try by email directly
+    if (result.rows.length === 0) {
+      result = await client.query(
+        'SELECT * FROM users WHERE email = $1',
+        [userId]
+      )
+    }
+
+    if (result.rows.length === 0) {
+      console.log('❌ [AUTH-UTILS] User not found in database:', userId)
       return null
     }
 
-    console.log('🔍 [AUTH-UTILS] Found user ID:', userId)
-
-    // Handle test user mapping - map "test-user-1" to actual UUID
-    if (userId === 'test-user-1') {
-      userId = 'f42a2757-ccb6-4f1e-ab99-56769b12089c'
-      console.log('🔄 [AUTH-UTILS] Mapped test user to actual UUID:', userId)
-    }
-
-    // Get user from database
-    const client = new Client({
-      connectionString: process.env.DATABASE_URL
-    })
-
-    try {
-      await client.connect()
-
-      // First try to find by UUID (proper ID)
-      let result = await client.query(
-        'SELECT * FROM users WHERE id = $1',
-        [userId]
-      )
-
-      // If not found and userId looks like test data, try by email
-      if (result.rows.length === 0 && userId.includes('test')) {
-        console.log('🔄 [AUTH-UTILS] Trying to find user by email for test user')
-        result = await client.query(
-          'SELECT * FROM users WHERE email = $1',
-          [userId.includes('@') ? userId : 'test1@gmail.com']
-        )
-      }
-
-      // If still not found, try by email directly
-      if (result.rows.length === 0) {
-        result = await client.query(
-          'SELECT * FROM users WHERE email = $1',
-          [userId]
-        )
-      }
-
-      if (result.rows.length === 0) {
-        console.log('❌ [AUTH-UTILS] User not found:', userId)
-        return null
-      }
-
-      const user = result.rows[0]
-      console.log('✅ [AUTH-UTILS] User found:', user.id, user.email)
-      return user
-
-    } finally {
-      await client.end()
-    }
+    const user = result.rows[0]
+    console.log('✅ [AUTH-UTILS] User found in database:', user.id, user.email)
+    return user
 
   } catch (error) {
-    console.error('❌ [AUTH-UTILS] Error getting user from request:', error)
+    console.error('❌ [AUTH-UTILS] Error getting user by ID from database:', error)
+    return null
+  } finally {
+    await client.end()
+  }
+}
+
+
+// Get user from server-side request (for API routes) with proper cookie handling
+export async function getUserFromRequest(req: NextRequest): Promise<User | null> {
+  try {
+    const token = req.cookies.get('auth_token')?.value
+
+    if (!token) {
+      console.log("🔍 [AUTH-UTILS] No auth token found")
+      return null
+    }
+
+    console.log("🔍 [AUTH-UTILS] Token found, verifying...")
+
+    // Verify JWT token
+    const decoded = jwt.verify(token, JWT_SECRET) as { userId: string }
+
+    if (!decoded.userId) {
+      console.log("❌ [AUTH-UTILS] Invalid token payload")
+      return null
+    }
+
+    console.log("🔍 [AUTH-UTILS] Getting user from database:", decoded.userId)
+
+    // Get user from database
+    const user = await getUserById(decoded.userId)
+
+    if (!user) {
+      console.log("❌ [AUTH-UTILS] User not found in database")
+      return null
+    }
+
+    console.log("✅ [AUTH-UTILS] User found:", user.email)
+
+    // Normalize user data structure
+    return {
+      id: user.id,
+      email: user.email,
+      name: user.name || 'User',
+      company: user.company || '',
+      role: user.role || 'user',
+      phoneNumber: user.phoneNumber || user.phone_number || '',
+      passwordHash: user.passwordHash || user.password_hash,
+      createdAt: user.createdAt || user.created_at,
+      updatedAt: user.updatedAt || user.updated_at,
+      lastLogin: user.lastLogin || user.last_login
+    }
+  } catch (error) {
+    console.error("❌ [AUTH-UTILS] Error getting user from request:", error)
     return null
   }
 }
 
 // Check if user is authenticated (for API routes)
 export async function isAuthenticated(): Promise<boolean> {
-  const user = await getUserFromRequest(new NextRequest("http://localhost/dummy")) // Pass a dummy request as NextRequest is required
+  // For server-side isAuthenticated, we need to simulate a request context.
+  // In a real API route, 'req' would be available. Here, we mock it.
+  // This might not be fully accurate for all Next.js server-side contexts.
+  // It's better to call getUserFromRequest directly where needed.
+  const user = await getUserFromRequest(new NextRequest("http://localhost/__mock__")) // Pass a dummy request
   return !!user
 }
 
 // Get user ID from server-side request (for API routes)
 export async function getUserId(): Promise<string | null> {
-  const user = await getUserFromRequest(new NextRequest("http://localhost/dummy")) // Pass a dummy request as NextRequest is required
+  // Similar to isAuthenticated, we mock the request.
+  const user = await getUserFromRequest(new NextRequest("http://localhost/__mock__")) // Pass a dummy request
   return user?.id || null
 }
 
 // Get user with detailed error information
 export async function getUserWithError() {
-  const user = await getUserFromRequest(new NextRequest("http://localhost/dummy")) // Pass a dummy request as NextRequest is required
+  // Similar to isAuthenticated, we mock the request.
+  const user = await getUserFromRequest(new NextRequest("http://localhost/__mock__")) // Pass a dummy request
 
   if (!user) {
     return {

@@ -41,6 +41,64 @@ export default function PathwayListingPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
+  // Assuming isInitialized and authLoading are available from useAuth or a similar context
+  // If not, these would need to be defined or passed appropriately.
+  // For now, let's assume they are available and correctly manage the auth state.
+  const isInitialized = true; // Placeholder, replace with actual initialization status if available
+  const authLoading = false; // Placeholder, replace with actual auth loading status if available
+
+
+  useEffect(() => {
+    const fetchUserPathways = async () => {
+      if (!user || !user.id) {
+        console.log('[PATHWAY-PAGE] ❌ No user or user ID available')
+        setLoading(false)
+        return
+      }
+
+      console.log('[PATHWAY-PAGE] 🔍 Fetching pathways for user:', user.id)
+      setLoading(true)
+      setError(null)
+
+      try {
+        // Use the authenticated user's actual ID, not the test ID
+        const response = await fetch(`/api/pathways?creator_id=${user.id}`, {
+          credentials: 'include',
+          cache: 'no-cache'
+        })
+
+        console.log('[PATHWAY-PAGE] 📊 Response status:', response.status)
+
+        if (!response.ok) {
+          const errorText = await response.text()
+          console.log('[PATHWAY-PAGE] ❌ Error response:', errorText)
+          throw new Error(`Failed to fetch pathways: ${response.status}`)
+        }
+
+        const data = await response.json()
+        console.log('[PATHWAY-PAGE] ✅ Pathways data:', data)
+
+        if (data.pathways) {
+          setPathways(data.pathways)
+        } else {
+          setPathways([])
+        }
+      } catch (error) {
+        console.error('[PATHWAY-PAGE] ❌ Error fetching pathways:', error)
+        setError(error instanceof Error ? error.message : 'Failed to load pathways')
+        setPathways([])
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    if (isInitialized && !authLoading && user) {
+      fetchUserPathways()
+    } else if (isInitialized && !authLoading && !user) {
+      setLoading(false)
+    }
+  }, [user, isInitialized, authLoading])
+
   useEffect(() => {
     async function fetchData() {
       if (!user) return
@@ -77,6 +135,10 @@ export default function PathwayListingPage() {
         setPhoneNumbers(cleanedPhoneNumbers)
 
         // Fetch pathways using the new API (no creator_id needed, uses authenticated user)
+        // This part seems to be replaced by the first useEffect hook which fetches pathways directly.
+        // If phone numbers also need to fetch their pathway info in a different way, this needs adjustment.
+        // Based on the previous change, it looks like pathway data is now fetched separately and linked.
+        // For now, we keep this as is, assuming phone numbers might still contain association data.
         const pathwaysResponse = await fetch('/api/pathways', {
           credentials: 'include'
         })

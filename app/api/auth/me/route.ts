@@ -42,11 +42,11 @@ async function getUserFromRequest(req: NextRequest) {
   }
 }
 
-export async function GET(request: NextRequest) {
+export async function GET(req: NextRequest) {
   try {
     console.log("🔍 [AUTH-ME] Processing auth check...")
 
-    const user = await getUserFromRequest(request)
+    const user = await getUserFromRequest(req)
     if (!user) {
       console.log("❌ [AUTH-ME] No user found")
       return NextResponse.json({ error: "Not authenticated" }, { status: 401 })
@@ -54,12 +54,27 @@ export async function GET(request: NextRequest) {
 
     console.log("🔍 [AUTH-ME] Found user:", { id: user.id, email: user.email })
 
-    // Return user data in consistent format
-    return NextResponse.json({
-      user: user  // Direct user object, not wrapped
+    // Ensure we return consistent user data structure
+    const userData = {
+      id: user.id,
+      email: user.email,
+      name: user.name || 'User',
+      company: user.company || '',
+      role: user.role || 'user',
+      phoneNumber: user.phoneNumber || user.phone_number || '',
+      createdAt: user.createdAt || user.created_at,
+      updatedAt: user.updatedAt || user.updated_at,
+      lastLogin: user.lastLogin || user.last_login
+    }
+
+    return NextResponse.json({ 
+      user: { 
+        ok: true, 
+        value: userData 
+      } 
     })
   } catch (error) {
-    console.error("❌ [AUTH-ME] Error:", error)
+    console.error("Error in /api/auth/me:", error)
     return NextResponse.json({ error: "Authentication failed" }, { status: 500 })
   }
 }
