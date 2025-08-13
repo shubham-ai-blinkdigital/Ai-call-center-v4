@@ -1,0 +1,42 @@
+I understand you want to integrate a new external API for user signup instead of your current internal authentication system. Let me explain the plan and how this would work:
+Current vs New Signup Flow
+Current Flow:
+User fills signup form
+Your /api/auth/signup creates user in your PostgreSQL database
+User is immediately logged in with JWT token
+New Flow with External API:
+User fills signup form
+Your signup endpoint calls the external {{forex_url}}api/accounts/signup
+External API creates user and sends verification email
+User verifies email through external system
+Once verified, user can login (you'll need to sync with external system)
+Integration Plan
+Phase 1: Modify Signup Endpoint
+Update /app/api/auth/signup/route.ts to call external API instead of creating user locally
+Handle the external API response and store relevant user data
+Manage the verification flow
+Phase 2: Update User Storage
+Decide whether to:
+Store users only after verification (recommended)
+Store users immediately but mark as unverified
+Map external API fields to your database schema:
+firstName + lastName → name
+email → email
+phoneNumber → phone_number
+_id → external reference
+token → for API authentication
+Phase 3: Verification Handling
+Create endpoint to handle verification status
+Sync verified users to your local database
+Update login flow to check verification status
+Phase 4: Login Integration
+Modify login to work with external system
+Handle JWT tokens from external API
+Maintain session management
+Key Considerations
+Token Management: The external API returns its own JWT token - you'll need to decide whether to use theirs or generate your own for session management.
+Data Mapping: Your current schema uses name (single field) but external API has firstName/lastName.
+Verification Flow: Users won't be able to login until verified - your UI needs to handle this state.
+Error Handling: External API failures need graceful handling.
+Platform Field: The external API requires a platform field set to "AI Call".
+Would you like me to proceed with implementing this integration? I can start with Phase 1 (modifying the signup endpoint) and show you how each piece would work.
