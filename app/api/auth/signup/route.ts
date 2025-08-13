@@ -21,13 +21,17 @@ export async function POST(request: Request) {
 
     // Call external API for signup
     const externalApiUrl = process.env.FOREX_URL || process.env.EXTERNAL_API_URL
+    console.log("[AUTH/SIGNUP] Checking API URL - FOREX_URL:", process.env.FOREX_URL, "EXTERNAL_API_URL:", process.env.EXTERNAL_API_URL)
+    
     if (!externalApiUrl) {
       console.error("[AUTH/SIGNUP] External API URL not configured")
       return NextResponse.json({
         success: false,
-        message: "External API configuration missing"
+        message: "External API configuration missing. Please configure FOREX_URL environment variable."
       }, { status: 500 })
     }
+
+    console.log("[AUTH/SIGNUP] Using external API URL:", externalApiUrl)
 
     const externalSignupData = {
       firstName,
@@ -38,9 +42,11 @@ export async function POST(request: Request) {
       platform: "AI Call"
     }
 
-    console.log("[AUTH/SIGNUP] Calling external API:", `${externalApiUrl}api/accounts/signup`)
+    const apiEndpoint = `${externalApiUrl}/api/accounts/signup`
+    console.log("[AUTH/SIGNUP] Calling external API:", apiEndpoint)
+    console.log("[AUTH/SIGNUP] Payload:", JSON.stringify(externalSignupData, null, 2))
     
-    const externalResponse = await fetch(`${externalApiUrl}api/accounts/signup`, {
+    const externalResponse = await fetch(apiEndpoint, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -48,7 +54,17 @@ export async function POST(request: Request) {
       body: JSON.stringify(externalSignupData)
     })
 
-    const externalResult = await externalResponse.json()
+    let externalResult
+    try {
+      externalResult = await externalResponse.json()
+    } catch (parseError) {
+      console.error("[AUTH/SIGNUP] Failed to parse external API response:", parseError)
+      console.log("[AUTH/SIGNUP] Raw response:", await externalResponse.text())
+      return NextResponse.json({
+        success: false,
+        message: "Invalid response from signup service"
+      }, { status: 500 })
+    }
 
     if (!externalResponse.ok) {
       console.error("[AUTH/SIGNUP] External API error:", externalResult)
