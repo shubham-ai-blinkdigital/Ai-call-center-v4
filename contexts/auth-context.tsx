@@ -122,6 +122,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       console.log("✅ [AUTH-CONTEXT] Login successful")
 
+      // Store external API token in localStorage for session management
+      if (result.token || result.externalToken) {
+        const tokenToStore = result.token || result.externalToken
+        localStorage.setItem('auth-token', tokenToStore)
+        console.log("✅ [AUTH-CONTEXT] Token stored in localStorage")
+      }
+
       // Update user state and isAuthenticated
       setUser(result.user)
       setIsAuthenticated(true)
@@ -129,7 +136,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // Redirect to dashboard
       router.push("/dashboard")
 
-      return { success: true, message: "Login successful" }
+      return { success: true, message: result.message || "Login successful" }
     } catch (error: any) {
       console.error("❌ [AUTH-CONTEXT] Unexpected login error:", error)
       return { success: false, message: error.message || "An unexpected error occurred" }
@@ -177,11 +184,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         credentials: "include",
       })
 
+      // Clear localStorage token
+      localStorage.removeItem('auth-token')
+      console.log("✅ [AUTH-CONTEXT] Token cleared from localStorage")
+
       setUser(null)
       setIsAuthenticated(false) // Update isAuthenticated state
       router.push("/login")
     } catch (err) {
       console.error("Logout error:", err)
+      
+      // Clear localStorage token even on error
+      localStorage.removeItem('auth-token')
+      
       setUser(null)
       setIsAuthenticated(false) // Update isAuthenticated state
       router.push("/login")

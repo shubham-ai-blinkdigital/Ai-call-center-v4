@@ -1,6 +1,6 @@
+
 import { NextResponse } from "next/server"
 import { Client } from "pg"
-
 import * as jwt from "jsonwebtoken"
 import { cookies } from "next/headers"
 
@@ -17,124 +17,198 @@ export async function POST(request: Request) {
       }, { status: 400 })
     }
 
-    console.log("[AUTH/LOGIN] Attempting login for:", email)
+    console.log("[AUTH/LOGIN] Attempting external API login for:", email)
 
-    // Verify JWT secret is configured
-    const jwtSecret = process.env.JWT_SECRET
-    if (!jwtSecret || jwtSecret === 'your-super-secure-jwt-secret-key-here') {
-      console.log("❌ [AUTH] JWT secret not properly configured")
-      return NextResponse.json({ error: "JWT secret not properly configured. Please set a secure JWT_SECRET in environment variables." }, { status: 500 })
+    // Get external API URL
+    const externalApiUrl = process.env.FOREX_URL || process.env.EXTERNAL_API_URL
+    if (!externalApiUrl) {
+      console.error("[AUTH/LOGIN] External API URL not configured")
+      return NextResponse.json({
+        success: false,
+        message: "External API configuration missing. Please configure FOREX_URL environment variable."
+      }, { status: 500 })
     }
 
-    // Connect to PostgreSQL
+    // Prepare external API login request
+    const cleanApiUrl = externalApiUrl.endsWith('/') ? externalApiUrl.slice(0, -1) : externalApiUrl
+    const apiEndpoint = `${cleanApiUrl}/api/accounts/login`
+    
+    const externalLoginData = {
+      email,
+      password,
+      platform: "AI Call"
+    }
+
+    console.log("[AUTH/LOGIN] Calling external API:", apiEndpoint)
+    console.log("[AUTH/LOGIN] Payload:", JSON.stringify(externalLoginData, null, 2))
+
+    // Call external API for authentication
+    const externalResponse = await fetch(apiEndpoint, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(externalLoginData)
+    })
+
+    const responseText = await externalResponse.text()
+    console.log("[AUTH/LOGIN] External API response status:", externalResponse.status)
+    console.log("[AUTH/LOGIN] External API response:", responseText.substring(0, 500) + (responseText.length > 500 ? '...' : ''))
+
+    // Parse external API response
+    let externalResult
+    try {
+      externalResult = JSON.parse(responseText)
+    } catch (parseError) {
+      console.error("[AUTH/LOGIN] Failed to parse external API response:", parseError)
+      return NextResponse.json({
+        success: false,
+        message: "Invalid response from authentication service"
+      }, { status: 500 })
+    }
+
+    // Check if external authentication failed
+    if (!externalResponse.ok || externalResult.status !== "success") {
+      console.log("[AUTH/LOGIN] External authentication failed:", externalResult.message)
+      return NextResponse.json({
+        success: false,
+        message: externalResult.message || "Invalid email or password"
+      }, { status: 401 })
+    }
+
+    console.log("[AUTH/LOGIN] External authentication successful")
+    const externalUserData = externalResult.data
+
+    // Connect to PostgreSQL to sync user data
     const client = new Client({
       connectionString: process.env.DATABASE_URL
     })
 
-    let user = null
+    let localUser = null
     try {
       await client.connect()
 
-      // Query user from PostgreSQL
-      const result = await client.query(
+      // Check if user exists in local database
+      const existingUserResult = await client.query(
         'SELECT * FROM users WHERE email = $1',
         [email]
       )
 
-      if (result.rows.length === 0) {
-        console.log("[AUTH/LOGIN] User not found:", email)
-        return NextResponse.json({ 
-          success: false, 
-          message: "Invalid email or password" 
-        }, { status: 401 })
+      if (existingUserResult.rows.length > 0) {
+        // Update existing user with latest data from external API
+        const updateResult = await client.query(
+          `UPDATE users SET 
+           first_name = $1, 
+           last_name = $2, 
+           phone_number = $3, 
+           role = $4, 
+           external_id = $5, 
+           external_token = $6, 
+           is_verified = $7,
+           platforms = $8,
+           last_login = NOW(), 
+           updated_at = NOW()
+           WHERE email = $9
+           RETURNING *`,
+          [
+            externalUserData.firstName,
+            externalUserData.lastName,
+            externalUserData.phoneNumber,
+            externalUserData.role || 'client',
+            externalUserData._id,
+            externalUserData.token,
+            externalUserData.verified || true,
+            JSON.stringify(externalUserData.platforms || []),
+            email
+          ]
+        )
+        localUser = updateResult.rows[0]
+        console.log("[AUTH/LOGIN] Updated existing local user:", localUser.id)
+      } else {
+        // Create new local user record
+        const insertResult = await client.query(
+          `INSERT INTO users (
+            email, first_name, last_name, phone_number, role, 
+            external_id, external_token, is_verified, platforms, 
+            password_hash, created_at, updated_at, last_login
+          ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, NOW(), NOW(), NOW())
+          RETURNING *`,
+          [
+            email,
+            externalUserData.firstName,
+            externalUserData.lastName,
+            externalUserData.phoneNumber,
+            externalUserData.role || 'client',
+            externalUserData._id,
+            externalUserData.token,
+            externalUserData.verified || true,
+            JSON.stringify(externalUserData.platforms || []),
+            password // Store password as backup
+          ]
+        )
+        localUser = insertResult.rows[0]
+        console.log("[AUTH/LOGIN] Created new local user:", localUser.id)
       }
-
-      user = result.rows[0]
-      console.log("[AUTH/LOGIN] User found in PostgreSQL:", user.email)
 
     } finally {
       await client.end()
     }
 
-    // Validate user object structure
-    if (!user.email || !user.password_hash) {
-      console.log("[AUTH/LOGIN] Invalid user object structure for:", email)
-      return NextResponse.json({ 
-        success: false, 
-        message: "Account not properly configured. Please contact support." 
-      }, { status: 401 })
-    }
-
-    // Verify password (plain text comparison)
-    const isValidPassword = password === user.password_hash
-    if (!isValidPassword) {
-      console.log("[AUTH/LOGIN] Invalid password for:", email)
-      return NextResponse.json({ 
-        success: false, 
-        message: "Invalid email or password" 
-      }, { status: 401 })
-    }
-
-    console.log("[AUTH/LOGIN] Login successful for:", email)
-
-    // Update last login in PostgreSQL
-    const updateClient = new Client({
-      connectionString: process.env.DATABASE_URL
-    })
-
-    try {
-      await updateClient.connect()
-      await updateClient.query(
-        'UPDATE users SET last_login = NOW(), updated_at = NOW() WHERE email = $1',
-        [email]
-      )
-
-      // Get updated user data
-      const updatedResult = await updateClient.query(
-        'SELECT * FROM users WHERE email = $1',
-        [email]
-      )
-      user = updatedResult.rows[0]
-
-    } finally {
-      await updateClient.end()
-    }
-
-    // Create JWT token
-    const token = jwt.sign(
+    // Create local JWT token for compatibility
+    const localToken = jwt.sign(
       { 
-        userId: user.id, 
-        email: user.email,
+        userId: localUser.id, 
+        email: localUser.email,
+        externalId: externalUserData._id,
+        externalToken: externalUserData.token,
         exp: Math.floor(Date.now() / 1000) + (7 * 24 * 60 * 60) // 7 days
       },
       JWT_SECRET
     )
 
-    // Set HTTP-only cookie
+    // Set HTTP-only cookie for server-side authentication
     const cookieStore = await cookies()
-    cookieStore.set("auth-token", token, {
+    cookieStore.set("auth-token", localToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
       maxAge: 7 * 24 * 60 * 60 // 7 days
     })
 
-    // Return user data (without password)
+    // Return user data with external token for localStorage storage
     return NextResponse.json({
       success: true,
+      message: "Logged in successfully",
       user: {
-          id: user.id,
-          email: user.email,
-          firstName: user.first_name,
-          lastName: user.last_name,
-          company: user.company,
-          phoneNumber: user.phone_number,
-          role: user.role
-        }
+        id: localUser.id,
+        _id: externalUserData._id,
+        firstName: externalUserData.firstName,
+        lastName: externalUserData.lastName,
+        email: externalUserData.email,
+        phoneNumber: externalUserData.phoneNumber,
+        role: externalUserData.role,
+        status: externalUserData.status,
+        verified: externalUserData.verified,
+        platforms: externalUserData.platforms,
+        createdDate: externalUserData.createdDate,
+        updatedDate: externalUserData.updatedDate
+      },
+      // Include external token for frontend localStorage storage
+      token: externalUserData.token,
+      externalToken: externalUserData.token
     })
 
   } catch (error: any) {
     console.error("[AUTH/LOGIN] Error:", error)
+    
+    // Handle network errors
+    if (error.message?.includes('fetch')) {
+      return NextResponse.json({
+        success: false,
+        message: "Unable to connect to authentication service. Please try again later."
+      }, { status: 503 })
+    }
+
     return NextResponse.json({ 
       success: false, 
       message: "Internal server error" 
