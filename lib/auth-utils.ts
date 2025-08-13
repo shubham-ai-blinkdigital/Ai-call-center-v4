@@ -71,7 +71,7 @@ async function getUserById(userId: string): Promise<any | null> {
 // Get user from server-side request (for API routes) with proper cookie handling
 export async function getUserFromRequest(req: NextRequest): Promise<User | null> {
   try {
-    const token = req.cookies.get('auth_token')?.value
+    const token = req.cookies.get('auth-token')?.value
 
     if (!token) {
       console.log("🔍 [AUTH-UTILS] No auth token found")
