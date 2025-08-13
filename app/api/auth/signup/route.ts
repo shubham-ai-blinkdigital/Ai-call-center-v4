@@ -42,7 +42,9 @@ export async function POST(request: Request) {
       platform: "AI Call"
     }
 
-    const apiEndpoint = `${externalApiUrl}/api/accounts/signup`
+    // Ensure no double slashes in the URL
+    const cleanApiUrl = externalApiUrl.endsWith('/') ? externalApiUrl.slice(0, -1) : externalApiUrl
+    const apiEndpoint = `${cleanApiUrl}/api/accounts/signup`
     console.log("[AUTH/SIGNUP] Calling external API:", apiEndpoint)
     console.log("[AUTH/SIGNUP] Payload:", JSON.stringify(externalSignupData, null, 2))
     
@@ -54,12 +56,26 @@ export async function POST(request: Request) {
       body: JSON.stringify(externalSignupData)
     })
 
+    // Get the response text first to avoid body consumption issues
+    const responseText = await externalResponse.text()
+    console.log("[AUTH/SIGNUP] Raw response status:", externalResponse.status)
+    console.log("[AUTH/SIGNUP] Raw response text:", responseText.substring(0, 500) + (responseText.length > 500 ? '...' : ''))
+
     let externalResult
     try {
-      externalResult = await externalResponse.json()
+      externalResult = JSON.parse(responseText)
     } catch (parseError) {
       console.error("[AUTH/SIGNUP] Failed to parse external API response:", parseError)
-      console.log("[AUTH/SIGNUP] Raw response:", await externalResponse.text())
+      console.error("[AUTH/SIGNUP] Response was not valid JSON. This usually means the API endpoint is incorrect or the server returned an error page.")
+      
+      // Check if it's an HTML error page
+      if (responseText.includes('<!DOCTYPE') || responseText.includes('<html>')) {
+        return NextResponse.json({
+          success: false,
+          message: "External API returned an error page. Please check the API endpoint configuration."
+        }, { status: 500 })
+      }
+      
       return NextResponse.json({
         success: false,
         message: "Invalid response from signup service"
