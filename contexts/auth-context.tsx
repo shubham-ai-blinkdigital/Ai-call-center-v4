@@ -52,11 +52,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const data = await response.json()
         console.log("🔍 [AUTH-CONTEXT] Auth response data:", data)
 
-        // Handle nested user data structure (user.value)
-        const userData = data.user?.value || data.user
+        // Expect direct user object
+        const userData = data.user
 
         if (userData && typeof userData === 'object' && userData.id) {
-          console.log("✅ [AUTH-CONTEXT] User authenticated:", userData.id)
+          console.log("✅ [AUTH-CONTEXT] User authenticated:", userData.id, userData.email)
           setUser(userData)
           setLoading(false)
           return

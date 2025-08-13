@@ -16,46 +16,37 @@ export function RecentFlows() {
 
   useEffect(() => {
     async function loadFlows() {
-      if (!user?.email) {
-        console.log('[RECENT-FLOWS] No user email available')
+      if (!user?.id) {
+        console.log("[RECENT-FLOWS] No user ID available")
         return
       }
 
-      console.log('[RECENT-FLOWS] Loading flows for user:', user.email)
-
       try {
+        setLoading(true)
+        console.log("[RECENT-FLOWS] Loading flows for user:", user.email)
+
         const response = await fetch('/api/pathways', {
-          credentials: 'include',
+          credentials: 'include'
         })
 
         if (!response.ok) {
-          if (response.status === 401) {
-            console.log('[RECENT-FLOWS] Authentication required')
-            setFlows([])
-            return
-          }
           throw new Error(`Failed to fetch flows: ${response.status}`)
         }
 
         const data = await response.json()
-        console.log('[RECENT-FLOWS] Received data:', data.pathways)
+        console.log("[RECENT-FLOWS] Received data:", data.pathways)
 
-        if (data.success && data.pathways) {
-          setFlows(data.pathways)
-        } else if (data.code === "AUTH_ID_FORMAT_ERROR") {
-          console.log('[RECENT-FLOWS] Auth format error - user needs to re-login')
-          setFlows([])
-        } else {
-          setFlows([])
-        }
+        setFlows(data.pathways || [])
       } catch (error) {
-        console.error('[RECENT-FLOWS] Error loading flows:', error)
+        console.error("[RECENT-FLOWS] Error loading flows:", error)
         setFlows([])
+      } finally {
+        setLoading(false)
       }
     }
 
     loadFlows()
-  }, [user])
+  }, [user?.id, user?.email])
 
   const handleEditFlow = (pathway: any) => {
     if (pathway.phone_number) {

@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useRouter } from "next/navigation"
@@ -66,29 +65,32 @@ export default function PathwayListingPage() {
 
         const phoneData = await phoneResponse.json()
         const phoneNumbers = phoneData.phoneNumbers || []
-        
+
         console.log("✅ [PATHWAY-PAGE] Phone numbers loaded:", phoneNumbers)
-        
+
         // Clean phone number formatting (remove extra + signs)
         const cleanedPhoneNumbers = phoneNumbers.map((phone: PhoneNumber) => ({
           ...phone,
           number: phone.number.replace(/^\+\+/, '+') // Remove double plus signs
         }))
-        
+
         setPhoneNumbers(cleanedPhoneNumbers)
 
-        // Fetch pathways for additional details if needed
+        // Fetch pathways using the new API (no creator_id needed, uses authenticated user)
         const pathwaysResponse = await fetch('/api/pathways', {
           credentials: 'include'
         })
 
-        if (pathwaysResponse.ok) {
-          const pathwaysData = await pathwaysResponse.json()
-          console.log('✅ [PATHWAY-PAGE] Pathways loaded:', pathwaysData)
-          setPathways(pathwaysData || [])
-        } else {
-          console.warn('⚠️ [PATHWAY-PAGE] Could not fetch pathways, but phone numbers loaded successfully')
+        if (!pathwaysResponse.ok) {
+          const errorText = await pathwaysResponse.text()
+          console.error('❌ [PATHWAY-PAGE] Error fetching pathways:', pathwaysResponse.status, errorText)
+          setError(`Failed to load pathways: ${pathwaysResponse.status}`)
+          return
         }
+
+        const pathwaysData = await pathwaysResponse.json()
+        console.log("✅ [PATHWAY-PAGE] Pathways data:", pathwaysData)
+        setPathways(pathwaysData || [])
 
       } catch (err) {
         console.error('❌ [PATHWAY-PAGE] Error fetching data:', err)
@@ -185,7 +187,7 @@ export default function PathwayListingPage() {
           {phoneNumbers.map((phone) => {
             // Use pathway info from phone_numbers table (which comes from the JOIN in the API)
             const hasPathway = phone.pathway_id && phone.pathway_name
-            
+
             return (
               <Card key={phone.id} className="hover:shadow-md transition-shadow">
                 <CardContent className="p-6">

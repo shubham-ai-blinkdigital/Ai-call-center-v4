@@ -28,7 +28,7 @@ export async function GET(request: NextRequest) {
       const result = await client.query(`
         SELECT DISTINCT p.*, pn.phone_number, pn.id as phone_number_id
         FROM pathways p
-        LEFT JOIN phone_numbers pn ON pn.pathway_id = p.id
+        LEFT JOIN phone_numbers pn ON p.phone_number_id = pn.id
         WHERE p.creator_id = $1 
            OR p.team_id IN (
              SELECT team_id FROM team_members WHERE user_id = $1

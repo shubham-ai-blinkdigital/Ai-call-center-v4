@@ -42,47 +42,24 @@ async function getUserFromRequest(req: NextRequest) {
   }
 }
 
-export async function GET(req: NextRequest) {
+export async function GET(request: NextRequest) {
   try {
-    // Get user from request using session/auth
-    const user = await getUserFromRequest(req)
+    console.log("🔍 [AUTH-ME] Processing auth check...")
 
+    const user = await getUserFromRequest(request)
     if (!user) {
-      return NextResponse.json(
-        { user: { ok: false, error: "Not authenticated" } },
-        { status: 401 }
-      )
+      console.log("❌ [AUTH-ME] No user found")
+      return NextResponse.json({ error: "Not authenticated" }, { status: 401 })
     }
 
-    // Ensure we return the UUID from database, not the test ID
-    const userData = {
-      id: user.id, // This should be the UUID from database
-      email: user.email,
-      name: user.name,
-      company: user.company,
-      role: user.role,
-      phoneNumber: user.phone_number,
-      passwordHash: user.password_hash,
-      createdAt: user.created_at,
-      updatedAt: user.updatedAt,
-      lastLogin: user.last_login
-    }
+    console.log("🔍 [AUTH-ME] Found user:", { id: user.id, email: user.email })
 
-    console.log('🔍 [AUTH-ME] Returning user data:', { id: userData.id, email: userData.email })
-
-    // Return user data in the expected format
+    // Return user data in consistent format
     return NextResponse.json({
-      user: {
-        ok: true,
-        value: userData
-      }
+      user: user  // Direct user object, not wrapped
     })
-
   } catch (error) {
     console.error("❌ [AUTH-ME] Error:", error)
-    return NextResponse.json(
-      { user: { ok: false, error: "Internal server error" } },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: "Authentication failed" }, { status: 500 })
   }
 }

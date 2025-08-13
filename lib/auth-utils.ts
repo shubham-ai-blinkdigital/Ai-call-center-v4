@@ -39,6 +39,12 @@ export async function getUserFromRequest(req: NextRequest): Promise<User | null>
 
     console.log('🔍 [AUTH-UTILS] Found user ID:', userId)
 
+    // Handle test user mapping - map "test-user-1" to actual UUID
+    if (userId === 'test-user-1') {
+      userId = 'f42a2757-ccb6-4f1e-ab99-56769b12089c'
+      console.log('🔄 [AUTH-UTILS] Mapped test user to actual UUID:', userId)
+    }
+
     // Get user from database
     const client = new Client({
       connectionString: process.env.DATABASE_URL
