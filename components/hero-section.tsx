@@ -42,9 +42,16 @@ export function HeroSection() {
                   onChange={(e) => setEmail(e.target.value)}
                 />
               </div>
-              <Button className="h-12 px-6 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white">
-                Get Started <ArrowRight className="ml-2 h-4 w-4" />
-              </Button>
+              <div className="flex gap-2">
+                <Button className="h-12 px-6 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white">
+                  Get Started <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
+                <Link href="/signup">
+                  <Button variant="outline" className="h-12 px-6 border-gray-600 text-gray-300 hover:bg-gray-800 hover:text-white">
+                    Sign Up
+                  </Button>
+                </Link>
+              </div>
             </div>
 
             <div className="mt-6 text-sm text-gray-400">
