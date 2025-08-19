@@ -20,6 +20,7 @@ interface AuthContextType {
   signup: (data: SignupData) => Promise<{ success: boolean; message: string }>
   logout: () => Promise<void>
   updateProfile: (data: Partial<User>) => Promise<{ success: boolean; message: string }>
+  resetPassword: (email: string) => Promise<{ success: boolean; message: string }>
   isAuthenticated: boolean
 }
 
@@ -239,6 +240,33 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }
 
+  const resetPassword = async (email: string) => {
+    try {
+      console.log("🔄 [AUTH-CONTEXT] Starting password reset for:", email)
+
+      const response = await fetch("/api/auth/forgot-password", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email }),
+      })
+
+      const result = await response.json()
+
+      if (!result.success) {
+        console.error("❌ [AUTH-CONTEXT] Password reset error:", result.message)
+        return { success: false, message: result.message }
+      }
+
+      console.log("✅ [AUTH-CONTEXT] Password reset email sent successfully")
+      return { success: true, message: result.message || "Password reset instructions sent to your email" }
+    } catch (error: any) {
+      console.error("❌ [AUTH-CONTEXT] Unexpected password reset error:", error)
+      return { success: false, message: error.message || "An unexpected error occurred" }
+    }
+  }
+
   // Prevent hydration mismatch by waiting for initialization
   if (!isInitialized && loading) {
     return null
@@ -253,6 +281,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         signup,
         logout,
         updateProfile,
+        resetPassword,
         isAuthenticated,
       }}
     >

@@ -1,45 +1,62 @@
+
 "use client"
 
 import type React from "react"
 
 import { useState } from "react"
 import Link from "next/link"
-import { useAuth } from "@/contexts/auth-context"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { AlertCircle, CheckCircle2, ArrowLeft } from "lucide-react"
+import { AlertCircle, CheckCircle2, ArrowLeft, Loader2 } from "lucide-react"
 
 export default function ResetPasswordPage() {
   const [email, setEmail] = useState("")
   const [error, setError] = useState("")
   const [successMessage, setSuccessMessage] = useState("")
-  const { resetPassword, isLoading } = useAuth()
+  const [isLoading, setIsLoading] = useState(false)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError("")
     setSuccessMessage("")
+    setIsLoading(true)
 
     if (!email) {
       setError("Email is required")
+      setIsLoading(false)
       return
     }
 
     if (!/\S+@\S+\.\S+/.test(email)) {
       setError("Email is invalid")
+      setIsLoading(false)
       return
     }
 
-    const result = await resetPassword(email)
+    try {
+      const response = await fetch("/api/auth/forgot-password", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email }),
+      })
 
-    if (result.success) {
-      setSuccessMessage(result.message)
-      setEmail("")
-    } else {
-      setError(result.message)
+      const result = await response.json()
+
+      if (result.success) {
+        setSuccessMessage(result.message)
+        setEmail("")
+      } else {
+        setError(result.message)
+      }
+    } catch (err: any) {
+      setError("An unexpected error occurred. Please try again.")
+    } finally {
+      setIsLoading(false)
     }
   }
 
@@ -81,11 +98,19 @@ export default function ResetPasswordPage() {
                 placeholder="name@example.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                disabled={isLoading || !!successMessage}
               />
             </div>
 
             <Button type="submit" className="w-full" disabled={isLoading || !!successMessage}>
-              {isLoading ? "Sending..." : "Send reset instructions"}
+              {isLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Sending...
+                </>
+              ) : (
+                "Send reset instructions"
+              )}
             </Button>
           </form>
         </CardContent>
