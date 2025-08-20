@@ -1,5 +1,5 @@
 
-import { NextResponse } from "next/server"
+import { NextRequest, NextResponse } from "next/server"
 import { getUserFromRequest } from "@/lib/auth-utils"
 import { Client } from "pg"
 
@@ -8,8 +8,8 @@ export async function GET(
   { params }: { params: { phoneNumber: string } }
 ) {
   try {
-    const user = await getUserFromRequest()
-    if (!user.ok) {
+    const user = await getUserFromRequest(request as NextRequest)
+    if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
@@ -26,7 +26,7 @@ export async function GET(
       FROM pathways p 
       JOIN phone_numbers pn ON p.id = pn.pathway_id 
       WHERE pn.phone_number = $1 AND pn.user_id = $2
-    `, [phoneNumber, user.value.id])
+    `, [phoneNumber, user.id])
 
     await client.end()
 

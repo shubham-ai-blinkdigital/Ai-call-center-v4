@@ -120,26 +120,26 @@ export async function getUserFromRequest(req: NextRequest): Promise<User | null>
 }
 
 // Check if user is authenticated (for API routes)
-export async function isAuthenticated(): Promise<boolean> {
-  // For server-side isAuthenticated, we need to simulate a request context.
-  // In a real API route, 'req' would be available. Here, we mock it.
-  // This might not be fully accurate for all Next.js server-side contexts.
-  // It's better to call getUserFromRequest directly where needed.
-  const user = await getUserFromRequest(new NextRequest("http://localhost/__mock__")) // Pass a dummy request
+// Note: This function should only be used where a NextRequest is available
+// For API routes, use getUserFromRequest(request) directly
+export async function isAuthenticated(request: NextRequest): Promise<boolean> {
+  const user = await getUserFromRequest(request)
   return !!user
 }
 
 // Get user ID from server-side request (for API routes)
-export async function getUserId(): Promise<string | null> {
-  // Similar to isAuthenticated, we mock the request.
-  const user = await getUserFromRequest(new NextRequest("http://localhost/__mock__")) // Pass a dummy request
+// Note: This function should only be used where a NextRequest is available
+// For API routes, use getUserFromRequest(request) directly
+export async function getUserId(request: NextRequest): Promise<string | null> {
+  const user = await getUserFromRequest(request)
   return user?.id || null
 }
 
 // Get user with detailed error information
-export async function getUserWithError() {
-  // Similar to isAuthenticated, we mock the request.
-  const user = await getUserFromRequest(new NextRequest("http://localhost/__mock__")) // Pass a dummy request
+// Note: This function should only be used where a NextRequest is available
+// For API routes, use getUserFromRequest(request) directly
+export async function getUserWithError(request: NextRequest) {
+  const user = await getUserFromRequest(request)
 
   if (!user) {
     return {

@@ -16,7 +16,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Verify authentication using getUserFromRequest
-    const user = await getUserFromRequest()
+    const user = await getUserFromRequest(request)
     if (!user) {
       return NextResponse.json(
         { error: 'Authentication required' },

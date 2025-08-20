@@ -1,12 +1,12 @@
 
-import { NextResponse } from "next/server"
+import { NextRequest, NextResponse } from "next/server"
 import { getUserFromRequest } from "@/lib/auth-utils"
 import { Client } from "pg"
 
 export async function GET(request: Request) {
   try {
-    const user = await getUserFromRequest()
-    if (!user.ok) {
+    const user = await getUserFromRequest(request as NextRequest)
+    if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
@@ -25,7 +25,7 @@ export async function GET(request: Request) {
 
     const result = await client.query(
       "SELECT pathway_id FROM phone_numbers WHERE phone_number = $1 AND user_id = $2",
-      [phoneNumber, user.value.id]
+      [phoneNumber, user.id]
     )
 
     await client.end()
