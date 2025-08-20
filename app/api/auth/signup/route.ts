@@ -19,7 +19,7 @@ export async function POST(request: Request) {
 
     console.log("[AUTH/SIGNUP] Attempting external signup for:", email)
 
-    // Call external API for signup
+    // Call external API for signup FIRST
     const externalApiUrl = process.env.FOREX_URL || process.env.EXTERNAL_API_URL
     console.log("[AUTH/SIGNUP] Checking API URL - FOREX_URL:", process.env.FOREX_URL, "EXTERNAL_API_URL:", process.env.EXTERNAL_API_URL)
     
@@ -82,7 +82,18 @@ export async function POST(request: Request) {
       }, { status: 500 })
     }
 
-    // Store user data locally regardless of external API result
+    // If external API failed, return the error immediately (don't store locally)
+    if (!externalResponse.ok) {
+      console.error("[AUTH/SIGNUP] External API signup failed:", externalResult)
+      return NextResponse.json({
+        success: false,
+        message: externalResult.message || "External signup failed"
+      }, { status: externalResponse.status })
+    }
+
+    console.log("[AUTH/SIGNUP] External signup successful:", externalResult)
+
+    // Only proceed to store locally if external API succeeded
     const client = new Client({
       connectionString: process.env.DATABASE_URL
     })
@@ -90,21 +101,63 @@ export async function POST(request: Request) {
     try {
       await client.connect()
 
-      // Check if user already exists in local database
+      // Check if user already exists in local database AFTER external API success
       const existingUser = await client.query(
         'SELECT * FROM users WHERE email = $1',
         [email]
       )
 
       if (existingUser.rows.length > 0) {
-        console.log("[AUTH/SIGNUP] User already exists locally:", email)
+        console.log("[AUTH/SIGNUP] User already exists locally but external API succeeded - updating existing record")
+        
+        // Update existing user with latest data from external API
+        const updateResult = await client.query(
+          `UPDATE users SET
+           first_name = $1,
+           last_name = $2,
+           company = $3,
+           phone_number = $4,
+           external_id = $5,
+           external_token = $6,
+           is_verified = $7,
+           platform = $8,
+           password_hash = $9,
+           updated_at = NOW()
+           WHERE email = $10
+           RETURNING *`,
+          [
+            firstName,
+            lastName,
+            company || '',
+            phoneNumber || '',
+            externalResult.data?._id || externalResult.data?.id || null,
+            externalResult.data?.token || null,
+            true, // Set as verified since external API succeeded
+            'AI Call',
+            password,
+            email
+          ]
+        )
+
+        const localUser = updateResult.rows[0]
+        console.log("[AUTH/SIGNUP] Updated existing local user:", localUser.id)
+
         return NextResponse.json({
-          success: false,
-          message: "User already exists"
-        }, { status: 400 })
+          success: true,
+          message: externalResult.message || "Account updated successfully",
+          user: {
+            id: localUser.id,
+            email: localUser.email,
+            firstName: localUser.first_name,
+            lastName: localUser.last_name,
+            company: localUser.company,
+            phoneNumber: localUser.phone_number,
+            isVerified: true
+          }
+        })
       }
 
-      // Create local user record (external API success or failure)
+      // Create new local user record since external API succeeded
       const insertResult = await client.query(
         `INSERT INTO users (email, first_name, last_name, company, phone_number, role, external_id, external_token, is_verified, platform, password_hash)
          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
@@ -116,37 +169,16 @@ export async function POST(request: Request) {
           company || '',
           phoneNumber || '',
           'user',
-          externalResult.data?._id || externalResult.data?.id || null, // Handle both success and error cases
-          externalResult.data?.token || null, // Handle both success and error cases
-          externalResponse.ok, // Set as verified only if external API succeeded
+          externalResult.data?._id || externalResult.data?.id || null,
+          externalResult.data?.token || null,
+          true, // Set as verified since external API succeeded
           'AI Call',
-          password // Store password as entered by user
+          password
         ]
       )
 
       const localUser = insertResult.rows[0]
       console.log("[AUTH/SIGNUP] Local user record created:", localUser.id)
-
-      // Handle response based on external API result
-      if (!externalResponse.ok) {
-        console.error("[AUTH/SIGNUP] External API error, but user stored locally:", externalResult)
-        return NextResponse.json({
-          success: false,
-          message: externalResult.message || "External signup failed",
-          userStoredLocally: true,
-          user: {
-            id: localUser.id,
-            email: localUser.email,
-            firstName: localUser.first_name,
-            lastName: localUser.last_name,
-            company: localUser.company,
-            phoneNumber: localUser.phone_number,
-            isVerified: false
-          }
-        }, { status: externalResponse.status })
-      }
-
-      console.log("[AUTH/SIGNUP] External signup successful:", externalResult)
 
       // Return success with external API message
       return NextResponse.json({
@@ -163,6 +195,15 @@ export async function POST(request: Request) {
         }
       })
 
+    } catch (dbError: any) {
+      console.error("[AUTH/SIGNUP] Database error after successful external signup:", dbError)
+      
+      // Even if local DB fails, external signup succeeded, so we should inform the user
+      return NextResponse.json({
+        success: true,
+        message: "Account created successfully on external service. Local sync will be completed on next login.",
+        warning: "Local database sync failed but signup was successful"
+      })
     } finally {
       await client.end()
     }
