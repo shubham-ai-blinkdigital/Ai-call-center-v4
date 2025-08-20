@@ -43,9 +43,10 @@ export async function GET(req: NextRequest) {
         SELECT 
           p.*,
           pn.phone_number,
-          pn.display_name as phone_display_name
+          CONCAT(u.first_name, ' ', u.last_name) as phone_display_name
         FROM pathways p
         LEFT JOIN phone_numbers pn ON p.phone_number_id = pn.id
+        LEFT JOIN users u ON p.creator_id = u.id
         WHERE p.creator_id = $1
         ORDER BY p.updated_at DESC
       `
