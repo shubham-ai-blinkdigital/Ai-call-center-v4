@@ -247,8 +247,8 @@ export default function PathwayListingPage() {
       ) : (
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {phoneNumbers.map((phone) => {
-            // Use pathway info from phone_numbers table (which comes from the JOIN in the API)
-            const hasPathway = phone.pathway_id && phone.pathway_name
+            // Use pathway info from phone_numbers table directly
+            const hasPathway = phone.pathway_id
 
             return (
               <Card key={phone.id} className="hover:shadow-md transition-shadow">

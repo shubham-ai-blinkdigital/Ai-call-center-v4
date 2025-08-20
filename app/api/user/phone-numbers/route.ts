@@ -38,12 +38,8 @@ export async function GET(request: Request) {
           pn.purchased_at as created_at,
           pn.user_id,
           pn.subscription_plan,
-          pn.pathway_id,
-          p.id as pathway_record_id,
-          p.name as pathway_name,
-          p.description as pathway_description
+          pn.pathway_id
          FROM phone_numbers pn
-         LEFT JOIN pathways p ON pn.pathway_id = p.id
          WHERE pn.user_id = $1
          ORDER BY pn.purchased_at DESC`,
         [userId]
@@ -61,8 +57,8 @@ export async function GET(request: Request) {
         monthly_fee: parseFloat(row.subscription_plan) || 1.50,
         assigned_to: 'Unassigned', // Default since column doesn't exist
         pathway_id: row.pathway_id,
-        pathway_name: row.pathway_name,
-        pathway_description: row.pathway_description
+        pathway_name: row.pathway_id ? `Pathway ${row.pathway_id}` : null, // Generate name from ID
+        pathway_description: row.pathway_id ? `Pathway configuration for ${row.pathway_id}` : null
       }))
 
       console.log("✅ [USER-PHONE-NUMBERS] Fetched from PostgreSQL:", phoneNumbers.length, "numbers for user", userId)
