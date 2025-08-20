@@ -73,12 +73,17 @@ export function FlowchartCanvas({ phoneNumber, pathwayInfo }: FlowchartCanvasPro
   // Load saved flowchart data when component mounts
   useEffect(() => {
     const loadSavedFlowchart = async () => {
-      if (!phoneNumber || !pathwayInfo?.pathway_id) return
+      if (!pathwayInfo?.pathway_id) return
 
+      console.log('[FLOWCHART-CANVAS] Loading pathway:', pathwayInfo.pathway_id)
       setIsLoadingFlowchart(true)
       try {
-        const response = await fetch(`/api/pathways/load-flowchart?phoneNumber=${phoneNumber}`)
+        const response = await fetch(`/api/pathways/load-flowchart?pathwayId=${pathwayInfo.pathway_id}`, {
+          credentials: 'include'
+        })
         const result = await response.json()
+
+        console.log('[FLOWCHART-CANVAS] Load response:', result)
 
         if (result.success && result.pathway && result.pathway.flowchart_data) {
           const flowchartData = result.pathway.flowchart_data
@@ -90,10 +95,14 @@ export function FlowchartCanvas({ phoneNumber, pathwayInfo }: FlowchartCanvasPro
             setEdges(reactFlowData.edges)
             
             toast.success(`Loaded saved pathway: ${result.pathway.name}`)
+          } else {
+            console.log('[FLOWCHART-CANVAS] No flowchart data found, starting with empty canvas')
           }
+        } else {
+          console.log('[FLOWCHART-CANVAS] No pathway data found or failed to load')
         }
       } catch (error) {
-        console.error('Error loading saved flowchart:', error)
+        console.error('[FLOWCHART-CANVAS] Error loading saved flowchart:', error)
         toast.error('Failed to load saved pathway')
       } finally {
         setIsLoadingFlowchart(false)
@@ -101,7 +110,7 @@ export function FlowchartCanvas({ phoneNumber, pathwayInfo }: FlowchartCanvasPro
     }
 
     loadSavedFlowchart()
-  }, [phoneNumber, pathwayInfo?.pathway_id, setNodes, setEdges])
+  }, [pathwayInfo?.pathway_id, setNodes, setEdges])
 
   const onConnect = useCallback(
     (params: Connection) => {
