@@ -67,7 +67,7 @@ export default function LoginPage() {
           {/* Logo/Brand */}
           <div className="text-center">
             <h1 className="text-4xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent mb-2">
-              hu$tle
+              hu$tle<span className="text-gray-400">.conversation</span>
             </h1>
           </div>
 
