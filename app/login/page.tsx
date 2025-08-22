@@ -66,8 +66,13 @@ export default function LoginPage() {
         <div className="w-full max-w-md space-y-8">
           {/* Logo/Brand */}
           <div className="text-center">
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent mb-2">
-              hu$tle<span className="text-gray-400">.conversation</span>
+            <h1 className="text-5xl font-bold mb-2">
+              <span className="bg-gradient-to-r from-blue-500 via-purple-600 to-pink-500 bg-clip-text text-transparent">
+                hu$tle
+              </span>
+              <span className="bg-gradient-to-r from-gray-500 to-gray-600 bg-clip-text text-transparent">
+                .conversation
+              </span>
             </h1>
           </div>
 
