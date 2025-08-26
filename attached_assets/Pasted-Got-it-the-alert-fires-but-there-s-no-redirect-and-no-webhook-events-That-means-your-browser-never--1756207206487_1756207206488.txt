@@ -1,0 +1,144 @@
+Got it—the alert fires but there’s no redirect and no webhook events. That means your browser never got a usable Checkout Session URL/ID from `/api/payments/stripe/create-checkout-session` (so you never reached Stripe). Let’s fix/verify this in three quick steps.
+
+---
+
+## 1) Make sure the API route always returns a usable URL/ID (and runs on Node)
+
+Update `app/api/payments/stripe/create-checkout-session/route.ts` to force the **nodejs** runtime, return **both** `url` and `id`, and log real errors.
+
+```ts
+// app/api/payments/stripe/create-checkout-session/route.ts
+import { NextResponse } from 'next/server'
+import { stripe } from '../../../../../lib/stripeClient'
+
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+
+export async function POST(req: Request) {
+  try {
+    const body = await req.json().catch(() => ({}));
+    const amount = Number(body?.amount);
+
+    if (!amount || isNaN(amount) || amount <= 0) {
+      return NextResponse.json({ error: 'Invalid amount' }, { status: 400 });
+    }
+
+    const amountCents = Math.round(amount * 100);
+    const origin = new URL(req.url).origin; // robust on Replit
+
+    // TODO: replace with real authenticated user id
+    const userId = 'YOUR_TEST_USER_UUID';
+
+    const session = await stripe.checkout.sessions.create({
+      mode: 'payment',
+      payment_method_types: ['card'],
+      line_items: [{
+        price_data: {
+          currency: 'usd',
+          product_data: { name: 'Wallet Top-up' },
+          unit_amount: amountCents
+        },
+        quantity: 1
+      }],
+      success_url: `${origin}/billing?success=1`,
+      cancel_url:  `${origin}/billing?canceled=1`,
+      metadata: { user_id: userId }
+    });
+
+    return NextResponse.json({ url: session.url, id: session.id }, { status: 200 });
+  } catch (err: any) {
+    console.error('create-checkout-session error:', err?.message || err);
+    return NextResponse.json(
+      { error: err?.message || 'Failed to create checkout session' },
+      { status: 500 }
+    );
+  }
+}
+```
+
+---
+
+## 2) Make the button redirect even if `url` is missing (fallback to `sessionId`)
+
+Use the Checkout URL if provided, otherwise fall back to `redirectToCheckout(sessionId)`.
+
+```jsx
+// In your Billing page button handler
+import { loadStripe } from '@stripe/stripe-js';
+
+async function startStripeTopUp(amount) {
+  try {
+    alert(`Initiating Stripe payment for $${amount}`);
+
+    const res = await fetch('/api/payments/stripe/create-checkout-session', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ amount })
+    });
+
+    if (!res.ok) {
+      const text = await res.text();
+      throw new Error(`API ${res.status}: ${text}`);
+    }
+
+    const { url, id } = await res.json();
+
+    // Preferred: direct URL
+    if (url) {
+      window.location.assign(url);
+      return;
+    }
+
+    // Fallback: redirect using sessionId
+    if (id) {
+      const { publishableKey } = await fetch('/api/stripe/config').then(r => r.json());
+      const stripe = await loadStripe(publishableKey);
+      const { error } = await stripe.redirectToCheckout({ sessionId: id });
+      if (error) throw error;
+      return;
+    }
+
+    throw new Error('No url or session id returned from server.');
+  } catch (e) {
+    console.error('Stripe start failed:', e);
+    alert(`Stripe start failed: ${e.message || e}`);
+  }
+}
+```
+
+Make sure your `$25 / $50` buttons call `startStripeTopUp(25)` etc.
+
+---
+
+## 3) Quick verification (no guessing)
+
+* **Console → Network tab**: Click \$25. You should see `POST /api/payments/stripe/create-checkout-session`:
+
+  * **200** with `{ url: "https://checkout.stripe.com/...", id: "cs_test_..." }` → browser should redirect.
+  * If **500/400**, the response body will show the exact error (missing `STRIPE_SECRET_KEY`, invalid amount, etc.). Fix and retry.
+
+* **Sanity cURL test (optional)** from Replit shell:
+
+  ```bash
+  curl -i -X POST "$REPLIT_APP_URL/api/payments/stripe/create-checkout-session" \
+    -H "Content-Type: application/json" \
+    -d '{"amount":25}'
+  ```
+
+  You should get JSON with a Checkout `url`. If this works, the frontend will redirect.
+
+* After you do reach Stripe and pay:
+
+  * Stripe Dashboard → Developers → Webhooks → your endpoint should show **Last delivery: 200**.
+  * If you already added the wallet-credit code in the webhook, your DB should show the new balance/transactions a few seconds later.
+
+---
+
+### Common gotchas (mapped to your setup)
+
+* **Hardcoded user id** is still a placeholder → doesn’t block redirect, but your webhook won’t know which wallet to credit. Put a real `users.id` for now.
+* **Missing Stripe envs** → ensure `STRIPE_SECRET_KEY` is set and you restarted the repl.
+* **Route runtime** → for Stripe server SDK you need Node runtime (`export const runtime = 'nodejs'`).
+* **Silent errors** → the updated handler and frontend now surface real error messages.
+
+Do these two code updates and try again. If the Network tab still doesn’t show a 200 with a `url`, paste the error you see and I’ll zero in on it.
