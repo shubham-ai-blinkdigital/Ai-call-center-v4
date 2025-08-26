@@ -22,19 +22,19 @@ export default function AddFundsButton({ amount = 50, onBalanceUpdate }) {
 
   // 2) Once config is available, load the SDK and render the button
   useEffect(() => {
-    if (!config || !config.clientId) return;
+    if (!config || !config.clientId || !containerRef.current) return;
 
-    // Dynamically insert PayPal SDK script
-    const script = document.createElement('script');
-    script.src = `https://www.paypal.com/sdk/js?client-id=${config.clientId}&currency=USD&intent=authorize${
-      config.env === 'sandbox' ? '&vault=true' : ''
-    }`;
-    script.async = true;
-    script.onload = () => {
-      if (!window.paypal) {
-        setError('PayPal SDK failed to load.');
+    // Check if PayPal SDK is already loaded
+    const existingScript = document.querySelector('script[src*="paypal.com/sdk/js"]');
+    
+    const renderPayPalButton = () => {
+      if (!window.paypal || !containerRef.current) {
+        setError('PayPal SDK not available.');
         return;
       }
+
+      // Clear any existing content
+      containerRef.current.innerHTML = '';
 
       window.paypal.Buttons({
         style: { shape: 'pill', color: 'blue', layout: 'vertical', label: 'pay' },
@@ -74,14 +74,41 @@ export default function AddFundsButton({ amount = 50, onBalanceUpdate }) {
           // optional: handle user cancellation
         }
 
-      }).render(containerRef.current);
+      }).render(containerRef.current).catch(err => {
+        console.error('PayPal render error:', err);
+        setError('Failed to render PayPal button.');
+      });
     };
-    script.onerror = () => setError('Failed to load PayPal SDK');
 
-    document.body.appendChild(script);
+    if (existingScript && window.paypal) {
+      // SDK already loaded, render button immediately
+      renderPayPalButton();
+    } else {
+      // Need to load the SDK
+      const script = document.createElement('script');
+      script.src = `https://www.paypal.com/sdk/js?client-id=${config.clientId}&currency=USD&intent=authorize${
+        config.env === 'sandbox' ? '&vault=true' : ''
+      }`;
+      script.async = true;
+      script.onload = renderPayPalButton;
+      script.onerror = () => setError('Failed to load PayPal SDK');
+
+      document.body.appendChild(script);
+      
+      // Cleanup function
+      return () => {
+        // Only clean up the container, not the script (other components might be using it)
+        if (containerRef.current) {
+          containerRef.current.innerHTML = '';
+        }
+      };
+    }
+
+    // Cleanup for when SDK was already loaded
     return () => {
-      document.body.removeChild(script);
-      if (containerRef.current) containerRef.current.innerHTML = '';
+      if (containerRef.current) {
+        containerRef.current.innerHTML = '';
+      }
     };
   }, [config, amount, onBalanceUpdate]);
 
