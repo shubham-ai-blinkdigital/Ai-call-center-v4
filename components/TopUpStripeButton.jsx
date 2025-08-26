@@ -1,4 +1,3 @@
-
 import { useState } from 'react'
 import { Button } from './ui/button'
 import { loadStripe } from '@stripe/stripe-js'
@@ -30,17 +29,29 @@ export default function TopUpStripeButton({ amount = 50 }) {
 
       const { url, id } = await response.json()
 
+      console.log('Stripe checkout response:', { url, id })
+
       // Preferred: direct URL redirect
       if (url) {
-        window.location.assign(url)
+        console.log('Redirecting to Stripe URL:', url)
+        window.location.href = url
         return
       }
 
       // Fallback: redirect using sessionId
       if (id) {
+        console.log('Using session ID fallback:', id)
         const configResponse = await fetch('/api/stripe/config')
+        if (!configResponse.ok) {
+          const errorText = await configResponse.text()
+          throw new Error(`Failed to get Stripe config: ${configResponse.status} ${errorText}`)
+        }
         const { publishableKey } = await configResponse.json()
+        console.log('Got publishable key:', publishableKey ? 'yes' : 'no')
         const stripe = await loadStripe(publishableKey)
+        if (!stripe) {
+          throw new Error('Failed to load Stripe')
+        }
         const { error } = await stripe.redirectToCheckout({ sessionId: id })
         if (error) throw error
         return
@@ -62,9 +73,9 @@ export default function TopUpStripeButton({ amount = 50 }) {
         <div className="p-4 bg-red-50 text-red-700 border border-red-200 rounded">
           {error}
         </div>
-        <Button 
-          onClick={() => setError(null)} 
-          variant="outline" 
+        <Button
+          onClick={() => setError(null)}
+          variant="outline"
           size="sm"
         >
           Try Again
@@ -74,7 +85,7 @@ export default function TopUpStripeButton({ amount = 50 }) {
   }
 
   return (
-    <Button 
+    <Button
       onClick={handleTopUp}
       disabled={loading}
       className="w-full"
