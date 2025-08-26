@@ -11,6 +11,38 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { useToast } from "@/components/ui/use-toast"
 import { useRouter } from "next/navigation"
 
+// Assume TopUpStripeButton and AddFundsButton are imported from their respective files
+// import TopUpStripeButton from "./TopUpStripeButton";
+// import AddFundsButton from "./AddFundsButton";
+
+// Mock TopUpStripeButton for demonstration purposes
+const TopUpStripeButton = ({ amount }) => (
+  <Button
+    onClick={() =>
+      alert(`Initiating Stripe payment for $${amount}`)
+    }
+    className="w-full"
+  >
+    ${amount}
+  </Button>
+);
+
+// Mock AddFundsButton for demonstration purposes
+const AddFundsButton = ({ amount, onBalanceUpdate }) => (
+  <Button
+    onClick={() => {
+      alert(`Processing PayPal payment for $${amount}`);
+      // Simulate balance update
+      onBalanceUpdate(`$${amount}`);
+    }}
+    variant="outline"
+    className="w-full"
+  >
+    ${amount}
+  </Button>
+);
+
+
 // Mock data for subscriptions
 const mockSubscriptions = [
   {
@@ -156,6 +188,18 @@ export default function BillingPage() {
     })
   }
 
+  const handleBalanceUpdate = (amount: string) => {
+    // In a real app, this would involve a more complex state update and possibly API calls
+    const currentBalance = parseFloat(balance.replace("$", ""));
+    const addedAmount = parseFloat(amount.replace("$", ""));
+    setBalance(`$${(currentBalance + addedAmount).toFixed(2)}`);
+    toast({
+      title: "Funds Added",
+      description: `Successfully added ${amount} to your balance.`,
+    });
+  };
+
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-full">
@@ -190,19 +234,41 @@ export default function BillingPage() {
         <TabsContent value="overview" className="space-y-4">
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Account Balance</CardTitle>
-                <CreditCard className="h-4 w-4 text-muted-foreground" />
+              <CardHeader>
+                <CardTitle>Account Balance</CardTitle>
+                <CardDescription>
+                  Your current account balance and usage
+                </CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">{balance}</div>
-                <p className="text-xs text-muted-foreground">Available for purchases</p>
+
+                <div className="space-y-4">
+                  <div>
+                    <h4 className="font-medium mb-2">Add Funds via Credit Card</h4>
+                    <div className="grid grid-cols-2 gap-2 mb-2">
+                      <TopUpStripeButton amount={25} />
+                      <TopUpStripeButton amount={50} />
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      <TopUpStripeButton amount={100} />
+                      <TopUpStripeButton amount={250} />
+                    </div>
+                  </div>
+
+                  <div>
+                    <h4 className="font-medium mb-2">Add Funds via PayPal</h4>
+                    <div className="grid grid-cols-2 gap-2 mb-2">
+                      <AddFundsButton amount={25} onBalanceUpdate={handleBalanceUpdate} />
+                      <AddFundsButton amount={50} onBalanceUpdate={handleBalanceUpdate} />
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      <AddFundsButton amount={100} onBalanceUpdate={handleBalanceUpdate} />
+                      <AddFundsButton amount={250} onBalanceUpdate={handleBalanceUpdate} />
+                    </div>
+                  </div>
+                </div>
               </CardContent>
-              <CardFooter>
-                <Button onClick={handleAddFunds} className="w-full">
-                  Add Funds
-                </Button>
-              </CardFooter>
             </Card>
 
             <Card>
