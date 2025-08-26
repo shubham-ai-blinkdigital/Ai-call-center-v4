@@ -34,7 +34,16 @@ export default function TopUpStripeButton({ amount = 50 }) {
       // Preferred: direct URL redirect
       if (url) {
         console.log('Redirecting to Stripe URL:', url)
-        window.location.href = url
+        console.log('URL type:', typeof url)
+        console.log('URL length:', url.length)
+        
+        // Try different redirect methods
+        try {
+          window.location.href = url
+        } catch (redirectError) {
+          console.error('window.location.href failed:', redirectError)
+          window.open(url, '_self')
+        }
         return
       }
 

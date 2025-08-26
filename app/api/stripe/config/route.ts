@@ -2,14 +2,22 @@
 import { NextResponse } from 'next/server'
 
 export async function GET() {
-  const publishableKey = process.env.STRIPE_PUBLISHABLE_KEY
+  try {
+    const publishableKey = process.env.STRIPE_PUBLISHABLE_KEY
 
-  if (!publishableKey) {
+    if (!publishableKey) {
+      return NextResponse.json(
+        { error: 'Stripe publishable key not configured' },
+        { status: 500 }
+      )
+    }
+
+    return NextResponse.json({ publishableKey })
+  } catch (error) {
+    console.error('Stripe config error:', error)
     return NextResponse.json(
-      { error: 'Stripe publishable key not configured' },
+      { error: 'Failed to get Stripe config' },
       { status: 500 }
     )
   }
-
-  return NextResponse.json({ publishableKey })
 }

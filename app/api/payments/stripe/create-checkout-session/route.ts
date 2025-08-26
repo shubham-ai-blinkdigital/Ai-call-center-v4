@@ -19,6 +19,12 @@ export async function POST(req: Request) {
     // TODO: replace with real authenticated user id
     const userId = 'YOUR_TEST_USER_UUID';
 
+    console.log('Creating Stripe session with:', {
+      amount: amountCents,
+      origin,
+      userId
+    });
+
     const session = await stripe.checkout.sessions.create({
       mode: 'payment',
       payment_method_types: ['card'],
@@ -34,6 +40,18 @@ export async function POST(req: Request) {
       cancel_url:  `${origin}/billing?canceled=1`,
       metadata: { user_id: userId }
     });
+
+    console.log('Stripe session created:', {
+      id: session.id,
+      url: session.url,
+      mode: session.mode,
+      status: session.status
+    });
+
+    if (!session.url) {
+      console.error('No URL returned from Stripe session');
+      return NextResponse.json({ error: 'No checkout URL generated' }, { status: 500 });
+    }
 
     return NextResponse.json({ url: session.url, id: session.id }, { status: 200 });
   } catch (err: any) {
