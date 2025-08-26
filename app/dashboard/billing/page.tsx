@@ -12,36 +12,11 @@ import { useToast } from "@/components/ui/use-toast"
 import { useRouter } from "next/navigation"
 import { ScrollArea } from "@/components/ui/scroll-area"
 
-// Assume TopUpStripeButton and AddFundsButton are imported from their respective files
-// import TopUpStripeButton from "./TopUpStripeButton";
-// import AddFundsButton from "./AddFundsButton";
-
-// Mock TopUpStripeButton for demonstration purposes
-const TopUpStripeButton = ({ amount }) => (
-  <Button
-    onClick={() =>
-      alert(`Initiating Stripe payment for $${amount}`)
-    }
-    className="w-full"
-  >
-    ${amount}
-  </Button>
-);
+import TopUpStripeButton from "@/components/TopUpStripeButton"
+import AddFundsButton from "@/components/AddFundsButton"
 
 // Mock AddFundsButton for demonstration purposes
-const AddFundsButton = ({ amount, onBalanceUpdate }) => (
-  <Button
-    onClick={() => {
-      alert(`Processing PayPal payment for $${amount}`);
-      // Simulate balance update
-      onBalanceUpdate(`$${amount}`);
-    }}
-    variant="outline"
-    className="w-full"
-  >
-    ${amount}
-  </Button>
-);
+
 
 
 // Mock data for subscriptions
