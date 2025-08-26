@@ -10,6 +10,7 @@ import { Loader2, CreditCard, AlertCircle, Plus, Download, Receipt, CheckCircle2
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { useToast } from "@/components/ui/use-toast"
 import { useRouter } from "next/navigation"
+import { ScrollArea } from "@/components/ui/scroll-area"
 
 // Assume TopUpStripeButton and AddFundsButton are imported from their respective files
 // import TopUpStripeButton from "./TopUpStripeButton";
@@ -209,21 +210,23 @@ export default function BillingPage() {
   }
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      <div className="flex flex-col space-y-2">
-        <h1 className="text-3xl font-bold tracking-tight">Billing & Payments</h1>
-        <p className="text-muted-foreground">Manage your subscriptions, payment methods, and billing history</p>
-      </div>
+    <div className="h-full">
+      <ScrollArea className="h-full">
+        <div className="container mx-auto p-6 space-y-6">
+          <div className="flex flex-col space-y-2">
+            <h1 className="text-3xl font-bold tracking-tight">Billing & Payments</h1>
+            <p className="text-muted-foreground">Manage your subscriptions, payment methods, and billing history</p>
+          </div>
 
-      {error && (
-        <Alert variant="destructive">
-          <AlertCircle className="h-4 w-4" />
-          <AlertTitle>Error</AlertTitle>
-          <AlertDescription>{error}</AlertDescription>
-        </Alert>
-      )}
+          {error && (
+            <Alert variant="destructive">
+              <AlertCircle className="h-4 w-4" />
+              <AlertTitle>Error</AlertTitle>
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
 
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
         <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="subscriptions">Subscriptions</TabsTrigger>
@@ -582,7 +585,9 @@ export default function BillingPage() {
             </CardContent>
           </Card>
         </TabsContent>
-      </Tabs>
+          </Tabs>
+        </div>
+      </ScrollArea>
     </div>
   )
 }
