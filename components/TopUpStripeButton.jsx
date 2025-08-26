@@ -1,6 +1,7 @@
 
 import { useState } from 'react'
 import { Button } from './ui/button'
+import { loadStripe } from '@stripe/stripe-js'
 
 export default function TopUpStripeButton({ amount = 50 }) {
   const [loading, setLoading] = useState(false)
@@ -11,13 +12,7 @@ export default function TopUpStripeButton({ amount = 50 }) {
       setLoading(true)
       setError(null)
 
-      // Optional: Check if Stripe is configured
-      const configResponse = await fetch('/api/stripe/config')
-      const configData = await configResponse.json()
-      
-      if (!configResponse.ok || configData.error) {
-        throw new Error(configData.error || 'Stripe is not configured')
-      }
+      alert(`Initiating Stripe payment for $${amount}`)
 
       // Create checkout session
       const response = await fetch('/api/payments/stripe/create-checkout-session', {
@@ -28,18 +23,30 @@ export default function TopUpStripeButton({ amount = 50 }) {
         body: JSON.stringify({ amount })
       })
 
-      const data = await response.json()
-
-      if (!response.ok || data.error) {
-        throw new Error(data.error || 'Failed to create checkout session')
+      if (!response.ok) {
+        const text = await response.text()
+        throw new Error(`API ${response.status}: ${text}`)
       }
 
-      if (!data.url) {
-        throw new Error('No checkout URL returned')
+      const { url, id } = await response.json()
+
+      // Preferred: direct URL redirect
+      if (url) {
+        window.location.assign(url)
+        return
       }
 
-      // Redirect to Stripe Checkout
-      window.location.href = data.url
+      // Fallback: redirect using sessionId
+      if (id) {
+        const configResponse = await fetch('/api/stripe/config')
+        const { publishableKey } = await configResponse.json()
+        const stripe = await loadStripe(publishableKey)
+        const { error } = await stripe.redirectToCheckout({ sessionId: id })
+        if (error) throw error
+        return
+      }
+
+      throw new Error('No url or session id returned from server.')
 
     } catch (err) {
       console.error('Stripe checkout error:', err)
