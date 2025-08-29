@@ -1,0 +1,191 @@
+Got it—redirect works, but your wallet isn’t updating. That means the **webhook either isn’t crediting the wallet** or it’s **not receiving/processing** the event.
+
+Here’s a tight fix path you can do now.
+
+---
+
+## 1) Make sure the session carries a REAL `user_id`
+
+In `app/api/payments/stripe/create-checkout-session/route.ts` replace the placeholder with a real user UUID from your `users` table (temporarily hardcode your test user).
+
+```ts
+// TODO: pull from your auth/session
+const userId = 'REPLACE_WITH_REAL_USERS_ID';
+```
+
+If `user_id` is missing, your webhook won’t know which wallet to credit.
+
+---
+
+## 2) Drop in a working webhook that **credits the wallet**
+
+This handler verifies the signature, handles `checkout.session.completed` for one-time top-ups, inserts a `payments` row, **increments the wallet**, and logs a `wallet_transactions` record.
+
+> If you already have a DB helper, keep it. If not, add the tiny `lib/db.ts` below.
+
+### `lib/db.ts` (only if you don’t already have one)
+
+```ts
+// lib/db.ts
+import { Pool } from 'pg';
+
+export const pool = new Pool({
+  connectionString: process.env.DATABASE_URL, // you have this secret
+  ssl: { rejectUnauthorized: false },
+});
+```
+
+### `app/api/payments/webhook/route.ts`
+
+```ts
+import { NextResponse } from 'next/server';
+import { stripe } from '../../../../lib/stripeClient';
+import { pool } from '../../../../lib/db';
+
+export const runtime = 'nodejs'; // raw body
+
+export async function POST(req: Request) {
+  const sig = req.headers.get('stripe-signature');
+  if (!sig) return new NextResponse('Missing signature', { status: 400 });
+
+  const rawBody = await req.text();
+
+  let event;
+  try {
+    event = stripe.webhooks.constructEvent(
+      rawBody,
+      sig,
+      process.env.STRIPE_WEBHOOK_SECRET!
+    );
+  } catch (err: any) {
+    console.error('❌ Signature verification failed:', err.message);
+    return new NextResponse(`Webhook Error: ${err.message}`, { status: 400 });
+  }
+
+  if (event.type === 'checkout.session.completed') {
+    const s: any = event.data.object;
+
+    // Only process one-time wallet top-ups here
+    if (s.mode !== 'payment') {
+      return NextResponse.json({ received: true });
+    }
+
+    const userId: string | undefined = s.metadata?.user_id;
+    const amountCents: number = Number(s.amount_total ?? 0); // smallest unit
+    const currency: string = (s.currency ?? 'usd').toLowerCase();
+    const sessionId: string = s.id;
+    const paymentIntent: string | undefined = s.payment_intent ?? undefined;
+
+    if (!userId || !amountCents) {
+      console.warn('Skipping session without userId/amount', { userId, amountCents, sessionId });
+      return NextResponse.json({ received: true });
+    }
+
+    // Safety: until we add conversion, only credit when currency is USD
+    if (currency !== 'usd') {
+      console.warn('Payment not in USD; skipping credit', { currency, amountCents, sessionId });
+      return NextResponse.json({ received: true });
+    }
+
+    const client = await pool.connect();
+    try {
+      await client.query('BEGIN');
+
+      // 1) Record in payments
+      await client.query(
+        `INSERT INTO payments (user_id, gateway, gateway_payment_id, amount_cents, currency, status)
+         VALUES ($1,'stripe',$2,$3,$4,'succeeded')
+         ON CONFLICT DO NOTHING`,
+        [userId, sessionId, amountCents, 'USD']
+      );
+
+      // 2) Ensure wallet exists & lock row
+      const w = await client.query(
+        `SELECT id, balance_cents FROM wallets WHERE user_id = $1 FOR UPDATE`,
+        [userId]
+      );
+      let walletId: number;
+      let balance = 0;
+
+      if (w.rows.length === 0) {
+        const ins = await client.query(
+          `INSERT INTO wallets (user_id, balance_cents) VALUES ($1, 0) RETURNING id, balance_cents`,
+          [userId]
+        );
+        walletId = ins.rows[0].id;
+        balance = 0;
+      } else {
+        walletId = w.rows[0].id;
+        balance = Number(w.rows[0].balance_cents);
+      }
+
+      const newBalance = balance + amountCents;
+
+      await client.query(
+        `UPDATE wallets SET balance_cents = $1, updated_at = now() WHERE id = $2`,
+        [newBalance, walletId]
+      );
+
+      await client.query(
+        `INSERT INTO wallet_transactions
+           (wallet_id, amount_cents, type, provider_txn_id, metadata, gateway)
+         VALUES ($1, $2, 'top_up', $3, $4, 'stripe')`,
+        [walletId, amountCents, paymentIntent ?? sessionId, JSON.stringify({ currency })]
+      );
+
+      await client.query('COMMIT');
+      console.log('✅ Wallet credited', { userId, amountCents, newBalance });
+    } catch (e) {
+      await client.query('ROLLBACK');
+      console.error('Webhook DB error:', e);
+      return new NextResponse('DB error', { status: 500 });
+    } finally {
+      client.release();
+    }
+  }
+
+  return NextResponse.json({ received: true });
+}
+```
+
+> **Important:** choose **USD** in the Checkout currency toggle for now. If you pay in INR, the webhook will skip crediting (to avoid over-credit). We can add FX conversion or force USD on the Checkout page next.
+
+---
+
+## 3) Verify it’s working
+
+1. **Replit → Secrets**: confirm `STRIPE_WEBHOOK_SECRET` is set; restart the repl.
+2. **Stripe Dashboard → Webhooks → your endpoint**: after completing the payment, you should see **Last delivery: 200**.
+3. **Replit logs**: look for `✅ Wallet credited`.
+4. **DB**:
+
+   * `payments`: new row (gateway `stripe`, status `succeeded`)
+   * `wallets.balance_cents`: increased by the USD amount in **cents**
+   * `wallet_transactions`: one `top_up` row
+
+---
+
+## 4) (Optional) Force USD to avoid the currency switcher
+
+If you don’t want the INR/USD selector to appear, you can:
+
+* Keep `price_data.currency: 'usd'` (already done), and
+* Add `locale: 'en'` and disable Link & other localized methods:
+
+```ts
+const session = await stripe.checkout.sessions.create({
+  mode: 'payment',
+  payment_method_types: ['card'],
+  line_items: [{ price_data: { currency: 'usd', product_data: { name: 'Wallet Top-up' }, unit_amount: amountCents }, quantity: 1 }],
+  success_url: `${origin}/billing?success=1`,
+  cancel_url:  `${origin}/billing?canceled=1`,
+  metadata: { user_id: userId },
+  currency: 'usd',
+});
+```
+
+(Stripe sometimes still shows a selector based on account settings; we can fully lock it down later.)
+
+---
+
+If you want, paste your current `create-checkout-session` and `webhook` files and I’ll patch them precisely to your codebase.
