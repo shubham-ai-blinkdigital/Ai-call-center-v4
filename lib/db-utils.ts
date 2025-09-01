@@ -85,21 +85,19 @@ export async function createPathway(pathwayData: {
   name: string
   description?: string
   creator_id: string
-  phone_number?: string
-  bland_id?: string
+  phone_number_id?: string
   team_id?: string
 }) {
   try {
     const result = await executeQuery(`
-      INSERT INTO pathways (name, description, creator_id, phone_number, bland_id, team_id, created_at, updated_at)
-      VALUES ($1, $2, $3, $4, $5, $6, NOW(), NOW())
+      INSERT INTO pathways (name, description, creator_id, phone_number_id, team_id, created_at, updated_at)
+      VALUES ($1, $2, $3, $4, $5, NOW(), NOW())
       RETURNING *
     `, [
       pathwayData.name,
       pathwayData.description || null,
       pathwayData.creator_id,
-      pathwayData.phone_number || null,
-      pathwayData.bland_id || null,
+      pathwayData.phone_number_id || null,
       pathwayData.team_id || null
     ])
 
@@ -120,9 +118,9 @@ export async function getPathwayById(id: string) {
 export async function updatePathway(id: string, pathwayData: Partial<{
   name: string
   description: string
-  phone_number: string
-  bland_id: string
+  phone_number_id: string
   team_id: string
+  flowchart_data: any
 }>) {
   const updates = Object.keys(pathwayData).map((key, index) => `${key} = $${index + 2}`).join(', ')
   const values = Object.values(pathwayData)
@@ -143,8 +141,10 @@ export async function deletePathway(id: string) {
 }
 
 export async function getPathwayByPhoneNumber(phoneNumber: string, userId: string) {
-  return executeQuery(
-    "SELECT * FROM pathways WHERE phone_number = $1 AND creator_id = $2 ORDER BY updated_at DESC LIMIT 1",
-    [phoneNumber, userId]
-  )
+  return executeQuery(`
+    SELECT p.* FROM pathways p
+    JOIN phone_numbers pn ON p.phone_number_id = pn.id
+    WHERE pn.phone_number = $1 AND p.creator_id = $2 
+    ORDER BY p.updated_at DESC LIMIT 1
+  `, [phoneNumber, userId])
 }

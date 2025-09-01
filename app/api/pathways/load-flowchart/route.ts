@@ -31,7 +31,7 @@ export async function GET(request: NextRequest) {
 
     // Get pathway data
     const pathwayResult = await executeQuery(`
-      SELECT id, name, description, flowchart_data, phone_number, created_at, updated_at
+      SELECT id, name, description, flowchart_data, phone_number_id, created_at, updated_at
       FROM pathways
       WHERE id = $1 AND creator_id = $2
     `, [pathwayId, userId])
@@ -52,7 +52,7 @@ export async function GET(request: NextRequest) {
         id: pathway.id,
         name: pathway.name,
         description: pathway.description,
-        phone_number: pathway.phone_number,
+        phone_number_id: pathway.phone_number_id,
         flowchart_data: pathway.flowchart_data,
         created_at: pathway.created_at,
         updated_at: pathway.updated_at
