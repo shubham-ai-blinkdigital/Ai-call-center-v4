@@ -31,13 +31,13 @@ export async function POST(request: NextRequest) {
 
     console.log(`[SAVE-FLOWCHART] Saving pathway ${pathwayId} for user ${userId}`)
 
-    // Update pathway flowchart_data
+    // Update the pathway
     const updateResult = await executeQuery(`
       UPDATE pathways 
-      SET flowchart_data = $1, updated_at = NOW(), updater_id = $2
-      WHERE id = $3 AND creator_id = $4
-      RETURNING id, name, updated_at
-    `, [JSON.stringify(flowchartData), userId, pathwayId, userId])
+      SET name = $1, flowchart_data = $2, updated_at = NOW()
+      WHERE pathway_id = $3 AND creator_id = $4
+      RETURNING pathway_id, name, updated_at
+    `, [name, JSON.stringify(flowchartData), pathwayId, userId])
 
     if (updateResult.length === 0) {
       return NextResponse.json({ 
@@ -52,7 +52,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       pathway: {
-        id: pathway.id,
+        id: pathway.pathway_id,
         name: pathway.name,
         updated_at: pathway.updated_at
       }

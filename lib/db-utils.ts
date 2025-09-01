@@ -110,7 +110,7 @@ export async function createPathway(pathwayData: {
 
 export async function getPathwayById(id: string) {
   return executeQuery(
-    "SELECT * FROM pathways WHERE id = $1",
+    "SELECT * FROM pathways WHERE pathway_id = $1",
     [id]
   )
 }
@@ -128,14 +128,14 @@ export async function updatePathway(id: string, pathwayData: Partial<{
   return executeQuery(`
     UPDATE pathways 
     SET ${updates}, updated_at = NOW()
-    WHERE id = $1
+    WHERE pathway_id = $1
     RETURNING *
   `, [id, ...values])
 }
 
 export async function deletePathway(id: string) {
   return executeQuery(
-    "DELETE FROM pathways WHERE id = $1 RETURNING *",
+    "DELETE FROM pathways WHERE pathway_id = $1 RETURNING *",
     [id]
   )
 }

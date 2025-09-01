@@ -84,7 +84,7 @@ export function TeamPathwaysList({ teamId, pathways, isAdmin }: TeamPathwaysList
                     variant="outline"
                     size="sm"
                     className="ml-4"
-                    onClick={() => router.push(`/dashboard/call-flows/editor?id=${pathway.id}`)}
+                    onClick={() => router.push(`/dashboard/call-flows/editor?pathwayId=${pathway.pathway_id}&source=pathway`)}
                   >
                     <ExternalLink className="mr-2 h-4 w-4" />
                     Open
