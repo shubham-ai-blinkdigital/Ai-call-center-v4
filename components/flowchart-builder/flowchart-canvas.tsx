@@ -286,8 +286,11 @@ export function FlowchartCanvas({ phoneNumber, pathwayInfo }: FlowchartCanvasPro
         {...props} 
         selected={props.selected}
         onEdit={() => {
-          setSelectedNode(props)
-          setIsEditorOpen(true)
+          const node = nodes.find(n => n.id === props.id)
+          if (node) {
+            setSelectedNode(node)
+            setIsEditorOpen(true)
+          }
         }}
         onDelete={() => onDeleteNode(props.id)}
         onDuplicate={() => onDuplicateNode(props.id)}
@@ -296,8 +299,11 @@ export function FlowchartCanvas({ phoneNumber, pathwayInfo }: FlowchartCanvasPro
         {...props} 
         selected={props.selected} 
         onEdit={() => {
-          setSelectedNode(props)
-          setIsEditorOpen(true)
+          const node = nodes.find(n => n.id === props.id)
+          if (node) {
+            setSelectedNode(node)
+            setIsEditorOpen(true)
+          }
         }}
         onDelete={() => onDeleteNode(props.id)}
         onDuplicate={() => onDuplicateNode(props.id)}
@@ -306,8 +312,11 @@ export function FlowchartCanvas({ phoneNumber, pathwayInfo }: FlowchartCanvasPro
         {...props} 
         selected={props.selected}
         onEdit={() => {
-          setSelectedNode(props)
-          setIsEditorOpen(true)
+          const node = nodes.find(n => n.id === props.id)
+          if (node) {
+            setSelectedNode(node)
+            setIsEditorOpen(true)
+          }
         }}
         onDelete={() => onDeleteNode(props.id)}
         onDuplicate={() => onDuplicateNode(props.id)}
@@ -316,8 +325,11 @@ export function FlowchartCanvas({ phoneNumber, pathwayInfo }: FlowchartCanvasPro
         {...props} 
         selected={props.selected}
         onEdit={() => {
-          setSelectedNode(props)
-          setIsEditorOpen(true)
+          const node = nodes.find(n => n.id === props.id)
+          if (node) {
+            setSelectedNode(node)
+            setIsEditorOpen(true)
+          }
         }}
         onDelete={() => onDeleteNode(props.id)}
         onDuplicate={() => onDuplicateNode(props.id)}
@@ -326,8 +338,11 @@ export function FlowchartCanvas({ phoneNumber, pathwayInfo }: FlowchartCanvasPro
         {...props} 
         selected={props.selected}
         onEdit={() => {
-          setSelectedNode(props)
-          setIsEditorOpen(true)
+          const node = nodes.find(n => n.id === props.id)
+          if (node) {
+            setSelectedNode(node)
+            setIsEditorOpen(true)
+          }
         }}
         onDelete={() => onDeleteNode(props.id)}
         onDuplicate={() => onDuplicateNode(props.id)}
@@ -336,8 +351,11 @@ export function FlowchartCanvas({ phoneNumber, pathwayInfo }: FlowchartCanvasPro
         {...props} 
         selected={props.selected}
         onEdit={() => {
-          setSelectedNode(props)
-          setIsEditorOpen(true)
+          const node = nodes.find(n => n.id === props.id)
+          if (node) {
+            setSelectedNode(node)
+            setIsEditorOpen(true)
+          }
         }}
         onDelete={() => onDeleteNode(props.id)}
         onDuplicate={() => onDuplicateNode(props.id)}
@@ -346,14 +364,17 @@ export function FlowchartCanvas({ phoneNumber, pathwayInfo }: FlowchartCanvasPro
         {...props} 
         selected={props.selected}
         onEdit={() => {
-          setSelectedNode(props)
-          setIsEditorOpen(true)
+          const node = nodes.find(n => n.id === props.id)
+          if (node) {
+            setSelectedNode(node)
+            setIsEditorOpen(true)
+          }
         }}
         onDelete={() => onDeleteNode(props.id)}
         onDuplicate={() => onDuplicateNode(props.id)}
       />,
     }),
-    [onDeleteNode, onDuplicateNode],
+    [nodes, onDeleteNode, onDuplicateNode],
   )
 
 
