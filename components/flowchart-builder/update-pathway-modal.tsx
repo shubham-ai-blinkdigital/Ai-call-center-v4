@@ -209,11 +209,11 @@ export function UpdatePathwayModal({ reactFlowData, pathwayId }: UpdatePathwayMo
 
               <div className="space-y-3">
                 <div className="grid grid-cols-2 gap-4 text-sm">
-                  <div><strong>Pathway ID:</strong> {pathwayId || 'Not set'}</div>
+                  <div><strong>Pathway ID:</strong> <code className="bg-gray-100 px-1 rounded text-xs">{pathwayId}</code></div>
                   <div><strong>API Key:</strong> Stored in environment</div>
                   <div><strong>Name:</strong> {name || 'Not set'}</div>
                   <div><strong>Description:</strong> {description || 'Auto-generated'}</div>
-                </div>
+                </div></div>
 
                 <div>
                   <h4 className="font-medium mb-2">JSON Payload:</h4>
