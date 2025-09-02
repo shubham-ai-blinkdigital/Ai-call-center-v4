@@ -51,6 +51,7 @@ export function CustomerResponseNode({ data, selected, onEdit, onDelete, onDupli
           <button
             onClick={(e) => {
               e.stopPropagation();
+              console.log('🎯 [CUSTOMER-RESPONSE-NODE] Edit button clicked');
               onEdit?.();
             }}
             className="w-8 h-8 bg-blue-500 hover:bg-blue-600 text-white rounded-full flex items-center justify-center shadow-md transition-colors"

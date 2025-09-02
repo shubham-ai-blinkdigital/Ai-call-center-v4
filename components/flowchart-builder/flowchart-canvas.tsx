@@ -286,10 +286,15 @@ export function FlowchartCanvas({ phoneNumber, pathwayInfo }: FlowchartCanvasPro
         {...props} 
         selected={props.selected}
         onEdit={() => {
+          console.log('🎯 [CANVAS] Edit clicked for node:', props.id)
           const node = nodes.find(n => n.id === props.id)
+          console.log('🔍 [CANVAS] Found node:', node)
           if (node) {
             setSelectedNode(node)
             setIsEditorOpen(true)
+            console.log('✅ [CANVAS] Editor opened for node:', node.id)
+          } else {
+            console.error('❌ [CANVAS] Node not found:', props.id)
           }
         }}
         onDelete={() => onDeleteNode(props.id)}
@@ -299,10 +304,15 @@ export function FlowchartCanvas({ phoneNumber, pathwayInfo }: FlowchartCanvasPro
         {...props} 
         selected={props.selected} 
         onEdit={() => {
+          console.log('🎯 [CANVAS] Edit clicked for node:', props.id)
           const node = nodes.find(n => n.id === props.id)
+          console.log('🔍 [CANVAS] Found node:', node)
           if (node) {
             setSelectedNode(node)
             setIsEditorOpen(true)
+            console.log('✅ [CANVAS] Editor opened for node:', node.id)
+          } else {
+            console.error('❌ [CANVAS] Node not found:', props.id)
           }
         }}
         onDelete={() => onDeleteNode(props.id)}
@@ -312,10 +322,15 @@ export function FlowchartCanvas({ phoneNumber, pathwayInfo }: FlowchartCanvasPro
         {...props} 
         selected={props.selected}
         onEdit={() => {
+          console.log('🎯 [CANVAS] Edit clicked for node:', props.id)
           const node = nodes.find(n => n.id === props.id)
+          console.log('🔍 [CANVAS] Found node:', node)
           if (node) {
             setSelectedNode(node)
             setIsEditorOpen(true)
+            console.log('✅ [CANVAS] Editor opened for node:', node.id)
+          } else {
+            console.error('❌ [CANVAS] Node not found:', props.id)
           }
         }}
         onDelete={() => onDeleteNode(props.id)}
@@ -325,10 +340,15 @@ export function FlowchartCanvas({ phoneNumber, pathwayInfo }: FlowchartCanvasPro
         {...props} 
         selected={props.selected}
         onEdit={() => {
+          console.log('🎯 [CANVAS] Edit clicked for node:', props.id)
           const node = nodes.find(n => n.id === props.id)
+          console.log('🔍 [CANVAS] Found node:', node)
           if (node) {
             setSelectedNode(node)
             setIsEditorOpen(true)
+            console.log('✅ [CANVAS] Editor opened for node:', node.id)
+          } else {
+            console.error('❌ [CANVAS] Node not found:', props.id)
           }
         }}
         onDelete={() => onDeleteNode(props.id)}
@@ -338,10 +358,15 @@ export function FlowchartCanvas({ phoneNumber, pathwayInfo }: FlowchartCanvasPro
         {...props} 
         selected={props.selected}
         onEdit={() => {
+          console.log('🎯 [CANVAS] Edit clicked for node:', props.id)
           const node = nodes.find(n => n.id === props.id)
+          console.log('🔍 [CANVAS] Found node:', node)
           if (node) {
             setSelectedNode(node)
             setIsEditorOpen(true)
+            console.log('✅ [CANVAS] Editor opened for node:', node.id)
+          } else {
+            console.error('❌ [CANVAS] Node not found:', props.id)
           }
         }}
         onDelete={() => onDeleteNode(props.id)}
@@ -351,10 +376,15 @@ export function FlowchartCanvas({ phoneNumber, pathwayInfo }: FlowchartCanvasPro
         {...props} 
         selected={props.selected}
         onEdit={() => {
+          console.log('🎯 [CANVAS] Edit clicked for node:', props.id)
           const node = nodes.find(n => n.id === props.id)
+          console.log('🔍 [CANVAS] Found node:', node)
           if (node) {
             setSelectedNode(node)
             setIsEditorOpen(true)
+            console.log('✅ [CANVAS] Editor opened for node:', node.id)
+          } else {
+            console.error('❌ [CANVAS] Node not found:', props.id)
           }
         }}
         onDelete={() => onDeleteNode(props.id)}
@@ -364,10 +394,15 @@ export function FlowchartCanvas({ phoneNumber, pathwayInfo }: FlowchartCanvasPro
         {...props} 
         selected={props.selected}
         onEdit={() => {
+          console.log('🎯 [CANVAS] Edit clicked for node:', props.id)
           const node = nodes.find(n => n.id === props.id)
+          console.log('🔍 [CANVAS] Found node:', node)
           if (node) {
             setSelectedNode(node)
             setIsEditorOpen(true)
+            console.log('✅ [CANVAS] Editor opened for node:', node.id)
+          } else {
+            console.error('❌ [CANVAS] Node not found:', props.id)
           }
         }}
         onDelete={() => onDeleteNode(props.id)}
