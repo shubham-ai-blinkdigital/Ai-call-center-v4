@@ -45,7 +45,8 @@ export function convertReactFlowToBland(reactFlowData: ReactFlowData): BlandFlow
     target: edge.target,
     ...(edge.data && { 
       data: {
-        label: edge.data.label
+        label: edge.data.label,
+        ...(edge.data.description && { description: edge.data.description })
       }
     })
   }))

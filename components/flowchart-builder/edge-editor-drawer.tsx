@@ -13,6 +13,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
@@ -58,6 +59,7 @@ export function EdgeEditorDrawer({
 }: EdgeEditorDrawerProps) {
   const [label, setLabel] = useState('')
   const [customLabel, setCustomLabel] = useState('')
+  const [description, setDescription] = useState('')
   const [color, setColor] = useState('#3b82f6')
   const [animated, setAnimated] = useState(true)
   const [open, setOpen] = useState(false)
@@ -66,6 +68,7 @@ export function EdgeEditorDrawer({
     if (selectedEdge) {
       setLabel(selectedEdge.data?.label || 'next')
       setCustomLabel(selectedEdge.data?.customLabel || '')
+      setDescription(selectedEdge.data?.description || '')
       setColor(selectedEdge.data?.color || '#3b82f6')
       setAnimated(selectedEdge.animated || true)
     }
@@ -78,6 +81,7 @@ export function EdgeEditorDrawer({
       data: {
         ...selectedEdge.data,
         label: label || 'next',
+        description: description || undefined,
         color,
       },
       animated,
@@ -157,6 +161,18 @@ export function EdgeEditorDrawer({
                 </Command>
               </PopoverContent>
             </Popover>
+          </div>
+
+          {/* Edge Description */}
+          <div className="space-y-2">
+            <Label htmlFor="edge-description">Description (Optional)</Label>
+            <Input
+              id="edge-description"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="Describe when this path should be taken..."
+            />
+            <p className="text-xs text-gray-500">Optional description for this edge connection</p>
           </div>
 
           {/* Edge Color */}
