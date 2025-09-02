@@ -82,12 +82,12 @@ export function convertBlandToReactFlow(blandData: BlandFlowData): ReactFlowData
     selected: false
   }))
 
-  // Add UI properties to edges
+  // Add UI properties to edges - ensure all edges have type: 'custom'
   const reactFlowEdges: Edge[] = blandData.edges.map(edge => ({
     id: edge.id,
     source: edge.source,
     target: edge.target,
-    type: 'custom',
+    type: 'custom', // Always ensure custom type for ReactFlow
     animated: true,
     data: edge.data || { label: 'next' },
     style: { stroke: '#3b82f6', strokeWidth: 2 }

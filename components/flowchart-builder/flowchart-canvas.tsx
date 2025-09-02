@@ -88,15 +88,27 @@ export function FlowchartCanvas({ phoneNumber, pathwayInfo }: FlowchartCanvasPro
         if (result.success && result.pathway && result.pathway.flowchart_data) {
           const flowchartData = result.pathway.flowchart_data
 
-          // Convert Bland format back to ReactFlow format
-          if (flowchartData.nodes && flowchartData.edges) {
-            const reactFlowData = convertBlandToReactFlow(flowchartData)
-            setNodes(reactFlowData.nodes)
-            setEdges(reactFlowData.edges)
+          console.log('[FLOWCHART-CANVAS] Setting loaded flowchart data:', flowchartData)
+
+          // Validate the data structure
+          if (flowchartData.nodes && Array.isArray(flowchartData.nodes) && 
+              flowchartData.edges && Array.isArray(flowchartData.edges)) {
+
+            // Ensure all edges have the required type: 'custom' for ReactFlow
+            const edgesWithType = flowchartData.edges.map(edge => ({
+              ...edge,
+              type: edge.type || 'custom', // Ensure type is set
+              animated: edge.animated !== undefined ? edge.animated : true,
+              style: edge.style || { stroke: '#3b82f6', strokeWidth: 2 }
+            }))
+
+            setNodes(flowchartData.nodes)
+            setEdges(edgesWithType)
 
             toast.success(`Loaded saved pathway: ${result.pathway.name}`)
           } else {
-            console.log('[FLOWCHART-CANVAS] No flowchart data found, starting with empty canvas')
+            console.error('[FLOWCHART-CANVAS] Invalid flowchart data structure:', flowchartData)
+            toast.error('Invalid flowchart data structure')
           }
         } else {
           console.log('[FLOWCHART-CANVAS] No pathway data found or failed to load')
