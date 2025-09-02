@@ -21,6 +21,7 @@ export function UpdatePathwayModal({ reactFlowData, pathwayId }: UpdatePathwayMo
   const [isOpen, setIsOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [showPreview, setShowPreview] = useState(false)
+  const [isSuccess, setIsSuccess] = useState(false)
 
   // Form fields
   const [manualPathwayId, setManualPathwayId] = useState(pathwayId || '')
@@ -70,17 +71,26 @@ export function UpdatePathwayModal({ reactFlowData, pathwayId }: UpdatePathwayMo
       const result = await response.json()
 
       if (result.status === 'success') {
+        setIsSuccess(true)
+        
         toast({
-          title: "Success!",
+          title: "✅ Success!",
           description: "Pathway updated successfully on Bland.ai",
+          variant: "default",
         })
 
-        // Reset form and close modal
-        setManualPathwayId(pathwayId || '')
-        setName('')
-        setDescription('')
-        setIsOpen(false)
-        setShowPreview(false)
+        // Show additional success feedback
+        console.log("✅ Pathway updated successfully:", result)
+
+        // Reset form and close modal after showing success
+        setTimeout(() => {
+          setManualPathwayId(pathwayId || '')
+          setName('')
+          setDescription('')
+          setIsSuccess(false)
+          setIsOpen(false)
+          setShowPreview(false)
+        }, 2000)
       } else {
         toast({
           title: "Error",
@@ -123,7 +133,22 @@ export function UpdatePathwayModal({ reactFlowData, pathwayId }: UpdatePathwayMo
         </DialogHeader>
 
         <div className="space-y-6">
-          {!showPreview ? (
+          {isSuccess ? (
+            // Success State
+            <div className="text-center py-8 space-y-4">
+              <div className="text-6xl">✅</div>
+              <h3 className="text-xl font-semibold text-green-700">Success!</h3>
+              <p className="text-green-600">Pathway updated successfully on Bland.ai</p>
+              <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                <p className="text-sm text-green-700">
+                  <strong>Pathway ID:</strong> {manualPathwayId}
+                </p>
+                <p className="text-sm text-green-700">
+                  <strong>Name:</strong> {name}
+                </p>
+              </div>
+            </div>
+          ) : !showPreview ? (
             // Form View
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
