@@ -29,9 +29,7 @@ export function SavePathwayModal({ reactFlowData, pathwayId }: SavePathwayModalP
   const router = useRouter()
   const pathname = usePathname()
 
-  // Form fields
-  const [name, setName] = useState('')
-  const [description, setDescription] = useState('')
+  // No form fields needed - just saving flowchart data
 
   // Extract phone number from URL
   const getPhoneNumberFromPath = () => {
@@ -46,46 +44,28 @@ export function SavePathwayModal({ reactFlowData, pathwayId }: SavePathwayModalP
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    // Only require name for NEW pathways
-    if (!pathwayId && !name.trim()) {
-      toast.error("Pathway name is required")
-      return
-    }
-
-    if (!pathwayId && !phoneNumber) {
-      toast.error("Phone number not found. Please navigate from a phone number pathway page.")
-      return
-    }
-
     if (reactFlowData.nodes.length === 0) {
       toast.error("Cannot save empty flowchart. Please add some nodes first.")
+      return
+    }
+
+    if (!pathwayId) {
+      toast.error("No pathway ID found. Cannot save flowchart.")
       return
     }
 
     setIsLoading(true)
 
     try {
-      // Choose endpoint based on whether we have a pathwayId
-      const endpoint = pathwayId ? '/api/pathways/save-flowchart' : '/api/pathways/create'
-
-      const payload = pathwayId 
-        ? {
-            pathwayId,
-            flowchartData: convertedData,
-          }
-        : {
-            name: name.trim(),
-            description: description.trim() || null,
-            phoneNumber: phoneNumber,
-            flowchartData: convertedData,
-          }
-
-      const response = await fetch(endpoint, {
+      const response = await fetch('/api/pathways/save-flowchart', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(payload),
+        body: JSON.stringify({
+          pathwayId,
+          flowchartData: convertedData,
+        }),
       })
 
       const result = await response.json()
@@ -94,14 +74,8 @@ export function SavePathwayModal({ reactFlowData, pathwayId }: SavePathwayModalP
         throw new Error(result.error || 'Failed to save pathway')
       }
 
-      toast.success(pathwayId ? "Pathway updated successfully!" : "Pathway saved successfully!")
-
-      // Reset form
-      setName('')
-      setDescription('')
+      toast.success("Pathway updated successfully!")
       setIsOpen(false)
-
-      // Optionally refresh the page to show updated data
       router.refresh()
 
     } catch (error) {
@@ -113,8 +87,6 @@ export function SavePathwayModal({ reactFlowData, pathwayId }: SavePathwayModalP
   }
 
   const resetForm = () => {
-    setName('')
-    setDescription('')
     setShowPreview(false)
   }
 
@@ -140,64 +112,21 @@ export function SavePathwayModal({ reactFlowData, pathwayId }: SavePathwayModalP
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Only show name/description fields for NEW pathways */}
-          {!pathwayId && (
-            <div className="grid grid-cols-1 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="name">Pathway Name *</Label>
-                <Input
-                  id="name"
-                  placeholder="e.g., Customer Support Flow"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  required
-                  disabled={isLoading}
-                />
-                <p className="text-xs text-gray-500">Give your pathway a descriptive name</p>
+          {/* Show confirmation for pathway update */}
+          <div className="space-y-4">
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <div className="flex items-center space-x-2">
+                <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                <span className="text-sm font-medium text-blue-900">Updating Pathway</span>
               </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="description">Description</Label>
-                <Textarea
-                  id="description"
-                  placeholder="Describe what this pathway does..."
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  rows={3}
-                  disabled={isLoading}
-                />
-                <p className="text-xs text-gray-500">Optional description of your pathway's purpose</p>
-              </div>
-
-              <div className="space-y-2">
-                <Label>Phone Number</Label>
-                <Input
-                  value={phoneNumber ? `+${phoneNumber}` : 'Not detected'}
-                  disabled
-                  className="bg-gray-50"
-                />
-                <p className="text-xs text-gray-500">This pathway will be associated with this phone number</p>
-              </div>
+              <p className="text-sm text-blue-700 mt-2">
+                This will save your current flowchart changes for phone number <code className="bg-blue-100 px-1 py-0.5 rounded text-xs">+{phoneNumber}</code>
+              </p>
+              <p className="text-xs text-blue-600 mt-1">
+                Only the flowchart data will be updated
+              </p>
             </div>
-          )}
-
-          {/* Show simple confirmation for EXISTING pathways */}
-          {pathwayId && (
-            <div className="space-y-4">
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                <div className="flex items-center space-x-2">
-                  <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                  <span className="text-sm font-medium text-blue-900">Updating Existing Pathway</span>
-                </div>
-                <p className="text-sm text-blue-700 mt-2">
-                  This will update the flowchart data for pathway <code className="bg-blue-100 px-1 py-0.5 rounded text-xs">{pathwayId}</code>
-                </p>
-                <p className="text-xs text-blue-600 mt-1">
-                  Name and description will remain unchanged
-                </p>
-              </div>
-            </div>
-          )}
+          </div>
 
           <div className="space-y-4">
             <div className="flex items-center justify-between">
@@ -238,18 +167,18 @@ export function SavePathwayModal({ reactFlowData, pathwayId }: SavePathwayModalP
             </Button>
             <Button 
               type="submit" 
-              disabled={isLoading || (!pathwayId && (!name.trim() || !phoneNumber))}
+              disabled={isLoading || !pathwayId}
               className="bg-blue-600 hover:bg-blue-700"
             >
               {isLoading ? (
                 <>
                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
-                  {pathwayId ? 'Updating...' : 'Saving...'}
+                  Saving...
                 </>
               ) : (
                 <>
                   <Save className="h-4 w-4 mr-2" />
-                  {pathwayId ? 'Update Pathway' : 'Save Pathway'}
+                  Save Pathway
                 </>
               )}
             </Button>
