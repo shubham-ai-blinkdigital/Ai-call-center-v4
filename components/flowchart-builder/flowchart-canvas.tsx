@@ -135,7 +135,7 @@ export function FlowchartCanvas({ phoneNumber, pathwayInfo }: FlowchartCanvasPro
 
   const onNodeClick = useCallback((event: React.MouseEvent, node: Node) => {
     setSelectedNode(node)
-    setIsEditorOpen(true)
+    // Don't open editor automatically - let the edit icon handle it
   }, [])
 
   const onPaneClick = useCallback(() => {
