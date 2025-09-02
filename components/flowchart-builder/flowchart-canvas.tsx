@@ -87,13 +87,13 @@ export function FlowchartCanvas({ phoneNumber, pathwayInfo }: FlowchartCanvasPro
 
         if (result.success && result.pathway && result.pathway.flowchart_data) {
           const flowchartData = result.pathway.flowchart_data
-          
+
           // Convert Bland format back to ReactFlow format
           if (flowchartData.nodes && flowchartData.edges) {
             const reactFlowData = convertBlandToReactFlow(flowchartData)
             setNodes(reactFlowData.nodes)
             setEdges(reactFlowData.edges)
-            
+
             toast.success(`Loaded saved pathway: ${result.pathway.name}`)
           } else {
             console.log('[FLOWCHART-CANVAS] No flowchart data found, starting with empty canvas')
@@ -277,8 +277,11 @@ export function FlowchartCanvas({ phoneNumber, pathwayInfo }: FlowchartCanvasPro
         )}
         {/* Floating Buttons */}
         <div className="absolute top-4 right-4 z-10 flex gap-2">
-          <SavePathwayModal reactFlowData={{ nodes, edges }} />
-          
+          <SavePathwayModal 
+              reactFlowData={{ nodes, edges }}
+              pathwayId={pathwayInfo?.pathway_id}
+            />
+
           <Dialog open={isJsonPreviewOpen} onOpenChange={setIsJsonPreviewOpen}>
             <DialogTrigger asChild>
               <Button 
@@ -346,7 +349,7 @@ export function FlowchartCanvas({ phoneNumber, pathwayInfo }: FlowchartCanvasPro
 
           <UpdatePathwayModal reactFlowData={{ nodes, edges }} />
         </div>
-        
+
         <ReactFlow
           nodes={nodes}
           edges={edges}
