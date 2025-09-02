@@ -31,7 +31,7 @@ export function UpdatePathwayModal({ reactFlowData, pathwayId }: UpdatePathwayMo
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    if (!pathwayId || !pathwayId.trim()) {
+    if (!pathwayId || (typeof pathwayId === 'string' && !pathwayId.trim())) {
       toast({
         title: "Error",
         description: "Pathway ID is required",
@@ -40,7 +40,7 @@ export function UpdatePathwayModal({ reactFlowData, pathwayId }: UpdatePathwayMo
       return
     }
 
-    if (!name.trim()) {
+    if (!name || !name.trim()) {
       toast({
         title: "Error",
         description: "Pathway name is required",
@@ -58,9 +58,9 @@ export function UpdatePathwayModal({ reactFlowData, pathwayId }: UpdatePathwayMo
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          pathwayId: pathwayId?.trim() || '',
+          pathwayId: (typeof pathwayId === 'string' ? pathwayId.trim() : pathwayId) || '',
           name: name.trim(),
-          description: description.trim(),
+          description: description || '',
           nodes: convertedData.nodes,
           edges: convertedData.edges,
         }),
@@ -99,8 +99,8 @@ export function UpdatePathwayModal({ reactFlowData, pathwayId }: UpdatePathwayMo
   }
 
   const finalPayload = {
-    name: name.trim(),
-    description: description.trim() || `Updated on ${new Date().toISOString()}`,
+    name: name || '',
+    description: description || `Updated on ${new Date().toISOString()}`,
     nodes: convertedData.nodes,
     edges: convertedData.edges,
   }
@@ -227,7 +227,7 @@ export function UpdatePathwayModal({ reactFlowData, pathwayId }: UpdatePathwayMo
 
                 <Button
                   onClick={handleSubmit}
-                  disabled={isLoading || !pathwayId?.trim() || !name.trim()}
+                  disabled={isLoading || !pathwayId || !name}
                   className="w-full bg-purple-600 hover:bg-purple-700"
                 >
                   {isLoading ? (
