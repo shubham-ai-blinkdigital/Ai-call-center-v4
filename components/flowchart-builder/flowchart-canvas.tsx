@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useCallback, useRef, useState, useEffect } from 'react'
+import React, { useCallback, useRef, useState, useEffect, useMemo } from 'react'
 import ReactFlow, {
   MiniMap,
   Controls,
@@ -13,6 +13,7 @@ import ReactFlow, {
   Node,
   ReactFlowProvider,
   ReactFlowInstance,
+  NodeProps,
 } from 'reactflow'
 import 'reactflow/dist/style.css'
 
@@ -152,22 +153,37 @@ export function FlowchartCanvas({ phoneNumber, pathwayInfo }: FlowchartCanvasPro
     setIsEditorOpen(false)
   }, [])
 
-  const onUpdateNode = useCallback((nodeId: string, updates: any) => {
+  const onUpdateNode = useCallback((nodeId: string, newData: any) => {
     setNodes((nds) =>
       nds.map((node) =>
-        node.id === nodeId
-          ? { ...node, ...updates }
-          : node
+        node.id === nodeId ? { ...node, data: { ...node.data, ...newData } } : node
       )
     )
-
-    // Update selectedNode if it's the one being edited
-    setSelectedNode((prevSelected) =>
-      prevSelected?.id === nodeId
-        ? { ...prevSelected, ...updates }
-        : prevSelected
-    )
   }, [setNodes])
+
+  const onDeleteNode = useCallback((nodeId: string) => {
+    setNodes((nds) => nds.filter((node) => node.id !== nodeId))
+    setEdges((eds) => eds.filter((edge) => edge.source !== nodeId && edge.target !== nodeId))
+    setSelectedNode(null)
+    setIsEditorOpen(false)
+  }, [setNodes, setEdges])
+
+  const onDuplicateNode = useCallback((nodeId: string) => {
+    const nodeToDuplicate = nodes.find((node) => node.id === nodeId)
+    if (!nodeToDuplicate) return
+
+    const newNode: Node = {
+      ...nodeToDuplicate,
+      id: `${nodeToDuplicate.type}_${Date.now()}`,
+      position: {
+        x: nodeToDuplicate.position.x + 50,
+        y: nodeToDuplicate.position.y + 50,
+      },
+      selected: false,
+    }
+
+    setNodes((nds) => nds.concat(newNode))
+  }, [nodes, setNodes])
 
   const onUpdateEdge = useCallback((edgeId: string, updates: any) => {
     setEdges((eds) =>
@@ -263,6 +279,91 @@ export function FlowchartCanvas({ phoneNumber, pathwayInfo }: FlowchartCanvasPro
   const handleConvertedJsonPreview = useCallback(() => {
     setIsConvertedJsonOpen(true)
   }, [])
+
+  const nodeTypesWithHandlers = useMemo(
+    () => ({
+      Default: (props: NodeProps) => {
+        const nodeType = props.data?.type || props.type
+        const nodeProps = {
+          ...props,
+          selected: props.selected,
+          onEdit: () => {
+            setSelectedNode(props)
+            setIsEditorOpen(true)
+          },
+          onDelete: () => onDeleteNode(props.id),
+          onDuplicate: () => onDuplicateNode(props.id),
+        }
+
+        switch (nodeType) {
+          case 'greeting':
+            return <GreetingNode {...nodeProps} />
+          case 'question':
+            return <QuestionNode {...nodeProps} />
+          case 'response':
+            return <CustomerResponseNode {...nodeProps} />
+          case 'transfer':
+            return <TransferNode {...nodeProps} />
+          case 'End Call':
+            return <EndCallNode {...nodeProps} />
+          default:
+            return <QuestionNode {...nodeProps} />
+        }
+      },
+      'End Call': (props: NodeProps) => <EndCallNode 
+        {...props} 
+        selected={props.selected} 
+        onEdit={() => {
+          setSelectedNode(props)
+          setIsEditorOpen(true)
+        }}
+        onDelete={() => onDeleteNode(props.id)}
+        onDuplicate={() => onDuplicateNode(props.id)}
+      />,
+      greeting: (props: NodeProps) => <GreetingNode 
+        {...props} 
+        selected={props.selected}
+        onEdit={() => {
+          setSelectedNode(props)
+          setIsEditorOpen(true)
+        }}
+        onDelete={() => onDeleteNode(props.id)}
+        onDuplicate={() => onDuplicateNode(props.id)}
+      />,
+      question: (props: NodeProps) => <QuestionNode 
+        {...props} 
+        selected={props.selected}
+        onEdit={() => {
+          setSelectedNode(props)
+          setIsEditorOpen(true)
+        }}
+        onDelete={() => onDeleteNode(props.id)}
+        onDuplicate={() => onDuplicateNode(props.id)}
+      />,
+      response: (props: NodeProps) => <CustomerResponseNode 
+        {...props} 
+        selected={props.selected}
+        onEdit={() => {
+          setSelectedNode(props)
+          setIsEditorOpen(true)
+        }}
+        onDelete={() => onDeleteNode(props.id)}
+        onDuplicate={() => onDuplicateNode(props.id)}
+      />,
+      transfer: (props: NodeProps) => <TransferNode 
+        {...props} 
+        selected={props.selected}
+        onEdit={() => {
+          setSelectedNode(props)
+          setIsEditorOpen(true)
+        }}
+        onDelete={() => onDeleteNode(props.id)}
+        onDuplicate={() => onDuplicateNode(props.id)}
+      />,
+    }),
+    [onDeleteNode, onDuplicateNode],
+  )
+
 
   return (
     <>
@@ -362,7 +463,7 @@ export function FlowchartCanvas({ phoneNumber, pathwayInfo }: FlowchartCanvasPro
           onNodeClick={onNodeClick}
           onPaneClick={onPaneClick}
           onEdgeClick={onEdgeClick}
-          nodeTypes={nodeTypes}
+          nodeTypes={nodeTypesWithHandlers}
           edgeTypes={edgeTypes}
           fitView
           className="bg-gray-50"
