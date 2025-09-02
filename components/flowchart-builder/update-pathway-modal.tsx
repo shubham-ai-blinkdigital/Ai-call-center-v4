@@ -1,4 +1,3 @@
-
 'use client'
 
 import React, { useState } from 'react'
@@ -14,16 +13,15 @@ import { Loader2, Send, Eye } from 'lucide-react'
 
 interface UpdatePathwayModalProps {
   reactFlowData: ReactFlowData
+  pathwayId: string
 }
 
-export function UpdatePathwayModal({ reactFlowData }: UpdatePathwayModalProps) {
+export function UpdatePathwayModal({ reactFlowData, pathwayId }: UpdatePathwayModalProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [showPreview, setShowPreview] = useState(false)
-  
+
   // Form fields
-  const [apiKey, setApiKey] = useState('')
-  const [pathwayId, setPathwayId] = useState('')
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
 
@@ -31,15 +29,6 @@ export function UpdatePathwayModal({ reactFlowData }: UpdatePathwayModalProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    
-    if (!apiKey.trim()) {
-      toast({
-        title: "Error",
-        description: "API key is required",
-        variant: "destructive",
-      })
-      return
-    }
 
     if (!pathwayId.trim()) {
       toast({
@@ -68,7 +57,6 @@ export function UpdatePathwayModal({ reactFlowData }: UpdatePathwayModalProps) {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          apiKey: apiKey.trim(),
           pathwayId: pathwayId.trim(),
           name: name.trim(),
           description: description.trim(),
@@ -84,10 +72,8 @@ export function UpdatePathwayModal({ reactFlowData }: UpdatePathwayModalProps) {
           title: "Success!",
           description: "Pathway updated successfully on Bland.ai",
         })
-        
+
         // Reset form and close modal
-        setApiKey('')
-        setPathwayId('')
         setName('')
         setDescription('')
         setIsOpen(false)
@@ -121,7 +107,7 @@ export function UpdatePathwayModal({ reactFlowData }: UpdatePathwayModalProps) {
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button 
+        <Button
           className="bg-purple-600 hover:bg-purple-700 text-white shadow-lg"
           size="sm"
         >
@@ -132,38 +118,11 @@ export function UpdatePathwayModal({ reactFlowData }: UpdatePathwayModalProps) {
         <DialogHeader>
           <DialogTitle>Update Pathway on Bland.ai</DialogTitle>
         </DialogHeader>
-        
+
         <div className="space-y-6">
           {!showPreview ? (
             // Form View
             <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="apiKey">Authorization (API Key) *</Label>
-                  <Input
-                    id="apiKey"
-                    type="password"
-                    placeholder="sk-..."
-                    value={apiKey}
-                    onChange={(e) => setApiKey(e.target.value)}
-                    required
-                  />
-                  <p className="text-xs text-gray-500">Your Bland.ai API key</p>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="pathwayId">Pathway ID *</Label>
-                  <Input
-                    id="pathwayId"
-                    placeholder="pathway-123..."
-                    value={pathwayId}
-                    onChange={(e) => setPathwayId(e.target.value)}
-                    required
-                  />
-                  <p className="text-xs text-gray-500">The unique identifier of the pathway to update</p>
-                </div>
-              </div>
-
               <div className="space-y-2">
                 <Label htmlFor="name">Pathway Name *</Label>
                 <Input
@@ -213,7 +172,7 @@ export function UpdatePathwayModal({ reactFlowData }: UpdatePathwayModalProps) {
                   <Eye className="w-4 h-4" />
                   Preview Payload
                 </Button>
-                
+
                 <Button
                   type="submit"
                   disabled={isLoading}
@@ -241,15 +200,15 @@ export function UpdatePathwayModal({ reactFlowData }: UpdatePathwayModalProps) {
                   ← Back to Form
                 </Button>
               </div>
-              
+
               <div className="space-y-3">
                 <div className="grid grid-cols-2 gap-4 text-sm">
-                  <div><strong>API Key:</strong> {apiKey ? '••••••••' + apiKey.slice(-4) : 'Not set'}</div>
                   <div><strong>Pathway ID:</strong> {pathwayId || 'Not set'}</div>
+                  <div><strong>API Key:</strong> Stored in environment</div>
                   <div><strong>Name:</strong> {name || 'Not set'}</div>
                   <div><strong>Description:</strong> {description || 'Auto-generated'}</div>
                 </div>
-                
+
                 <div>
                   <h4 className="font-medium mb-2">JSON Payload:</h4>
                   <ScrollArea className="h-96 w-full rounded-md border p-4">
@@ -258,10 +217,10 @@ export function UpdatePathwayModal({ reactFlowData }: UpdatePathwayModalProps) {
                     </pre>
                   </ScrollArea>
                 </div>
-                
+
                 <Button
                   onClick={handleSubmit}
-                  disabled={isLoading || !apiKey || !pathwayId || !name}
+                  disabled={isLoading || !pathwayId || !name}
                   className="w-full bg-purple-600 hover:bg-purple-700"
                 >
                   {isLoading ? (

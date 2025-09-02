@@ -3,15 +3,16 @@ import { type NextRequest, NextResponse } from "next/server"
 
 export async function POST(request: NextRequest) {
   try {
-    const { apiKey, pathwayId, name, description, nodes, edges } = await request.json()
+    const { pathwayId, name, description, nodes, edges } = await request.json()
 
     console.log("=".repeat(80))
     console.log("[API_ROUTE_NEW] 🚀 UPDATE PATHWAY NEW API ROUTE - PAYLOAD INSPECTION")
     console.log("=".repeat(80))
 
-    // Validate required fields
+    // Get API key from environment
+    const apiKey = process.env.BLAND_AI_API_KEY
     if (!apiKey) {
-      return NextResponse.json({ status: "error", message: "API key is required" }, { status: 400 })
+      return NextResponse.json({ status: "error", message: "Bland.ai API key not configured in environment" }, { status: 500 })
     }
 
     if (!pathwayId) {
@@ -27,7 +28,7 @@ export async function POST(request: NextRequest) {
     }
 
     console.log("[API_ROUTE_NEW] 📋 Received payload structure:")
-    console.log("[API_ROUTE_NEW] - API Key length:", apiKey.length)
+    console.log("[API_ROUTE_NEW] - API Key from environment, length:", apiKey.length)
     console.log("[API_ROUTE_NEW] - Pathway ID:", pathwayId)
     console.log("[API_ROUTE_NEW] - Name:", name)
     console.log("[API_ROUTE_NEW] - Description:", description || "No description provided")
