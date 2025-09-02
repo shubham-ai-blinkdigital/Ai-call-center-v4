@@ -1,3 +1,4 @@
+
 'use client'
 
 import React, { useState } from 'react'
@@ -213,7 +214,7 @@ export function UpdatePathwayModal({ reactFlowData, pathwayId }: UpdatePathwayMo
                   <div><strong>API Key:</strong> Stored in environment</div>
                   <div><strong>Name:</strong> {name || 'Not set'}</div>
                   <div><strong>Description:</strong> {description || 'Auto-generated'}</div>
-                </div></div>
+                </div>
 
                 <div>
                   <h4 className="font-medium mb-2">JSON Payload:</h4>
