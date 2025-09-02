@@ -149,14 +149,20 @@ export function UpdatePathwayModal({ reactFlowData, pathwayId }: UpdatePathwayMo
 
               <div className="bg-gray-50 p-4 rounded-lg">
                 <h4 className="font-medium mb-2">Converted Data Summary:</h4>
-                <div className="text-sm text-gray-600 grid grid-cols-2 gap-4">
-                  <div>
-                    <p><strong>Original Nodes:</strong> {reactFlowData.nodes.length}</p>
-                    <p><strong>Cleaned Nodes:</strong> {convertedData.nodes.length}</p>
+                <div className="text-sm text-gray-600 space-y-2">
+                  <div className="bg-blue-50 p-2 rounded border-l-4 border-blue-400">
+                    <p><strong>Pathway ID:</strong> <code className="bg-blue-100 px-1 rounded text-xs">{pathwayId}</code></p>
+                    <p className="text-xs text-blue-600 mt-1">This ID will be used in the API request to Bland.ai</p>
                   </div>
-                  <div>
-                    <p><strong>Original Edges:</strong> {reactFlowData.edges.length}</p>
-                    <p><strong>Cleaned Edges:</strong> {convertedData.edges.length}</p>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <p><strong>Original Nodes:</strong> {reactFlowData.nodes.length}</p>
+                      <p><strong>Cleaned Nodes:</strong> {convertedData.nodes.length}</p>
+                    </div>
+                    <div>
+                      <p><strong>Original Edges:</strong> {reactFlowData.edges.length}</p>
+                      <p><strong>Cleaned Edges:</strong> {convertedData.edges.length}</p>
+                    </div>
                   </div>
                 </div>
                 <p className="text-green-600 text-xs mt-2">✅ UI-specific properties will be removed before sending</p>
