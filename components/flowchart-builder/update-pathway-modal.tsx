@@ -23,6 +23,7 @@ export function UpdatePathwayModal({ reactFlowData, pathwayId }: UpdatePathwayMo
   const [showPreview, setShowPreview] = useState(false)
 
   // Form fields
+  const [manualPathwayId, setManualPathwayId] = useState(pathwayId || '')
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
 
@@ -31,7 +32,7 @@ export function UpdatePathwayModal({ reactFlowData, pathwayId }: UpdatePathwayMo
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    if (!pathwayId || (typeof pathwayId === 'string' && !pathwayId.trim())) {
+    if (!manualPathwayId || !manualPathwayId.trim()) {
       toast({
         title: "Error",
         description: "Pathway ID is required",
@@ -58,7 +59,7 @@ export function UpdatePathwayModal({ reactFlowData, pathwayId }: UpdatePathwayMo
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          pathwayId: (typeof pathwayId === 'string' ? pathwayId.trim() : pathwayId) || '',
+          pathwayId: manualPathwayId.trim(),
           name: name.trim(),
           description: description || '',
           nodes: convertedData.nodes,
@@ -75,6 +76,7 @@ export function UpdatePathwayModal({ reactFlowData, pathwayId }: UpdatePathwayMo
         })
 
         // Reset form and close modal
+        setManualPathwayId(pathwayId || '')
         setName('')
         setDescription('')
         setIsOpen(false)
@@ -125,6 +127,18 @@ export function UpdatePathwayModal({ reactFlowData, pathwayId }: UpdatePathwayMo
             // Form View
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
+                <Label htmlFor="pathwayId">Pathway ID *</Label>
+                <Input
+                  id="pathwayId"
+                  placeholder="Enter pathway ID"
+                  value={manualPathwayId}
+                  onChange={(e) => setManualPathwayId(e.target.value)}
+                  required
+                />
+                <p className="text-xs text-gray-500">The ID of the pathway you want to update</p>
+              </div>
+
+              <div className="space-y-2">
                 <Label htmlFor="name">Pathway Name *</Label>
                 <Input
                   id="name"
@@ -152,7 +166,7 @@ export function UpdatePathwayModal({ reactFlowData, pathwayId }: UpdatePathwayMo
                 <h4 className="font-medium mb-2">Converted Data Summary:</h4>
                 <div className="text-sm text-gray-600 space-y-2">
                   <div className="bg-blue-50 p-2 rounded border-l-4 border-blue-400">
-                    <p><strong>Pathway ID:</strong> <code className="bg-blue-100 px-1 rounded text-xs">{pathwayId}</code></p>
+                    <p><strong>Pathway ID:</strong> <code className="bg-blue-100 px-1 rounded text-xs">{manualPathwayId || 'Not set'}</code></p>
                     <p className="text-xs text-blue-600 mt-1">This ID will be used in the API request to Bland.ai</p>
                   </div>
                   <div className="grid grid-cols-2 gap-4">
@@ -210,7 +224,7 @@ export function UpdatePathwayModal({ reactFlowData, pathwayId }: UpdatePathwayMo
 
               <div className="space-y-3">
                 <div className="grid grid-cols-2 gap-4 text-sm">
-                  <div><strong>Pathway ID:</strong> <code className="bg-gray-100 px-1 rounded text-xs">{pathwayId || 'Not set'}</code></div>
+                  <div><strong>Pathway ID:</strong> <code className="bg-gray-100 px-1 rounded text-xs">{manualPathwayId || 'Not set'}</code></div>
                   <div><strong>API Key:</strong> Stored in environment</div>
                   <div><strong>Name:</strong> {name || 'Not set'}</div>
                   <div><strong>Description:</strong> {description || 'Auto-generated'}</div>
@@ -227,7 +241,7 @@ export function UpdatePathwayModal({ reactFlowData, pathwayId }: UpdatePathwayMo
 
                 <Button
                   onClick={handleSubmit}
-                  disabled={isLoading || !pathwayId || !name}
+                  disabled={isLoading || !manualPathwayId || !name}
                   className="w-full bg-purple-600 hover:bg-purple-700"
                 >
                   {isLoading ? (
