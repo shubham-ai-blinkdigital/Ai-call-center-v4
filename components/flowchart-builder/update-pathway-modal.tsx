@@ -31,7 +31,7 @@ export function UpdatePathwayModal({ reactFlowData, pathwayId }: UpdatePathwayMo
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    if (!pathwayId.trim()) {
+    if (!pathwayId || !pathwayId.trim()) {
       toast({
         title: "Error",
         description: "Pathway ID is required",
@@ -58,7 +58,7 @@ export function UpdatePathwayModal({ reactFlowData, pathwayId }: UpdatePathwayMo
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          pathwayId: pathwayId.trim(),
+          pathwayId: pathwayId?.trim() || '',
           name: name.trim(),
           description: description.trim(),
           nodes: convertedData.nodes,
@@ -210,7 +210,7 @@ export function UpdatePathwayModal({ reactFlowData, pathwayId }: UpdatePathwayMo
 
               <div className="space-y-3">
                 <div className="grid grid-cols-2 gap-4 text-sm">
-                  <div><strong>Pathway ID:</strong> <code className="bg-gray-100 px-1 rounded text-xs">{pathwayId}</code></div>
+                  <div><strong>Pathway ID:</strong> <code className="bg-gray-100 px-1 rounded text-xs">{pathwayId || 'Not set'}</code></div>
                   <div><strong>API Key:</strong> Stored in environment</div>
                   <div><strong>Name:</strong> {name || 'Not set'}</div>
                   <div><strong>Description:</strong> {description || 'Auto-generated'}</div>
@@ -227,7 +227,7 @@ export function UpdatePathwayModal({ reactFlowData, pathwayId }: UpdatePathwayMo
 
                 <Button
                   onClick={handleSubmit}
-                  disabled={isLoading || !pathwayId || !name}
+                  disabled={isLoading || !pathwayId?.trim() || !name.trim()}
                   className="w-full bg-purple-600 hover:bg-purple-700"
                 >
                   {isLoading ? (
