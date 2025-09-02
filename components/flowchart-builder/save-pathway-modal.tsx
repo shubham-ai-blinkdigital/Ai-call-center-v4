@@ -20,9 +20,10 @@ interface ReactFlowData {
 
 interface SavePathwayModalProps {
   reactFlowData: ReactFlowData
+  pathwayId?: string // Optional for backwards compatibility
 }
 
-export function SavePathwayModal({ reactFlowData }: SavePathwayModalProps) {
+export function SavePathwayModal({ reactFlowData, pathwayId }: SavePathwayModalProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [showPreview, setShowPreview] = useState(false)
@@ -51,7 +52,7 @@ export function SavePathwayModal({ reactFlowData }: SavePathwayModalProps) {
       return
     }
 
-    if (!phoneNumber) {
+    if (!pathwayId && !phoneNumber) {
       toast.error("Phone number not found. Please navigate from a phone number pathway page.")
       return
     }
@@ -64,17 +65,28 @@ export function SavePathwayModal({ reactFlowData }: SavePathwayModalProps) {
     setIsLoading(true)
 
     try {
-      const response = await fetch('/api/pathways/save-flowchart', {
+      // Choose endpoint based on whether we have a pathwayId
+      const endpoint = pathwayId ? '/api/pathways/save-flowchart' : '/api/pathways/create'
+      
+      const payload = pathwayId 
+        ? {
+            pathwayId,
+            name: name.trim(),
+            flowchartData: convertedData,
+          }
+        : {
+            name: name.trim(),
+            description: description.trim() || null,
+            phoneNumber: phoneNumber,
+            flowchartData: convertedData,
+          }
+
+      const response = await fetch(endpoint, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          name: name.trim(),
-          description: description.trim() || null,
-          phoneNumber: phoneNumber,
-          flowchartData: convertedData,
-        }),
+        body: JSON.stringify(payload),
       })
 
       const result = await response.json()
@@ -83,7 +95,7 @@ export function SavePathwayModal({ reactFlowData }: SavePathwayModalProps) {
         throw new Error(result.error || 'Failed to save pathway')
       }
 
-      toast.success("Pathway saved successfully!")
+      toast.success(pathwayId ? "Pathway updated successfully!" : "Pathway saved successfully!")
       
       // Reset form
       setName('')
@@ -123,7 +135,9 @@ export function SavePathwayModal({ reactFlowData }: SavePathwayModalProps) {
       </DialogTrigger>
       <DialogContent className="max-w-2xl max-h-[90vh]">
         <DialogHeader>
-          <DialogTitle>Save Pathway for {phoneNumber ? `+${phoneNumber}` : 'Phone Number'}</DialogTitle>
+          <DialogTitle>
+            {pathwayId ? 'Update Pathway' : `Save Pathway for ${phoneNumber ? `+${phoneNumber}` : 'Phone Number'}`}
+          </DialogTitle>
         </DialogHeader>
         
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -204,18 +218,18 @@ export function SavePathwayModal({ reactFlowData }: SavePathwayModalProps) {
             </Button>
             <Button 
               type="submit" 
-              disabled={isLoading || !name.trim() || !phoneNumber}
+              disabled={isLoading || !name.trim() || (!pathwayId && !phoneNumber)}
               className="bg-blue-600 hover:bg-blue-700"
             >
               {isLoading ? (
                 <>
                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
-                  Saving...
+                  {pathwayId ? 'Updating...' : 'Saving...'}
                 </>
               ) : (
                 <>
                   <Save className="h-4 w-4 mr-2" />
-                  Save Pathway
+                  {pathwayId ? 'Update Pathway' : 'Save Pathway'}
                 </>
               )}
             </Button>

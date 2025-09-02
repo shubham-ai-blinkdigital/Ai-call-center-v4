@@ -1,3 +1,4 @@
+
 import { NextRequest, NextResponse } from "next/server"
 import { cookies } from "next/headers"
 import { validateAuthToken } from "@/lib/auth-utils"
@@ -21,45 +22,44 @@ export async function POST(request: NextRequest) {
 
     const userId = authResult.user.id
     const body = await request.json()
-    const { pathwayId, flowchartData, name } = body
+    const { name, description, phoneNumber, flowchartData } = body
 
-    if (!pathwayId || !flowchartData) {
+    if (!name?.trim() || !flowchartData) {
       return NextResponse.json({ 
-        error: "Pathway ID and flowchart data are required" 
+        error: "Name and flowchart data are required" 
       }, { status: 400 })
     }
 
-    console.log(`[SAVE-FLOWCHART] Saving pathway ${pathwayId} for user ${userId}`)
+    console.log(`[CREATE-PATHWAY] Creating new pathway "${name}" for user ${userId}`)
 
-    // Update the pathway
-    const updateResult = await executeQuery(`
-      UPDATE pathways 
-      SET name = COALESCE($1, name), flowchart_data = $2, updated_at = NOW()
-      WHERE pathway_id = $3 AND creator_id = $4
-      RETURNING pathway_id, name, updated_at
-    `, [name?.trim() || null, JSON.stringify(flowchartData), pathwayId, userId])
+    // Create new pathway
+    const insertResult = await executeQuery(`
+      INSERT INTO pathways (pathway_id, creator_id, name, description, phone_number_id, flowchart_data, created_at, updated_at)
+      VALUES (gen_random_uuid()::text, $1, $2, $3, $4, $5, NOW(), NOW())
+      RETURNING pathway_id, name, created_at
+    `, [userId, name.trim(), description?.trim() || null, phoneNumber || null, JSON.stringify(flowchartData)])
 
-    if (updateResult.length === 0) {
+    if (insertResult.length === 0) {
       return NextResponse.json({ 
-        error: "Pathway not found or not owned by user" 
-      }, { status: 404 })
+        error: "Failed to create pathway" 
+      }, { status: 500 })
     }
 
-    const pathway = updateResult[0]
+    const pathway = insertResult[0]
 
-    console.log(`[SAVE-FLOWCHART] Successfully saved pathway: ${pathway.name}`)
+    console.log(`[CREATE-PATHWAY] Successfully created pathway: ${pathway.name} (${pathway.pathway_id})`)
 
     return NextResponse.json({
       success: true,
       pathway: {
         id: pathway.pathway_id,
         name: pathway.name,
-        updated_at: pathway.updated_at
+        created_at: pathway.created_at
       }
-    })
+    }, { status: 201 })
 
   } catch (error) {
-    console.error("[SAVE-FLOWCHART] Error:", error)
+    console.error("[CREATE-PATHWAY] Error:", error)
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }
