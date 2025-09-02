@@ -46,7 +46,8 @@ export function SavePathwayModal({ reactFlowData, pathwayId }: SavePathwayModalP
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    if (!name.trim()) {
+    // Only require name for NEW pathways
+    if (!pathwayId && !name.trim()) {
       toast.error("Pathway name is required")
       return
     }
@@ -139,43 +140,64 @@ export function SavePathwayModal({ reactFlowData, pathwayId }: SavePathwayModalP
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="grid grid-cols-1 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="name">Pathway Name *</Label>
-              <Input
-                id="name"
-                placeholder="e.g., Customer Support Flow"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                required
-                disabled={isLoading}
-              />
-              <p className="text-xs text-gray-500">Give your pathway a descriptive name</p>
-            </div>
+          {/* Only show name/description fields for NEW pathways */}
+          {!pathwayId && (
+            <div className="grid grid-cols-1 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="name">Pathway Name *</Label>
+                <Input
+                  id="name"
+                  placeholder="e.g., Customer Support Flow"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  required
+                  disabled={isLoading}
+                />
+                <p className="text-xs text-gray-500">Give your pathway a descriptive name</p>
+              </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="description">Description</Label>
-              <Textarea
-                id="description"
-                placeholder="Describe what this pathway does..."
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                rows={3}
-                disabled={isLoading}
-              />
-              <p className="text-xs text-gray-500">Optional description of your pathway's purpose</p>
-            </div>
+              <div className="space-y-2">
+                <Label htmlFor="description">Description</Label>
+                <Textarea
+                  id="description"
+                  placeholder="Describe what this pathway does..."
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  rows={3}
+                  disabled={isLoading}
+                />
+                <p className="text-xs text-gray-500">Optional description of your pathway's purpose</p>
+              </div>
 
-            <div className="space-y-2">
-              <Label>Phone Number</Label>
-              <Input
-                value={phoneNumber ? `+${phoneNumber}` : 'Not detected'}
-                disabled
-                className="bg-gray-50"
-              />
-              <p className="text-xs text-gray-500">This pathway will be associated with this phone number</p>
+              <div className="space-y-2">
+                <Label>Phone Number</Label>
+                <Input
+                  value={phoneNumber ? `+${phoneNumber}` : 'Not detected'}
+                  disabled
+                  className="bg-gray-50"
+                />
+                <p className="text-xs text-gray-500">This pathway will be associated with this phone number</p>
+              </div>
             </div>
-          </div>
+          )}
+
+          {/* Show simple confirmation for EXISTING pathways */}
+          {pathwayId && (
+            <div className="space-y-4">
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <div className="flex items-center space-x-2">
+                  <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                  <span className="text-sm font-medium text-blue-900">Updating Existing Pathway</span>
+                </div>
+                <p className="text-sm text-blue-700 mt-2">
+                  This will update the flowchart data for pathway <code className="bg-blue-100 px-1 py-0.5 rounded text-xs">{pathwayId}</code>
+                </p>
+                <p className="text-xs text-blue-600 mt-1">
+                  Name and description will remain unchanged
+                </p>
+              </div>
+            </div>
+          )}
 
           <div className="space-y-4">
             <div className="flex items-center justify-between">
@@ -216,7 +238,7 @@ export function SavePathwayModal({ reactFlowData, pathwayId }: SavePathwayModalP
             </Button>
             <Button 
               type="submit" 
-              disabled={isLoading || !name.trim() || (!pathwayId && !phoneNumber)}
+              disabled={isLoading || (!pathwayId && (!name.trim() || !phoneNumber))}
               className="bg-blue-600 hover:bg-blue-700"
             >
               {isLoading ? (
