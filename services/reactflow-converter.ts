@@ -11,6 +11,7 @@ export interface BlandEdge {
   id: string
   source: string
   target: string
+  type?: string
   data?: any
 }
 
@@ -38,11 +39,12 @@ export function convertReactFlowToBland(reactFlowData: ReactFlowData): BlandFlow
     data: node.data
   }))
 
-  // Clean edges - remove UI-specific properties and color
+  // Clean edges - remove UI-specific properties and color, but keep type: "custom"
   const cleanEdges: BlandEdge[] = reactFlowData.edges.map(edge => ({
     id: edge.id,
     source: edge.source,
     target: edge.target,
+    type: "custom",
     ...(edge.data && { 
       data: {
         label: edge.data.label,
