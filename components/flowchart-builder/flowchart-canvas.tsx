@@ -97,9 +97,8 @@ export function FlowchartCanvas({ phoneNumber, pathwayInfo }: FlowchartCanvasPro
             // Ensure all edges have the required type: 'custom' for ReactFlow
             const edgesWithType = flowchartData.edges.map(edge => ({
               ...edge,
-              type: edge.type || 'custom', // Ensure type is set
-              animated: edge.animated !== undefined ? edge.animated : true,
-              style: edge.style || { stroke: '#3b82f6', strokeWidth: 2 }
+              type: 'custom', // Always use custom type for edges
+              animated: edge.animated !== undefined ? edge.animated : true
             }))
 
             setNodes(flowchartData.nodes)
@@ -131,8 +130,7 @@ export function FlowchartCanvas({ phoneNumber, pathwayInfo }: FlowchartCanvasPro
         id: `edge_${params.source}_${params.target}_${Date.now()}`,
         type: 'custom',
         animated: true,
-        data: { label: 'next' },
-        style: { stroke: '#3b82f6', strokeWidth: 2 },
+        data: { label: 'next' }
       }
       setEdges((eds) => addEdge(newEdge, eds))
     },

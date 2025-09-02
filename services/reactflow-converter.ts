@@ -87,10 +87,9 @@ export function convertBlandToReactFlow(blandData: BlandFlowData): ReactFlowData
     id: edge.id,
     source: edge.source,
     target: edge.target,
-    type: 'custom', // Always ensure custom type for ReactFlow
+    type: 'custom', // Always ensure custom type for ReactFlow edges
     animated: true,
-    data: edge.data || { label: 'next' },
-    style: { stroke: '#3b82f6', strokeWidth: 2 }
+    data: edge.data || { label: 'next' }
   }))
 
   const result = {
