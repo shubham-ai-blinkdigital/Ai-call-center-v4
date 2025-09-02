@@ -1,3 +1,4 @@
+
 import { NextRequest, NextResponse } from "next/server"
 import { cookies } from "next/headers"
 import { validateAuthToken } from "@/lib/auth-utils"
@@ -21,7 +22,7 @@ export async function POST(request: NextRequest) {
 
     const userId = authResult.user.id
     const body = await request.json()
-    const { pathwayId, flowchartData, name } = body
+    const { pathwayId, flowchartData } = body
 
     if (!pathwayId || !flowchartData) {
       return NextResponse.json({ 
@@ -31,13 +32,13 @@ export async function POST(request: NextRequest) {
 
     console.log(`[SAVE-FLOWCHART] Saving pathway ${pathwayId} for user ${userId}`)
 
-    // Update the pathway
+    // Update ONLY the flowchart_data - mirror the load logic approach
     const updateResult = await executeQuery(`
       UPDATE pathways 
-      SET name = COALESCE($1, name), flowchart_data = $2, updated_at = NOW()
-      WHERE pathway_id = $3 AND creator_id = $4
+      SET flowchart_data = $1, updated_at = NOW()
+      WHERE pathway_id = $2 AND creator_id = $3
       RETURNING pathway_id, name, updated_at
-    `, [name?.trim() || null, JSON.stringify(flowchartData), pathwayId, userId])
+    `, [JSON.stringify(flowchartData), pathwayId, userId])
 
     if (updateResult.length === 0) {
       return NextResponse.json({ 

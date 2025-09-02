@@ -1,4 +1,3 @@
-
 'use client'
 
 import React, { useState } from 'react'
@@ -29,7 +28,7 @@ export function SavePathwayModal({ reactFlowData, pathwayId }: SavePathwayModalP
   const [showPreview, setShowPreview] = useState(false)
   const router = useRouter()
   const pathname = usePathname()
-  
+
   // Form fields
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
@@ -46,7 +45,7 @@ export function SavePathwayModal({ reactFlowData, pathwayId }: SavePathwayModalP
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    
+
     if (!name.trim()) {
       toast.error("Pathway name is required")
       return
@@ -67,11 +66,10 @@ export function SavePathwayModal({ reactFlowData, pathwayId }: SavePathwayModalP
     try {
       // Choose endpoint based on whether we have a pathwayId
       const endpoint = pathwayId ? '/api/pathways/save-flowchart' : '/api/pathways/create'
-      
+
       const payload = pathwayId 
         ? {
             pathwayId,
-            name: name.trim(),
             flowchartData: convertedData,
           }
         : {
@@ -96,12 +94,12 @@ export function SavePathwayModal({ reactFlowData, pathwayId }: SavePathwayModalP
       }
 
       toast.success(pathwayId ? "Pathway updated successfully!" : "Pathway saved successfully!")
-      
+
       // Reset form
       setName('')
       setDescription('')
       setIsOpen(false)
-      
+
       // Optionally refresh the page to show updated data
       router.refresh()
 
@@ -139,7 +137,7 @@ export function SavePathwayModal({ reactFlowData, pathwayId }: SavePathwayModalP
             {pathwayId ? 'Update Pathway' : `Save Pathway for ${phoneNumber ? `+${phoneNumber}` : 'Phone Number'}`}
           </DialogTitle>
         </DialogHeader>
-        
+
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="grid grid-cols-1 gap-4">
             <div className="space-y-2">
