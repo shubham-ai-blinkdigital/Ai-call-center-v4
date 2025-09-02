@@ -88,26 +88,15 @@ export function FlowchartCanvas({ phoneNumber, pathwayInfo }: FlowchartCanvasPro
         if (result.success && result.pathway && result.pathway.flowchart_data) {
           const flowchartData = result.pathway.flowchart_data
 
-          console.log('[FLOWCHART-CANVAS] Setting loaded flowchart data:', flowchartData)
-
-          // Validate the data structure
-          if (flowchartData.nodes && Array.isArray(flowchartData.nodes) && 
-              flowchartData.edges && Array.isArray(flowchartData.edges)) {
-
-            // Ensure all edges have the required type: 'custom' for ReactFlow
-            const edgesWithType = flowchartData.edges.map(edge => ({
-              ...edge,
-              type: 'custom', // Always use custom type for edges
-              animated: edge.animated !== undefined ? edge.animated : true
-            }))
-
-            setNodes(flowchartData.nodes)
-            setEdges(edgesWithType)
+          // Convert Bland format back to ReactFlow format
+          if (flowchartData.nodes && flowchartData.edges) {
+            const reactFlowData = convertBlandToReactFlow(flowchartData)
+            setNodes(reactFlowData.nodes)
+            setEdges(reactFlowData.edges)
 
             toast.success(`Loaded saved pathway: ${result.pathway.name}`)
           } else {
-            console.error('[FLOWCHART-CANVAS] Invalid flowchart data structure:', flowchartData)
-            toast.error('Invalid flowchart data structure')
+            console.log('[FLOWCHART-CANVAS] No flowchart data found, starting with empty canvas')
           }
         } else {
           console.log('[FLOWCHART-CANVAS] No pathway data found or failed to load')
@@ -130,7 +119,8 @@ export function FlowchartCanvas({ phoneNumber, pathwayInfo }: FlowchartCanvasPro
         id: `edge_${params.source}_${params.target}_${Date.now()}`,
         type: 'custom',
         animated: true,
-        data: { label: 'next' }
+        data: { label: 'next' },
+        style: { stroke: '#3b82f6', strokeWidth: 2 },
       }
       setEdges((eds) => addEdge(newEdge, eds))
     },
