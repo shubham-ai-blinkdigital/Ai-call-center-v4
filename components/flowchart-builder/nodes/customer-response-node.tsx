@@ -2,7 +2,7 @@
 
 import React from 'react'
 import { Handle, Position, NodeProps } from 'reactflow'
-import { MessageSquare, Edit3, Trash2, Copy } from 'lucide-react'
+import { MessageSquare, Edit3, Trash2, Copy, Pencil } from 'lucide-react'
 
 interface CustomerResponseNodeData {
   text: string
@@ -12,8 +12,8 @@ interface CustomerResponseNodeData {
   intentDescription?: string
 }
 
-export function CustomerResponseNode({ data, selected, onEdit, onDelete, onDuplicate }: { 
-  data: any; 
+export function CustomerResponseNode({ data, selected, onEdit, onDelete, onDuplicate }: {
+  data: any;
   selected?: boolean;
   onEdit?: () => void;
   onDelete?: () => void;
@@ -44,25 +44,24 @@ export function CustomerResponseNode({ data, selected, onEdit, onDelete, onDupli
           style={{ background: '#555' }}
         />
       </div>
-      
+
       {/* Action Icons */}
       {selected && (
         <div className="absolute -right-12 top-0 flex flex-col gap-1 z-10">
           <button
             onClick={(e) => {
-              e.stopPropagation();
-              console.log('🎯 [CUSTOMER-RESPONSE-NODE] Edit button clicked');
-              onEdit?.();
+              e.stopPropagation()
+              onEdit?.()
             }}
-            className="w-8 h-8 bg-blue-500 hover:bg-blue-600 text-white rounded-full flex items-center justify-center shadow-md transition-colors"
-            title="Edit"
+            className="p-2 hover:bg-blue-100 rounded-full transition-colors bg-white shadow-sm border border-gray-200"
+            title="Edit node"
           >
-            <Edit3 className="w-4 h-4" />
+            <Pencil className="w-4 h-4 text-blue-600" />
           </button>
           <button
             onClick={(e) => {
-              e.stopPropagation();
-              onDelete?.();
+              e.stopPropagation()
+              onDelete?.()
             }}
             className="w-8 h-8 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center shadow-md transition-colors"
             title="Delete"
@@ -71,8 +70,8 @@ export function CustomerResponseNode({ data, selected, onEdit, onDelete, onDupli
           </button>
           <button
             onClick={(e) => {
-              e.stopPropagation();
-              onDuplicate?.();
+              e.stopPropagation()
+              onDuplicate?.()
             }}
             className="w-8 h-8 bg-green-500 hover:bg-green-600 text-white rounded-full flex items-center justify-center shadow-md transition-colors"
             title="Duplicate"

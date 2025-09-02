@@ -2,7 +2,7 @@
 
 import React from 'react'
 import { Handle, Position, NodeProps } from 'reactflow'
-import { MessageCircle, Edit3, Trash2, Copy } from 'lucide-react'
+import { MessageCircle, Edit3, Trash2, Copy, Pencil } from 'lucide-react'
 
 interface GreetingNodeData {
   text: string
@@ -31,19 +31,19 @@ export function GreetingNode({ data, selected, onEdit, onDelete, onDuplicate }: 
         </div>
         <Handle type="source" position={Position.Bottom} className="w-3 h-3" />
       </div>
-      
+
       {/* Action Icons */}
       {selected && (
         <div className="absolute -right-12 top-0 flex flex-col gap-1 z-10">
           <button
             onClick={(e) => {
-              e.stopPropagation();
-              onEdit?.();
+              e.stopPropagation()
+              onEdit?.()
             }}
-            className="w-8 h-8 bg-blue-500 hover:bg-blue-600 text-white rounded-full flex items-center justify-center shadow-md transition-colors"
-            title="Edit"
+            className="p-2 hover:bg-blue-100 rounded-full transition-colors bg-white shadow-sm border border-gray-200"
+            title="Edit node"
           >
-            <Edit3 className="w-4 h-4" />
+            <Pencil className="w-4 h-4 text-blue-600" />
           </button>
           <button
             onClick={(e) => {
