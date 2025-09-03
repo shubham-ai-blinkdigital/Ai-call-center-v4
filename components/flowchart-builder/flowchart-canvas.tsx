@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useCallback, useRef, useState, useEffect, useMemo } from 'react'
+import React, { useCallback, useRef, useState, useEffect } from 'react'
 import ReactFlow, {
   MiniMap,
   Controls,
@@ -13,7 +13,6 @@ import ReactFlow, {
   Node,
   ReactFlowProvider,
   ReactFlowInstance,
-  NodeProps,
 } from 'reactflow'
 import 'reactflow/dist/style.css'
 
@@ -135,7 +134,7 @@ export function FlowchartCanvas({ phoneNumber, pathwayInfo }: FlowchartCanvasPro
 
   const onNodeClick = useCallback((event: React.MouseEvent, node: Node) => {
     setSelectedNode(node)
-    // Don't open editor automatically - let the edit icon handle it
+    setIsEditorOpen(true)
   }, [])
 
   const onPaneClick = useCallback(() => {
@@ -153,37 +152,22 @@ export function FlowchartCanvas({ phoneNumber, pathwayInfo }: FlowchartCanvasPro
     setIsEditorOpen(false)
   }, [])
 
-  const onUpdateNode = useCallback((nodeId: string, newData: any) => {
+  const onUpdateNode = useCallback((nodeId: string, updates: any) => {
     setNodes((nds) =>
       nds.map((node) =>
-        node.id === nodeId ? { ...node, data: { ...node.data, ...newData } } : node
+        node.id === nodeId
+          ? { ...node, ...updates }
+          : node
       )
     )
+
+    // Update selectedNode if it's the one being edited
+    setSelectedNode((prevSelected) =>
+      prevSelected?.id === nodeId
+        ? { ...prevSelected, ...updates }
+        : prevSelected
+    )
   }, [setNodes])
-
-  const onDeleteNode = useCallback((nodeId: string) => {
-    setNodes((nds) => nds.filter((node) => node.id !== nodeId))
-    setEdges((eds) => eds.filter((edge) => edge.source !== nodeId && edge.target !== nodeId))
-    setSelectedNode(null)
-    setIsEditorOpen(false)
-  }, [setNodes, setEdges])
-
-  const onDuplicateNode = useCallback((nodeId: string) => {
-    const nodeToDuplicate = nodes.find((node) => node.id === nodeId)
-    if (!nodeToDuplicate) return
-
-    const newNode: Node = {
-      ...nodeToDuplicate,
-      id: `${nodeToDuplicate.type}_${Date.now()}`,
-      position: {
-        x: nodeToDuplicate.position.x + 50,
-        y: nodeToDuplicate.position.y + 50,
-      },
-      selected: false,
-    }
-
-    setNodes((nds) => nds.concat(newNode))
-  }, [nodes, setNodes])
 
   const onUpdateEdge = useCallback((edgeId: string, updates: any) => {
     setEdges((eds) =>
@@ -226,7 +210,7 @@ export function FlowchartCanvas({ phoneNumber, pathwayInfo }: FlowchartCanvasPro
 
       const newNode: Node = {
         id: type === 'greetingNode' ? '1' : `${type}_${Date.now()}`,
-        type: (type === 'greetingNode' || type === 'questionNode' || type === 'customerResponseNode') ? 'Default' :
+        type: (type === 'greetingNode' || type === 'questionNode' || type === 'customerResponseNode') ? 'Default' : 
               type === 'endCallNode' ? 'End Call' : type,
         position,
         data: getDefaultNodeData(type),
@@ -280,153 +264,6 @@ export function FlowchartCanvas({ phoneNumber, pathwayInfo }: FlowchartCanvasPro
     setIsConvertedJsonOpen(true)
   }, [])
 
-  const nodeTypesWithHandlers = useMemo(
-    () => ({
-      Default: (props: NodeProps) => <CustomerResponseNode
-        {...props}
-        selected={props.selected}
-        onEdit={() => {
-          console.log('🎯 [CANVAS] Edit clicked for node:', props.id)
-          console.log('🔍 [CANVAS] Current nodes array:', nodes.map(n => ({ id: n.id, type: n.type })))
-          const node = nodes.find(n => n.id === props.id)
-          console.log('🔍 [CANVAS] Found node:', node)
-          if (node) {
-            console.log('🔧 [CANVAS] Setting selected node and opening editor...')
-            setSelectedNode(node)
-            setIsEditorOpen(true)
-            console.log('✅ [CANVAS] Editor state set - isOpen:', true, 'selectedNode:', node.id)
-          } else {
-            console.error('❌ [CANVAS] Node not found in nodes array for id:', props.id)
-          }
-        }}
-        onDelete={() => onDeleteNode(props.id)}
-        onDuplicate={() => onDuplicateNode(props.id)}
-      />,
-      'End Call': (props: NodeProps) => <EndCallNode
-        {...props}
-        selected={props.selected}
-        onEdit={() => {
-          console.log('🎯 [CANVAS] Edit clicked for node:', props.id)
-          console.log('🔍 [CANVAS] Current nodes array:', nodes.map(n => ({ id: n.id, type: n.type })))
-          const node = nodes.find(n => n.id === props.id)
-          console.log('🔍 [CANVAS] Found node:', node)
-          if (node) {
-            console.log('🔧 [CANVAS] Setting selected node and opening editor...')
-            setSelectedNode(node)
-            setIsEditorOpen(true)
-            console.log('✅ [CANVAS] Editor state set - isOpen:', true, 'selectedNode:', node.id)
-          } else {
-            console.error('❌ [CANVAS] Node not found in nodes array for id:', props.id)
-          }
-        }}
-        onDelete={() => onDeleteNode(props.id)}
-        onDuplicate={() => onDuplicateNode(props.id)}
-      />,
-      greetingNode: (props: NodeProps) => <GreetingNode
-        {...props}
-        selected={props.selected}
-        onEdit={() => {
-          console.log('🎯 [CANVAS] Edit clicked for node:', props.id)
-          console.log('🔍 [CANVAS] Current nodes array:', nodes.map(n => ({ id: n.id, type: n.type })))
-          const node = nodes.find(n => n.id === props.id)
-          console.log('🔍 [CANVAS] Found node:', node)
-          if (node) {
-            console.log('🔧 [CANVAS] Setting selected node and opening editor...')
-            setSelectedNode(node)
-            setIsEditorOpen(true)
-            console.log('✅ [CANVAS] Editor state set - isOpen:', true, 'selectedNode:', node.id)
-          } else {
-            console.error('❌ [CANVAS] Node not found in nodes array for id:', props.id)
-          }
-        }}
-        onDelete={() => onDeleteNode(props.id)}
-        onDuplicate={() => onDuplicateNode(props.id)}
-      />,
-      questionNode: (props: NodeProps) => <QuestionNode
-        {...props}
-        selected={props.selected}
-        onEdit={() => {
-          console.log('🎯 [CANVAS] Edit clicked for node:', props.id)
-          console.log('🔍 [CANVAS] Current nodes array:', nodes.map(n => ({ id: n.id, type: n.type })))
-          const node = nodes.find(n => n.id === props.id)
-          console.log('🔍 [CANVAS] Found node:', node)
-          if (node) {
-            console.log('🔧 [CANVAS] Setting selected node and opening editor...')
-            setSelectedNode(node)
-            setIsEditorOpen(true)
-            console.log('✅ [CANVAS] Editor state set - isOpen:', true, 'selectedNode:', node.id)
-          } else {
-            console.error('❌ [CANVAS] Node not found in nodes array for id:', props.id)
-          }
-        }}
-        onDelete={() => onDeleteNode(props.id)}
-        onDuplicate={() => onDuplicateNode(props.id)}
-      />,
-      customerResponseNode: (props: NodeProps) => <CustomerResponseNode
-        {...props}
-        selected={props.selected}
-        onEdit={() => {
-          console.log('🎯 [CANVAS] Edit clicked for node:', props.id)
-          console.log('🔍 [CANVAS] Current nodes array:', nodes.map(n => ({ id: n.id, type: n.type })))
-          const node = nodes.find(n => n.id === props.id)
-          console.log('🔍 [CANVAS] Found node:', node)
-          if (node) {
-            console.log('🔧 [CANVAS] Setting selected node and opening editor...')
-            setSelectedNode(node)
-            setIsEditorOpen(true)
-            console.log('✅ [CANVAS] Editor state set - isOpen:', true, 'selectedNode:', node.id)
-          } else {
-            console.error('❌ [CANVAS] Node not found in nodes array for id:', props.id)
-          }
-        }}
-        onDelete={() => onDeleteNode(props.id)}
-        onDuplicate={() => onDuplicateNode(props.id)}
-      />,
-      transferNode: (props: NodeProps) => <TransferNode
-        {...props}
-        selected={props.selected}
-        onEdit={() => {
-          console.log('🎯 [CANVAS] Edit clicked for node:', props.id)
-          console.log('🔍 [CANVAS] Current nodes array:', nodes.map(n => ({ id: n.id, type: n.type })))
-          const node = nodes.find(n => n.id === props.id)
-          console.log('🔍 [CANVAS] Found node:', node)
-          if (node) {
-            console.log('🔧 [CANVAS] Setting selected node and opening editor...')
-            setSelectedNode(node)
-            setIsEditorOpen(true)
-            console.log('✅ [CANVAS] Editor state set - isOpen:', true, 'selectedNode:', node.id)
-          } else {
-            console.error('❌ [CANVAS] Node not found in nodes array for id:', props.id)
-          }
-        }}
-        onDelete={() => onDeleteNode(props.id)}
-        onDuplicate={() => onDuplicateNode(props.id)}
-      />,
-      endCallNode: (props: NodeProps) => <EndCallNode
-        {...props}
-        selected={props.selected}
-        onEdit={() => {
-          console.log('🎯 [CANVAS] Edit clicked for node:', props.id)
-          console.log('🔍 [CANVAS] Current nodes array:', nodes.map(n => ({ id: n.id, type: n.type })))
-          const node = nodes.find(n => n.id === props.id)
-          console.log('🔍 [CANVAS] Found node:', node)
-          if (node) {
-            console.log('🔧 [CANVAS] Setting selected node and opening editor...')
-            setSelectedNode(node)
-            setIsEditorOpen(true)
-            console.log('✅ [CANVAS] Editor state set - isOpen:', true, 'selectedNode:', node.id)
-          } else {
-            console.error('❌ [CANVAS] Node not found in nodes array for id:', props.id)
-          }
-        }}
-        onDelete={() => onDeleteNode(props.id)}
-        onDuplicate={() => onDuplicateNode(props.id)}
-      />,
-    }),
-    [nodes, onDeleteNode, onDuplicateNode, setSelectedNode, setIsEditorOpen],
-  )
-
-
   return (
     <>
       <div className="w-full h-full relative" ref={reactFlowWrapper}>
@@ -440,14 +277,14 @@ export function FlowchartCanvas({ phoneNumber, pathwayInfo }: FlowchartCanvasPro
         )}
         {/* Floating Buttons */}
         <div className="absolute top-4 right-4 z-10 flex gap-2">
-          <SavePathwayModal
+          <SavePathwayModal 
               reactFlowData={{ nodes, edges }}
               pathwayId={pathwayInfo?.pathway_id}
             />
 
           <Dialog open={isJsonPreviewOpen} onOpenChange={setIsJsonPreviewOpen}>
             <DialogTrigger asChild>
-              <Button
+              <Button 
                 onClick={handleJsonPreview}
                 className="bg-green-600 hover:bg-green-700 text-white shadow-lg"
                 size="sm"
@@ -478,7 +315,7 @@ export function FlowchartCanvas({ phoneNumber, pathwayInfo }: FlowchartCanvasPro
 
           <Dialog open={isConvertedJsonOpen} onOpenChange={setIsConvertedJsonOpen}>
             <DialogTrigger asChild>
-              <Button
+              <Button 
                 onClick={handleConvertedJsonPreview}
                 className="bg-blue-600 hover:bg-blue-700 text-white shadow-lg"
                 size="sm"
@@ -492,7 +329,7 @@ export function FlowchartCanvas({ phoneNumber, pathwayInfo }: FlowchartCanvasPro
               </DialogHeader>
               <div className="space-y-4">
                 <div>
-                  <h3 className="font-semibold mb-2">Converted Bland.ai Format:</h3>
+                  <h3 className="font-semibold mb-2">Clean Bland.ai Format:</h3>
                   <ScrollArea className="h-96 w-full rounded-md border p-4">
                     <pre className="text-xs">
                       {JSON.stringify(convertReactFlowToBland({ nodes, edges }), null, 2)}
@@ -525,7 +362,7 @@ export function FlowchartCanvas({ phoneNumber, pathwayInfo }: FlowchartCanvasPro
           onNodeClick={onNodeClick}
           onPaneClick={onPaneClick}
           onEdgeClick={onEdgeClick}
-          nodeTypes={nodeTypesWithHandlers}
+          nodeTypes={nodeTypes}
           edgeTypes={edgeTypes}
           fitView
           className="bg-gray-50"

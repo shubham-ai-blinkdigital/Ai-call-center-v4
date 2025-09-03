@@ -18,29 +18,16 @@ interface NodeEditorDrawerProps {
 }
 
 export function NodeEditorDrawer({ isOpen, onClose, selectedNode, onUpdateNode }: NodeEditorDrawerProps) {
-  console.log('🔄 [NODE-EDITOR] Rendering with:', {
-    isOpen,
-    selectedNodeId: selectedNode?.id,
-    selectedNodeType: selectedNode?.type,
-    selectedNodeData: selectedNode?.data
-  })
-  
-  if (!selectedNode) {
-    console.log('❌ [NODE-EDITOR] No selected node, returning null')
-    return null
-  }
+  if (!selectedNode) return null
 
   const handleFieldChange = (field: string, value: any) => {
-    console.log('🔄 [NODE-EDITOR] Updating field:', field, 'with value:', value)
-    console.log('🔍 [NODE-EDITOR] Current node:', selectedNode)
-    
     const updates = {
-      ...selectedNode.data,
-      [field]: value
+      data: {
+        ...selectedNode.data,
+        [field]: value
+      }
     }
-    
-    console.log('📤 [NODE-EDITOR] Sending updates:', updates)
-    onUpdateNode(selectedNode.id, { data: updates })
+    onUpdateNode(selectedNode.id, updates)
   }
 
   const handleExtractVarAdd = () => {
@@ -297,7 +284,7 @@ export function NodeEditorDrawer({ isOpen, onClose, selectedNode, onUpdateNode }
   )
 
   return (
-    <Sheet key={selectedNode.id} open={isOpen} onOpenChange={onClose}>
+    <Sheet open={isOpen} onOpenChange={onClose}>
       <SheetContent side="right" className="w-96 sm:w-[400px]">
         <SheetHeader>
           <SheetTitle>Edit Node Properties</SheetTitle>
