@@ -151,6 +151,58 @@ export async function getUserWithError(request: NextRequest) {
   return { user, error: null }
 }
 
+// Get current user from cookies (for API routes without NextRequest)
+export async function getCurrentUser(): Promise<User | null> {
+  try {
+    const cookieStore = await cookies()
+    const token = cookieStore.get('auth-token')?.value
+
+    if (!token) {
+      console.log("🔍 [CURRENT-USER] No auth token found")
+      return null
+    }
+
+    console.log("🔍 [CURRENT-USER] Token found, verifying...")
+
+    // Verify JWT token
+    const decoded = jwt.verify(token, JWT_SECRET) as { userId: string }
+
+    if (!decoded.userId) {
+      console.log("❌ [CURRENT-USER] Invalid token payload")
+      return null
+    }
+
+    console.log("🔍 [CURRENT-USER] Getting user from database:", decoded.userId)
+
+    // Get user from database
+    const user = await getUserById(decoded.userId)
+
+    if (!user) {
+      console.log("❌ [CURRENT-USER] User not found in database")
+      return null
+    }
+
+    console.log("✅ [CURRENT-USER] User found:", user.email)
+
+    // Normalize user data structure
+    return {
+      id: user.id,
+      email: user.email,
+      name: user.name || 'User',
+      company: user.company || '',
+      role: user.role || 'user',
+      phoneNumber: user.phoneNumber || user.phone_number || '',
+      passwordHash: user.passwordHash || user.password_hash,
+      createdAt: user.createdAt || user.created_at,
+      updatedAt: user.updatedAt || user.updated_at,
+      lastLogin: user.lastLogin || user.last_login
+    }
+  } catch (error) {
+    console.error("❌ [CURRENT-USER] Error getting current user:", error)
+    return null
+  }
+}
+
 // Validate auth token (for API routes)
 export async function verifyJWT(token: string): Promise<{ isValid: boolean; user: any; error?: string }> {
   return validateAuthToken(token)

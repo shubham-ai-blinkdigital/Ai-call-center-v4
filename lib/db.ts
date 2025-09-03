@@ -1,4 +1,25 @@
 // Database utilities using PostgreSQL directly instead of Supabase
+import { Client } from "pg"
+
+// Database connection pool
+export const db = {
+  query: async (text: string, params?: any[]) => {
+    const client = new Client({
+      connectionString: process.env.DATABASE_URL
+    })
+    
+    try {
+      await client.connect()
+      const result = await client.query(text, params)
+      return result
+    } catch (error) {
+      console.error('Database query error:', error)
+      throw error
+    } finally {
+      await client.end()
+    }
+  }
+}
 
 export async function testDatabaseConnection() {
   try {

@@ -7,6 +7,7 @@ import { Phone, BarChart3, Settings, TrendingUp, Activity, Zap, RefreshCw } from
 import Link from "next/link"
 import { RecentFlows } from "@/components/recent-flows"
 import { useUserCallData } from "@/hooks/use-user-call-data"
+import { Wallet } from "lucide-react"
 
 export default function DashboardPage() {
   const { user, loading } = useAuth()
@@ -19,6 +20,40 @@ export default function DashboardPage() {
     lastUpdated,
     refetch,
   } = useUserCallData()
+
+  // Wallet balance state
+  const [walletBalance, setWalletBalance] = useState<string>("$0.00")
+  const [walletLoading, setWalletLoading] = useState(false)
+
+  // Fetch wallet balance
+  const fetchWalletBalance = async () => {
+    if (!user?.id) return
+    
+    try {
+      setWalletLoading(true)
+      const response = await fetch('/api/wallet/balance', {
+        credentials: 'include'
+      })
+      
+      if (response.ok) {
+        const data = await response.json()
+        setWalletBalance(`$${data.balance_dollars}`)
+      } else {
+        console.error('Failed to fetch wallet balance')
+      }
+    } catch (error) {
+      console.error('Error fetching wallet balance:', error)
+    } finally {
+      setWalletLoading(false)
+    }
+  }
+
+  // Fetch wallet balance on component mount
+  useEffect(() => {
+    if (user?.id) {
+      fetchWalletBalance()
+    }
+  }, [user?.id])
 
   // Calculate metrics from call data
   const calculateMetrics = () => {
@@ -213,6 +248,27 @@ export default function DashboardPage() {
                 <div className="text-2xl font-bold text-gray-900">{userPhoneNumber ? "1" : "0"}</div>
               )}
               <p className="text-xs text-gray-500 mt-1">{userPhoneNumber ? "1 purchased" : "No numbers yet"}</p>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-white shadow-sm border-0 hover:shadow-md transition-shadow">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-gray-600">Wallet Balance</CardTitle>
+              <div className="h-8 w-8 bg-green-100 rounded-lg flex items-center justify-center">
+                <Wallet className="h-4 w-4 text-green-600" />
+              </div>
+            </CardHeader>
+            <CardContent>
+              {walletLoading ? (
+                <div className="h-8 w-20 bg-gray-200 animate-pulse rounded"></div>
+              ) : (
+                <div className="text-2xl font-bold text-gray-900">{walletBalance}</div>
+              )}
+              <p className="text-xs text-gray-500 mt-1">
+                <Link href="/dashboard/billing" className="text-blue-600 hover:underline">
+                  Manage billing
+                </Link>
+              </p>
             </CardContent>
           </Card>
         </div>
