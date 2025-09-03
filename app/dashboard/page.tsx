@@ -306,6 +306,7 @@ export default function DashboardPage() {
       </div>
     </div>
   )
+}
 }</old_str>
   )
 }
