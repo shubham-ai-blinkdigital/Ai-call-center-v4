@@ -2,20 +2,24 @@
 
 import React from 'react'
 import { Handle, Position, NodeProps } from 'reactflow'
-import { MessageSquare, Pencil } from 'lucide-react'
+import { MessageSquare, Pencil, Trash2 } from 'lucide-react'
 
 interface CustomerResponseNodeData {
+  name: string
   text: string
-  options?: string[]
-  responses?: string[]
-  variableName?: string
-  intentDescription?: string
 }
 
-export function CustomerResponseNode({ data, selected, onEdit }: { data: any; selected?: boolean; onEdit?: () => void }) {
+export function CustomerResponseNode({ data, selected, onEdit, onDelete }: { data: any; selected?: boolean; onEdit?: () => void; onDelete?: () => void }) {
   const handleEdit = (e: React.MouseEvent) => {
     e.stopPropagation()
     onEdit?.()
+  }
+
+  const handleDelete = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    if (window.confirm('Are you sure you want to delete this node?')) {
+      onDelete?.()
+    }
   }
 
   return (
@@ -29,7 +33,15 @@ export function CustomerResponseNode({ data, selected, onEdit }: { data: any; se
       >
         <Pencil className="w-3 h-3 text-gray-600" />
       </button>
-      
+
+      {/* Trash Icon - appears on hover */}
+      <button
+        onClick={handleDelete}
+        className="absolute -top-1 -right-9 p-1 bg-white rounded-full shadow-md border border-gray-200 opacity-0 group-hover:opacity-100 transition-opacity duration-200 hover:bg-gray-50 z-10"
+      >
+        <Trash2 className="w-3 h-3 text-red-600" />
+      </button>
+
       <div className="flex items-center space-x-2">
         <MessageSquare className="w-4 h-4 text-yellow-600" />
         <div className="font-bold text-yellow-800">

@@ -65,15 +65,31 @@ export function FlowchartCanvas({ phoneNumber, pathwayInfo }: FlowchartCanvasPro
     setIsEditorOpen(true)
   }, [])
 
+  const onDeleteNode = useCallback((nodeId: string) => {
+    // Remove the node
+    setNodes((nds) => nds.filter((node) => node.id !== nodeId))
+    
+    // Remove all connected edges
+    setEdges((eds) => eds.filter((edge) => edge.source !== nodeId && edge.target !== nodeId))
+    
+    // Close any open editors if this node was selected
+    setSelectedNode((prevSelected) => 
+      prevSelected?.id === nodeId ? null : prevSelected
+    )
+    if (selectedNode?.id === nodeId) {
+      setIsEditorOpen(false)
+    }
+  }, [setNodes, setEdges, selectedNode])
+
   const nodeTypes = useMemo(() => ({
-    greetingNode: (props: any) => <GreetingNode {...props} onEdit={() => onEditNode(props)} />,
-    Default: (props: any) => <CustomerResponseNode {...props} onEdit={() => onEditNode(props)} />,
-    questionNode: (props: any) => <QuestionNode {...props} onEdit={() => onEditNode(props)} />,
-    customerResponseNode: (props: any) => <CustomerResponseNode {...props} onEdit={() => onEditNode(props)} />,
-    endCallNode: (props: any) => <EndCallNode {...props} onEdit={() => onEditNode(props)} />,
-    'End Call': (props: any) => <EndCallNode {...props} onEdit={() => onEditNode(props)} />,
-    transferNode: (props: any) => <TransferNode {...props} onEdit={() => onEditNode(props)} />,
-  }), [onEditNode])
+    greetingNode: (props: any) => <GreetingNode {...props} onEdit={() => onEditNode(props)} onDelete={() => onDeleteNode(props.id)} />,
+    Default: (props: any) => <CustomerResponseNode {...props} onEdit={() => onEditNode(props)} onDelete={() => onDeleteNode(props.id)} />,
+    questionNode: (props: any) => <QuestionNode {...props} onEdit={() => onEditNode(props)} onDelete={() => onDeleteNode(props.id)} />,
+    customerResponseNode: (props: any) => <CustomerResponseNode {...props} onEdit={() => onEditNode(props)} onDelete={() => onDeleteNode(props.id)} />,
+    endCallNode: (props: any) => <EndCallNode {...props} onEdit={() => onEditNode(props)} onDelete={() => onDeleteNode(props.id)} />,
+    'End Call': (props: any) => <EndCallNode {...props} onEdit={() => onEditNode(props)} onDelete={() => onDeleteNode(props.id)} />,
+    transferNode: (props: any) => <TransferNode {...props} onEdit={() => onEditNode(props)} onDelete={() => onDeleteNode(props.id)} />,
+  }), [onEditNode, onDeleteNode])
 
   // Load saved flowchart data when component mounts
   useEffect(() => {
