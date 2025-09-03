@@ -54,8 +54,8 @@ export async function POST(req: Request) {
         },
         quantity: 1
       }],
-      success_url: `${origin}/billing?success=1`,
-      cancel_url:  `${origin}/billing?canceled=1`,
+      success_url: `${origin}/dashboard/billing?success=1`,
+      cancel_url:  `${origin}/dashboard/billing?canceled=1`,
       metadata: { user_id: userId }
     });
 
