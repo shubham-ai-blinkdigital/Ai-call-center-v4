@@ -13,9 +13,6 @@ import { useRouter } from "next/navigation"
 import { ScrollArea } from "@/components/ui/scroll-area"
 
 import TopUpStripeButton from "@/components/TopUpStripeButton"
-import AddFundsButton from "@/components/AddFundsButton"
-
-// Mock AddFundsButton for demonstration purposes
 
 
 
@@ -164,16 +161,7 @@ export default function BillingPage() {
     })
   }
 
-  const handleBalanceUpdate = (amount: string) => {
-    // In a real app, this would involve a more complex state update and possibly API calls
-    const currentBalance = parseFloat(balance.replace("$", ""));
-    const addedAmount = parseFloat(amount.replace("$", ""));
-    setBalance(`$${(currentBalance + addedAmount).toFixed(2)}`);
-    toast({
-      title: "Funds Added",
-      description: `Successfully added ${amount} to your balance.`,
-    });
-  };
+  
 
 
   if (loading) {
@@ -221,30 +209,13 @@ export default function BillingPage() {
               <CardContent>
                 <div className="text-2xl font-bold">{balance}</div>
 
-                <div className="space-y-4">
-                  <div>
-                    <h4 className="font-medium mb-2">Add Funds via Credit Card</h4>
-                    <div className="grid grid-cols-2 gap-2 mb-2">
-                      <TopUpStripeButton amount={25} />
-                      <TopUpStripeButton amount={50} />
-                    </div>
-                    <div className="grid grid-cols-2 gap-2">
-                      <TopUpStripeButton amount={100} />
-                      <TopUpStripeButton amount={250} />
-                    </div>
-                  </div>
-
-                  <div>
-                    <h4 className="font-medium mb-2">Add Funds via PayPal</h4>
-                    <div className="grid grid-cols-2 gap-2 mb-2">
-                      <AddFundsButton amount={25} onBalanceUpdate={handleBalanceUpdate} />
-                      <AddFundsButton amount={50} onBalanceUpdate={handleBalanceUpdate} />
-                    </div>
-                    <div className="grid grid-cols-2 gap-2">
-                      <AddFundsButton amount={100} onBalanceUpdate={handleBalanceUpdate} />
-                      <AddFundsButton amount={250} onBalanceUpdate={handleBalanceUpdate} />
-                    </div>
-                  </div>
+                <div className="grid grid-cols-2 gap-2 mb-2">
+                  <TopUpStripeButton amount={25} />
+                  <TopUpStripeButton amount={50} />
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <TopUpStripeButton amount={100} />
+                  <TopUpStripeButton amount={250} />
                 </div>
               </CardContent>
             </Card>
