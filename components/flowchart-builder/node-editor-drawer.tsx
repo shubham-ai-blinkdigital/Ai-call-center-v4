@@ -18,7 +18,12 @@ interface NodeEditorDrawerProps {
 }
 
 export function NodeEditorDrawer({ isOpen, onClose, selectedNode, onUpdateNode }: NodeEditorDrawerProps) {
-  console.log('🔄 [NODE-EDITOR] Rendering with node:', selectedNode?.id, selectedNode?.data)
+  console.log('🔄 [NODE-EDITOR] Rendering with:', {
+    isOpen,
+    selectedNodeId: selectedNode?.id,
+    selectedNodeType: selectedNode?.type,
+    selectedNodeData: selectedNode?.data
+  })
   
   if (!selectedNode) {
     console.log('❌ [NODE-EDITOR] No selected node, returning null')

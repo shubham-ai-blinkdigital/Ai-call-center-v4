@@ -51,6 +51,8 @@ export function CustomerResponseNode({ data, selected, onEdit, onDelete, onDupli
           <button
             onClick={(e) => {
               e.stopPropagation()
+              e.preventDefault()
+              console.log('🖊️ [CUSTOMER-RESPONSE-NODE] Pencil clicked!')
               onEdit?.()
             }}
             className="p-2 hover:bg-blue-100 rounded-full transition-colors bg-white shadow-sm border border-gray-200"

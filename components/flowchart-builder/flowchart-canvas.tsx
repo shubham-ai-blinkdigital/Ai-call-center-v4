@@ -226,7 +226,7 @@ export function FlowchartCanvas({ phoneNumber, pathwayInfo }: FlowchartCanvasPro
 
       const newNode: Node = {
         id: type === 'greetingNode' ? '1' : `${type}_${Date.now()}`,
-        type: (type === 'greetingNode' || type === 'questionNode' || type === 'customerResponseNode') ? 'Default' : 
+        type: (type === 'greetingNode' || type === 'questionNode' || type === 'customerResponseNode') ? 'Default' :
               type === 'endCallNode' ? 'End Call' : type,
         position,
         data: getDefaultNodeData(type),
@@ -282,127 +282,141 @@ export function FlowchartCanvas({ phoneNumber, pathwayInfo }: FlowchartCanvasPro
 
   const nodeTypesWithHandlers = useMemo(
     () => ({
-      Default: (props: NodeProps) => <CustomerResponseNode 
-        {...props} 
+      Default: (props: NodeProps) => <CustomerResponseNode
+        {...props}
         selected={props.selected}
         onEdit={() => {
           console.log('🎯 [CANVAS] Edit clicked for node:', props.id)
+          console.log('🔍 [CANVAS] Current nodes array:', nodes.map(n => ({ id: n.id, type: n.type })))
           const node = nodes.find(n => n.id === props.id)
           console.log('🔍 [CANVAS] Found node:', node)
           if (node) {
+            console.log('🔧 [CANVAS] Setting selected node and opening editor...')
             setSelectedNode(node)
             setIsEditorOpen(true)
-            console.log('✅ [CANVAS] Editor opened for node:', node.id)
+            console.log('✅ [CANVAS] Editor state set - isOpen:', true, 'selectedNode:', node.id)
           } else {
-            console.error('❌ [CANVAS] Node not found:', props.id)
+            console.error('❌ [CANVAS] Node not found in nodes array for id:', props.id)
           }
         }}
         onDelete={() => onDeleteNode(props.id)}
         onDuplicate={() => onDuplicateNode(props.id)}
       />,
-      'End Call': (props: NodeProps) => <EndCallNode 
-        {...props} 
-        selected={props.selected} 
+      'End Call': (props: NodeProps) => <EndCallNode
+        {...props}
+        selected={props.selected}
         onEdit={() => {
           console.log('🎯 [CANVAS] Edit clicked for node:', props.id)
+          console.log('🔍 [CANVAS] Current nodes array:', nodes.map(n => ({ id: n.id, type: n.type })))
           const node = nodes.find(n => n.id === props.id)
           console.log('🔍 [CANVAS] Found node:', node)
           if (node) {
+            console.log('🔧 [CANVAS] Setting selected node and opening editor...')
             setSelectedNode(node)
             setIsEditorOpen(true)
-            console.log('✅ [CANVAS] Editor opened for node:', node.id)
+            console.log('✅ [CANVAS] Editor state set - isOpen:', true, 'selectedNode:', node.id)
           } else {
-            console.error('❌ [CANVAS] Node not found:', props.id)
+            console.error('❌ [CANVAS] Node not found in nodes array for id:', props.id)
           }
         }}
         onDelete={() => onDeleteNode(props.id)}
         onDuplicate={() => onDuplicateNode(props.id)}
       />,
-      greetingNode: (props: NodeProps) => <GreetingNode 
-        {...props} 
+      greetingNode: (props: NodeProps) => <GreetingNode
+        {...props}
         selected={props.selected}
         onEdit={() => {
           console.log('🎯 [CANVAS] Edit clicked for node:', props.id)
+          console.log('🔍 [CANVAS] Current nodes array:', nodes.map(n => ({ id: n.id, type: n.type })))
           const node = nodes.find(n => n.id === props.id)
           console.log('🔍 [CANVAS] Found node:', node)
           if (node) {
+            console.log('🔧 [CANVAS] Setting selected node and opening editor...')
             setSelectedNode(node)
             setIsEditorOpen(true)
-            console.log('✅ [CANVAS] Editor opened for node:', node.id)
+            console.log('✅ [CANVAS] Editor state set - isOpen:', true, 'selectedNode:', node.id)
           } else {
-            console.error('❌ [CANVAS] Node not found:', props.id)
+            console.error('❌ [CANVAS] Node not found in nodes array for id:', props.id)
           }
         }}
         onDelete={() => onDeleteNode(props.id)}
         onDuplicate={() => onDuplicateNode(props.id)}
       />,
-      questionNode: (props: NodeProps) => <QuestionNode 
-        {...props} 
+      questionNode: (props: NodeProps) => <QuestionNode
+        {...props}
         selected={props.selected}
         onEdit={() => {
           console.log('🎯 [CANVAS] Edit clicked for node:', props.id)
+          console.log('🔍 [CANVAS] Current nodes array:', nodes.map(n => ({ id: n.id, type: n.type })))
           const node = nodes.find(n => n.id === props.id)
           console.log('🔍 [CANVAS] Found node:', node)
           if (node) {
+            console.log('🔧 [CANVAS] Setting selected node and opening editor...')
             setSelectedNode(node)
             setIsEditorOpen(true)
-            console.log('✅ [CANVAS] Editor opened for node:', node.id)
+            console.log('✅ [CANVAS] Editor state set - isOpen:', true, 'selectedNode:', node.id)
           } else {
-            console.error('❌ [CANVAS] Node not found:', props.id)
+            console.error('❌ [CANVAS] Node not found in nodes array for id:', props.id)
           }
         }}
         onDelete={() => onDeleteNode(props.id)}
         onDuplicate={() => onDuplicateNode(props.id)}
       />,
-      customerResponseNode: (props: NodeProps) => <CustomerResponseNode 
-        {...props} 
+      customerResponseNode: (props: NodeProps) => <CustomerResponseNode
+        {...props}
         selected={props.selected}
         onEdit={() => {
           console.log('🎯 [CANVAS] Edit clicked for node:', props.id)
+          console.log('🔍 [CANVAS] Current nodes array:', nodes.map(n => ({ id: n.id, type: n.type })))
           const node = nodes.find(n => n.id === props.id)
           console.log('🔍 [CANVAS] Found node:', node)
           if (node) {
+            console.log('🔧 [CANVAS] Setting selected node and opening editor...')
             setSelectedNode(node)
             setIsEditorOpen(true)
-            console.log('✅ [CANVAS] Editor opened for node:', node.id)
+            console.log('✅ [CANVAS] Editor state set - isOpen:', true, 'selectedNode:', node.id)
           } else {
-            console.error('❌ [CANVAS] Node not found:', props.id)
+            console.error('❌ [CANVAS] Node not found in nodes array for id:', props.id)
           }
         }}
         onDelete={() => onDeleteNode(props.id)}
         onDuplicate={() => onDuplicateNode(props.id)}
       />,
-      transferNode: (props: NodeProps) => <TransferNode 
-        {...props} 
+      transferNode: (props: NodeProps) => <TransferNode
+        {...props}
         selected={props.selected}
         onEdit={() => {
           console.log('🎯 [CANVAS] Edit clicked for node:', props.id)
+          console.log('🔍 [CANVAS] Current nodes array:', nodes.map(n => ({ id: n.id, type: n.type })))
           const node = nodes.find(n => n.id === props.id)
           console.log('🔍 [CANVAS] Found node:', node)
           if (node) {
+            console.log('🔧 [CANVAS] Setting selected node and opening editor...')
             setSelectedNode(node)
             setIsEditorOpen(true)
-            console.log('✅ [CANVAS] Editor opened for node:', node.id)
+            console.log('✅ [CANVAS] Editor state set - isOpen:', true, 'selectedNode:', node.id)
           } else {
-            console.error('❌ [CANVAS] Node not found:', props.id)
+            console.error('❌ [CANVAS] Node not found in nodes array for id:', props.id)
           }
         }}
         onDelete={() => onDeleteNode(props.id)}
         onDuplicate={() => onDuplicateNode(props.id)}
       />,
-      endCallNode: (props: NodeProps) => <EndCallNode 
-        {...props} 
+      endCallNode: (props: NodeProps) => <EndCallNode
+        {...props}
         selected={props.selected}
         onEdit={() => {
           console.log('🎯 [CANVAS] Edit clicked for node:', props.id)
+          console.log('🔍 [CANVAS] Current nodes array:', nodes.map(n => ({ id: n.id, type: n.type })))
           const node = nodes.find(n => n.id === props.id)
           console.log('🔍 [CANVAS] Found node:', node)
           if (node) {
+            console.log('🔧 [CANVAS] Setting selected node and opening editor...')
             setSelectedNode(node)
             setIsEditorOpen(true)
-            console.log('✅ [CANVAS] Editor opened for node:', node.id)
+            console.log('✅ [CANVAS] Editor state set - isOpen:', true, 'selectedNode:', node.id)
           } else {
-            console.error('❌ [CANVAS] Node not found:', props.id)
+            console.error('❌ [CANVAS] Node not found in nodes array for id:', props.id)
           }
         }}
         onDelete={() => onDeleteNode(props.id)}
@@ -426,14 +440,14 @@ export function FlowchartCanvas({ phoneNumber, pathwayInfo }: FlowchartCanvasPro
         )}
         {/* Floating Buttons */}
         <div className="absolute top-4 right-4 z-10 flex gap-2">
-          <SavePathwayModal 
+          <SavePathwayModal
               reactFlowData={{ nodes, edges }}
               pathwayId={pathwayInfo?.pathway_id}
             />
 
           <Dialog open={isJsonPreviewOpen} onOpenChange={setIsJsonPreviewOpen}>
             <DialogTrigger asChild>
-              <Button 
+              <Button
                 onClick={handleJsonPreview}
                 className="bg-green-600 hover:bg-green-700 text-white shadow-lg"
                 size="sm"
@@ -464,7 +478,7 @@ export function FlowchartCanvas({ phoneNumber, pathwayInfo }: FlowchartCanvasPro
 
           <Dialog open={isConvertedJsonOpen} onOpenChange={setIsConvertedJsonOpen}>
             <DialogTrigger asChild>
-              <Button 
+              <Button
                 onClick={handleConvertedJsonPreview}
                 className="bg-blue-600 hover:bg-blue-700 text-white shadow-lg"
                 size="sm"
@@ -478,7 +492,7 @@ export function FlowchartCanvas({ phoneNumber, pathwayInfo }: FlowchartCanvasPro
               </DialogHeader>
               <div className="space-y-4">
                 <div>
-                  <h3 className="font-semibold mb-2">Clean Bland.ai Format:</h3>
+                  <h3 className="font-semibold mb-2">Converted Bland.ai Format:</h3>
                   <ScrollArea className="h-96 w-full rounded-md border p-4">
                     <pre className="text-xs">
                       {JSON.stringify(convertReactFlowToBland({ nodes, edges }), null, 2)}

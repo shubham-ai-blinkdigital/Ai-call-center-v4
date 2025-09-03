@@ -40,6 +40,8 @@ export function QuestionNode({ data, selected, onEdit, onDelete, onDuplicate }: 
           <button
             onClick={(e) => {
               e.stopPropagation()
+              e.preventDefault()
+              console.log('🖊️ [QUESTION-NODE] Pencil clicked!')
               onEdit?.()
             }}
             className="p-2 hover:bg-blue-100 rounded-full transition-colors bg-white shadow-sm border border-gray-200"
