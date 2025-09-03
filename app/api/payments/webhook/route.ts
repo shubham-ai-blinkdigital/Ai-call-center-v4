@@ -1,4 +1,3 @@
-
 import { NextResponse } from 'next/server'
 import { stripe } from '../../../../lib/stripeClient'
 import { db } from '../../../../lib/db'
@@ -56,111 +55,85 @@ export async function POST(req: Request) {
         console.log('Processing payment for user:', userId, 'amount:', amount)
 
         try {
-          // Insert payment record
-          const paymentResponse = await fetch('/api/database/records', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              table: 'payments',
-              data: {
-                gateway: 'stripe',
-                gateway_payment_id: session.id,
-                amount_cents: amount,
-                status: 'succeeded',
-                user_id: userId,
-                created_at: new Date().toISOString(),
-                updated_at: new Date().toISOString()
-              }
-            })
-          })
+          // Insert payment record using direct database query
+          const paymentResult = await db.query(`
+            INSERT INTO payments (gateway, gateway_payment_id, amount_cents, status, user_id, created_at, updated_at)
+            VALUES ($1, $2, $3, $4, $5, $6, $7)
+            RETURNING id
+          `, [
+            'stripe',
+            session.id,
+            amount,
+            'succeeded',
+            userId,
+            new Date().toISOString(),
+            new Date().toISOString()
+          ])
 
-          if (!paymentResponse.ok) {
-            console.error('Failed to insert payment record:', await paymentResponse.text())
-            break
-          }
+          console.log('✅ Payment record created:', paymentResult.rows[0]?.id)
 
-          // Find or create wallet
-          const walletResponse = await fetch(`/api/database/records?table=wallets&user_id=${userId}`)
+          // Find or create wallet using direct database query
+          const existingWallet = await db.query(
+            'SELECT id, balance_cents FROM wallets WHERE user_id = $1',
+            [userId]
+          )
+
           let walletId
+          let newBalance
 
-          if (walletResponse.ok) {
-            const walletData = await walletResponse.json()
-            const existingWallet = walletData.records?.[0]
-            
-            if (existingWallet) {
-              walletId = existingWallet.id
-              
-              // Update existing wallet balance
-              const updateResponse = await fetch('/api/database/records', {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                  table: 'wallets',
-                  id: walletId,
-                  data: {
-                    balance_cents: existingWallet.balance_cents + amount,
-                    updated_at: new Date().toISOString()
-                  }
-                })
-              })
+          if (existingWallet.rows.length > 0) {
+            // Update existing wallet balance
+            walletId = existingWallet.rows[0].id
+            const currentBalance = existingWallet.rows[0].balance_cents || 0
+            newBalance = currentBalance + amount
 
-              if (!updateResponse.ok) {
-                console.error('Failed to update wallet balance:', await updateResponse.text())
-                break
-              }
-            } else {
-              // Create new wallet
-              const createWalletResponse = await fetch('/api/database/records', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                  table: 'wallets',
-                  data: {
-                    user_id: userId,
-                    balance_cents: amount,
-                    created_at: new Date().toISOString(),
-                    updated_at: new Date().toISOString()
-                  }
-                })
-              })
+            await db.query(`
+              UPDATE wallets 
+              SET balance_cents = $1, updated_at = $2 
+              WHERE id = $3
+            `, [newBalance, new Date().toISOString(), walletId])
 
-              if (!createWalletResponse.ok) {
-                console.error('Failed to create wallet:', await createWalletResponse.text())
-                break
-              }
+            console.log('✅ Updated wallet balance:', walletId, 'new balance:', newBalance)
+          } else {
+            // Create new wallet
+            const newWalletResult = await db.query(`
+              INSERT INTO wallets (user_id, balance_cents, created_at, updated_at)
+              VALUES ($1, $2, $3, $4)
+              RETURNING id
+            `, [
+              userId,
+              amount,
+              new Date().toISOString(),
+              new Date().toISOString()
+            ])
 
-              const newWallet = await createWalletResponse.json()
-              walletId = newWallet.record?.id
-            }
+            walletId = newWalletResult.rows[0].id
+            newBalance = amount
+            console.log('✅ Created new wallet:', walletId, 'balance:', newBalance)
           }
 
-          // Insert wallet transaction
+          // Insert wallet transaction using direct database query
           if (walletId) {
-            const transactionResponse = await fetch('/api/database/records', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                table: 'wallet_transactions',
-                data: {
-                  wallet_id: walletId,
-                  amount_cents: amount,
-                  type: 'top_up',
-                  gateway: 'stripe',
-                  provider_txn_id: session.payment_intent,
-                  created_at: new Date().toISOString()
-                }
-              })
-            })
+            const transactionResult = await db.query(`
+              INSERT INTO wallet_transactions (wallet_id, amount_cents, type, gateway, provider_txn_id, created_at)
+              VALUES ($1, $2, $3, $4, $5, $6)
+              RETURNING id
+            `, [
+              walletId,
+              amount,
+              'top_up',
+              'stripe',
+              session.payment_intent,
+              new Date().toISOString()
+            ])
 
-            if (!transactionResponse.ok) {
-              console.error('Failed to insert wallet transaction:', await transactionResponse.text())
-            }
+            console.log('✅ Wallet transaction created:', transactionResult.rows[0]?.id)
           }
 
-          console.log(`Successfully processed Stripe payment: ${session.id} for user ${userId}, amount: $${amount / 100}`)
+          console.log(`✅ Successfully processed Stripe payment: ${session.id} for user ${userId}, amount: $${amount / 100}`)
 
         } catch (error) {
-          console.error('Error processing checkout.session.completed:', error)
+          console.error('❌ Error processing checkout.session.completed:', error)
         }
         break
 
@@ -171,7 +144,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ received: true })
 
   } catch (error) {
-    console.error('Error processing Stripe webhook:', error)
+    console.error('❌ Error processing Stripe webhook:', error)
     return NextResponse.json(
       { error: 'Webhook processing failed' },
       { status: 500 }
