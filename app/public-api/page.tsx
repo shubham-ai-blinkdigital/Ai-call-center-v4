@@ -1,12 +1,51 @@
 
+"use client"
+
 import { Metadata } from 'next'
 
-export const metadata: Metadata = {
-  title: 'Public API Documentation - getPurchaseNumber',
-  description: 'Documentation for the getPurchaseNumber API endpoint',
-}
-
 export default function PublicApiDocumentationPage() {
+  const handleTestApi = () => {
+    const email = (document.getElementById('test-email') as HTMLInputElement).value;
+    const resultDiv = document.getElementById('test-result');
+    
+    if (!email) {
+      if (resultDiv) resultDiv.innerHTML = '<div style="color: #ef4444; padding: 15px; background: #fef2f2; border: 1px solid #fca5a5; border-radius: 8px;"><strong>Error:</strong> Please enter an email address</div>';
+      return;
+    }
+    
+    if (resultDiv) resultDiv.innerHTML = '<div style="color: #3b82f6; padding: 15px; background: #f0f9ff; border: 1px solid #7dd3fc; border-radius: 8px;">🔄 Testing API...</div>';
+    
+    fetch(`/Public_api/getPurchaseNumber?email=${encodeURIComponent(email)}`)
+      .then(response => response.json())
+      .then(data => {
+        if (resultDiv) {
+          resultDiv.innerHTML = `
+            <div style="padding: 15px; background: #f0f9ff; border: 1px solid #7dd3fc; border-radius: 8px;">
+              <h4 style="margin: 0 0 10px 0; color: #1e40af;">API Response:</h4>
+              <pre style="background: #1e293b; color: #f8fafc; padding: 15px; border-radius: 6px; overflow-x: auto; font-size: 14px; margin: 0;">${JSON.stringify(data, null, 2)}</pre>
+            </div>
+          `;
+        }
+      })
+      .catch(error => {
+        if (resultDiv) {
+          resultDiv.innerHTML = `
+            <div style="color: #ef4444; padding: 15px; background: #fef2f2; border: 1px solid #fca5a5; border-radius: 8px;">
+              <strong>Error:</strong> ${error.message}
+            </div>
+          `;
+        }
+      });
+  };
+
+  const handleMouseOver = (e: React.MouseEvent<HTMLButtonElement>) => {
+    (e.target as HTMLButtonElement).style.backgroundColor = '#2563eb';
+  };
+
+  const handleMouseOut = (e: React.MouseEvent<HTMLButtonElement>) => {
+    (e.target as HTMLButtonElement).style.backgroundColor = '#3b82f6';
+  };
+
   return (
     <html lang="en">
       <head>
@@ -473,39 +512,7 @@ getPurchaseNumbers("user@example.com").then(numbers => {
               <br />
               <button 
                 id="test-btn"
-                onClick={() => {
-                  const email = (document.getElementById('test-email') as HTMLInputElement).value;
-                  const resultDiv = document.getElementById('test-result');
-                  
-                  if (!email) {
-                    if (resultDiv) resultDiv.innerHTML = '<div style="color: #ef4444; padding: 15px; background: #fef2f2; border: 1px solid #fca5a5; border-radius: 8px;"><strong>Error:</strong> Please enter an email address</div>';
-                    return;
-                  }
-                  
-                  if (resultDiv) resultDiv.innerHTML = '<div style="color: #3b82f6; padding: 15px; background: #f0f9ff; border: 1px solid #7dd3fc; border-radius: 8px;">🔄 Testing API...</div>';
-                  
-                  fetch(`/Public_api/getPurchaseNumber?email=${encodeURIComponent(email)}`)
-                    .then(response => response.json())
-                    .then(data => {
-                      if (resultDiv) {
-                        resultDiv.innerHTML = `
-                          <div style="padding: 15px; background: #f0f9ff; border: 1px solid #7dd3fc; border-radius: 8px;">
-                            <h4 style="margin: 0 0 10px 0; color: #1e40af;">API Response:</h4>
-                            <pre style="background: #1e293b; color: #f8fafc; padding: 15px; border-radius: 6px; overflow-x: auto; font-size: 14px; margin: 0;">${JSON.stringify(data, null, 2)}</pre>
-                          </div>
-                        `;
-                      }
-                    })
-                    .catch(error => {
-                      if (resultDiv) {
-                        resultDiv.innerHTML = `
-                          <div style="color: #ef4444; padding: 15px; background: #fef2f2; border: 1px solid #fca5a5; border-radius: 8px;">
-                            <strong>Error:</strong> ${error.message}
-                          </div>
-                        `;
-                      }
-                    });
-                }}
+                onClick={handleTestApi}
                 style={{
                   background: '#3b82f6',
                   color: 'white',
@@ -517,8 +524,8 @@ getPurchaseNumbers("user@example.com").then(numbers => {
                   cursor: 'pointer',
                   transition: 'background-color 0.2s'
                 }}
-                onMouseOver={(e) => e.target.style.backgroundColor = '#2563eb'}
-                onMouseOut={(e) => e.target.style.backgroundColor = '#3b82f6'}
+                onMouseOver={handleMouseOver}
+                onMouseOut={handleMouseOut}
               >
                 Test API
               </button>
