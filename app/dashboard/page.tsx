@@ -201,7 +201,7 @@ export default function DashboardPage() {
 
           <Card className="bg-white shadow-sm border-0 hover:shadow-md transition-shadow">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-gray-600">Phone Numbers</CardTitle>
+              <CardTitle className="text-sm font-medium text-gray-600">Purchased Numbers</CardTitle>
               <div className="h-8 w-8 bg-orange-100 rounded-lg flex items-center justify-center">
                 <Settings className="h-4 w-4 text-orange-600" />
               </div>
@@ -212,7 +212,7 @@ export default function DashboardPage() {
               ) : (
                 <div className="text-2xl font-bold text-gray-900">{userPhoneNumber ? "1" : "0"}</div>
               )}
-              <p className="text-xs text-gray-500 mt-1">{userPhoneNumber ? "1 active" : "No numbers yet"}</p>
+              <p className="text-xs text-gray-500 mt-1">{userPhoneNumber ? "1 purchased" : "No numbers yet"}</p>
             </CardContent>
           </Card>
         </div>
