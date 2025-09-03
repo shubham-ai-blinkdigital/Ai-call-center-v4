@@ -15,7 +15,7 @@ export default function PublicApiDocumentationPage() {
     
     if (resultDiv) resultDiv.innerHTML = '<div style="color: #3b82f6; padding: 15px; background: #f0f9ff; border: 1px solid #7dd3fc; border-radius: 8px;">🔄 Testing API...</div>';
     
-    fetch(`/Public_api/getPurchaseNumber?email=${encodeURIComponent(email)}`)
+    fetch(`/api/Public_api/getPurchaseNumber?email=${encodeURIComponent(email)}`)
       .then(response => response.json())
       .then(data => {
         if (resultDiv) {
@@ -47,8 +47,8 @@ export default function PublicApiDocumentationPage() {
   };
 
   return (
-    <html lang="en">
-      <head>
+    <div>
+      <div style={{display: 'none'}}>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <title>Public API Documentation - getPurchaseNumber</title>
@@ -203,8 +203,8 @@ export default function PublicApiDocumentationPage() {
             }
           `
         }} />
-      </head>
-      <body>
+      </div>
+      <div>
         <div className="container">
           <h1>📚 Public API Documentation</h1>
           
@@ -242,7 +242,7 @@ export default function PublicApiDocumentationPage() {
           
           <h3>JavaScript/Fetch</h3>
           <pre>{`const email = "user@example.com";
-const response = await fetch(\`/Public_api/getPurchaseNumber?email=\${encodeURIComponent(email)}\`);
+const response = await fetch(\`/api/Public_api/getPurchaseNumber?email=\${encodeURIComponent(email)}\`);
 const data = await response.json();
 
 if (data.success) {
@@ -537,7 +537,7 @@ getPurchaseNumbers("user@example.com").then(numbers => {
           <h2>🆘 Support</h2>
           <p>If you encounter any issues or have questions about this API, please contact our support team or check the server logs for detailed error information.</p>
         </div>
-      </body>
-    </html>
+      </div>
+    </div>
   )
 }
