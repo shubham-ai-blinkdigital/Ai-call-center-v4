@@ -1,9 +1,6 @@
 import { NextResponse } from 'next/server'
-import { db } from '../../../../lib/replit-db-server'
 import { paypalClient } from '../../../../lib/paypalClient'
-
-// Mocking the PayPal client for demonstration purposes if it's not actually imported
-// In a real scenario, ensure paypalClient is correctly configured and imported.
+import paypal from '@paypal/checkout-server-sdk'
 
 export async function POST(req) {
   try {
@@ -19,7 +16,6 @@ export async function POST(req) {
     }
 
     const userId = user.id
-
     const { orderID } = await req.json()
 
     if (!orderID) {
@@ -29,31 +25,141 @@ export async function POST(req) {
       )
     }
 
-    // Fetch the order details from PayPal using the orderID
-    // This part requires the actual paypalClient to be correctly set up and imported.
-    // The following is a placeholder structure.
-    const orderDetails = await paypalClient.captureOrder(orderID) // Assuming paypalClient has a captureOrder method
+    // Capture the order using PayPal SDK
+    const captureRequest = new paypal.orders.OrdersCaptureRequest(orderID)
+    const response = await paypalClient.execute(captureRequest)
+    const captureDetails = response.result
 
-    // Example of how you might interact with replit-db-server
-    // This is a placeholder for storing payment or order information
-    // await db.set(`payment_${orderID}`, {
-    //   userId: userId,
-    //   orderID: orderID,
-    //   paypalDetails: orderDetails,
-    //   timestamp: new Date().toISOString(),
-    // })
+    console.log('PayPal capture response:', captureDetails)
 
-    // Check if the payment was successful (this depends on paypalClient response)
-    const isPaid = orderDetails.status === 'COMPLETED' // Example check
+    // Check if the payment was successful
+    if (captureDetails.status === 'COMPLETED') {
+      // Extract amount from the captured order
+      const amountValue = parseFloat(captureDetails.purchase_units[0].payments.captures[0].amount.value)
+      const amountCents = Math.round(amountValue * 100) // Convert to cents
 
-    if (isPaid) {
-      // Update your application's state, e.g., mark order as paid in your database
-      // await db.set(`order_${orderID}_status`, 'paid')
+      // Insert payment record
+      const paymentResponse = await fetch('/api/database/records', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          table: 'payments',
+          data: {
+            gateway: 'paypal',
+            gateway_payment_id: orderID,
+            amount_cents: amountCents,
+            status: 'succeeded',
+            user_id: userId,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          }
+        })
+      })
 
-      return NextResponse.json({ message: 'Payment captured successfully', orderDetails })
+      if (!paymentResponse.ok) {
+        console.error('Failed to insert payment record:', await paymentResponse.text())
+        return NextResponse.json(
+          { error: 'Failed to record payment' },
+          { status: 500 }
+        )
+      }
+
+      // Find or create wallet
+      const walletResponse = await fetch(`/api/database/records?table=wallets&user_id=${userId}`)
+      let walletId
+      let currentBalance = 0
+
+      if (walletResponse.ok) {
+        const walletData = await walletResponse.json()
+        if (walletData.length > 0) {
+          walletId = walletData[0].id
+          currentBalance = walletData[0].balance_cents || 0
+        }
+      }
+
+      // Create wallet if it doesn't exist
+      if (!walletId) {
+        const createWalletResponse = await fetch('/api/database/records', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            table: 'wallets',
+            data: {
+              user_id: userId,
+              balance_cents: 0,
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString()
+            }
+          })
+        })
+
+        if (!createWalletResponse.ok) {
+          console.error('Failed to create wallet:', await createWalletResponse.text())
+          return NextResponse.json(
+            { error: 'Failed to create wallet' },
+            { status: 500 }
+          )
+        }
+
+        const walletResult = await createWalletResponse.json()
+        walletId = walletResult.id
+        currentBalance = 0
+      }
+
+      // Update wallet balance
+      const newBalance = currentBalance + amountCents
+      const updateWalletResponse = await fetch('/api/database/records', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          table: 'wallets',
+          id: walletId,
+          data: {
+            balance_cents: newBalance,
+            updated_at: new Date().toISOString()
+          }
+        })
+      })
+
+      if (!updateWalletResponse.ok) {
+        console.error('Failed to update wallet balance:', await updateWalletResponse.text())
+        return NextResponse.json(
+          { error: 'Failed to update wallet' },
+          { status: 500 }
+        )
+      }
+
+      // Insert wallet transaction
+      const transactionResponse = await fetch('/api/database/records', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          table: 'wallet_transactions',
+          data: {
+            wallet_id: walletId,
+            amount_cents: amountCents,
+            type: 'top_up',
+            gateway: 'paypal',
+            provider_txn_id: orderID,
+            created_at: new Date().toISOString()
+          }
+        })
+      })
+
+      if (!transactionResponse.ok) {
+        console.error('Failed to insert wallet transaction:', await transactionResponse.text())
+      }
+
+      console.log(`✅ PayPal payment captured and wallet updated: ${userId}, amount: $${amountValue}, new balance: ${newBalance} cents`)
+
+      return NextResponse.json({
+        message: 'Payment captured successfully',
+        balance_cents: newBalance,
+        orderDetails: captureDetails
+      })
     } else {
       return NextResponse.json(
-        { error: 'Payment could not be captured' },
+        { error: 'Payment could not be captured', status: captureDetails.status },
         { status: 400 }
       )
     }
@@ -66,7 +172,7 @@ export async function POST(req) {
   }
 }
 
-// Placeholder for GET request if needed, e.g., to check order status
+// GET request to check order status
 export async function GET(req) {
   try {
     const { searchParams } = new URL(req.url)
@@ -80,13 +186,15 @@ export async function GET(req) {
     }
 
     // Fetch order details from PayPal
-    // const orderDetails = await paypalClient.getOrder(orderID); // Assuming paypalClient has a getOrder method
+    const orderRequest = new paypal.orders.OrdersGetRequest(orderID)
+    const response = await paypalClient.execute(orderRequest)
+    const orderDetails = response.result
 
-    // For now, let's just return a mock response or data from replit-db if available
-    // const paymentData = await db.get(`payment_${orderID}`)
-
-    // Placeholder response
-    return NextResponse.json({ message: `Status check for order ${orderID} would go here.` })
+    return NextResponse.json({
+      orderID: orderDetails.id,
+      status: orderDetails.status,
+      details: orderDetails
+    })
 
   } catch (error) {
     console.error('Error checking PayPal order status:', error)
