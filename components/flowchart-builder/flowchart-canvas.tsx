@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useCallback, useRef, useState, useEffect } from 'react'
+import React, { useCallback, useRef, useState, useEffect, useMemo } from 'react'
 import ReactFlow, {
   MiniMap,
   Controls,
@@ -34,15 +34,15 @@ import { convertReactFlowToBland, convertBlandToReactFlow } from '../../services
 import { UpdatePathwayModal } from './update-pathway-modal'
 import { SavePathwayModal } from './save-pathway-modal'
 
-const nodeTypes = {
-  greetingNode: GreetingNode,
-  Default: CustomerResponseNode, // Map 'Default' to CustomerResponseNode for Bland.ai compatibility
-  questionNode: QuestionNode,
-  customerResponseNode: CustomerResponseNode,
-  endCallNode: EndCallNode,
-  'End Call': EndCallNode, // Map 'End Call' to EndCallNode for Bland.ai compatibility
-  transferNode: TransferNode,
-}
+const nodeTypes = useMemo(() => ({
+    greetingNode: (props: any) => <GreetingNode {...props} onEdit={() => onEditNode(props)} />,
+    Default: (props: any) => <CustomerResponseNode {...props} onEdit={() => onEditNode(props)} />,
+    questionNode: (props: any) => <QuestionNode {...props} onEdit={() => onEditNode(props)} />,
+    customerResponseNode: (props: any) => <CustomerResponseNode {...props} onEdit={() => onEditNode(props)} />,
+    endCallNode: (props: any) => <EndCallNode {...props} onEdit={() => onEditNode(props)} />,
+    'End Call': (props: any) => <EndCallNode {...props} onEdit={() => onEditNode(props)} />,
+    transferNode: (props: any) => <TransferNode {...props} onEdit={() => onEditNode(props)} />,
+  }), [onEditNode])
 
 const initialNodes: Node[] = []
 const initialEdges: Edge[] = []
@@ -132,7 +132,7 @@ export function FlowchartCanvas({ phoneNumber, pathwayInfo }: FlowchartCanvasPro
     event.dataTransfer.dropEffect = 'move'
   }, [])
 
-  const onNodeClick = useCallback((event: React.MouseEvent, node: Node) => {
+  const onEditNode = useCallback((node: Node) => {
     setSelectedNode(node)
     setIsEditorOpen(true)
   }, [])
@@ -359,7 +359,6 @@ export function FlowchartCanvas({ phoneNumber, pathwayInfo }: FlowchartCanvasPro
           onInit={setReactFlowInstance}
           onDrop={onDrop}
           onDragOver={onDragOver}
-          onNodeClick={onNodeClick}
           onPaneClick={onPaneClick}
           onEdgeClick={onEdgeClick}
           nodeTypes={nodeTypes}
