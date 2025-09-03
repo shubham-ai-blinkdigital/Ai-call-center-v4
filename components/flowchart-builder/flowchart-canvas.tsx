@@ -34,16 +34,6 @@ import { convertReactFlowToBland, convertBlandToReactFlow } from '../../services
 import { UpdatePathwayModal } from './update-pathway-modal'
 import { SavePathwayModal } from './save-pathway-modal'
 
-const nodeTypes = useMemo(() => ({
-    greetingNode: (props: any) => <GreetingNode {...props} onEdit={() => onEditNode(props)} />,
-    Default: (props: any) => <CustomerResponseNode {...props} onEdit={() => onEditNode(props)} />,
-    questionNode: (props: any) => <QuestionNode {...props} onEdit={() => onEditNode(props)} />,
-    customerResponseNode: (props: any) => <CustomerResponseNode {...props} onEdit={() => onEditNode(props)} />,
-    endCallNode: (props: any) => <EndCallNode {...props} onEdit={() => onEditNode(props)} />,
-    'End Call': (props: any) => <EndCallNode {...props} onEdit={() => onEditNode(props)} />,
-    transferNode: (props: any) => <TransferNode {...props} onEdit={() => onEditNode(props)} />,
-  }), [onEditNode])
-
 const initialNodes: Node[] = []
 const initialEdges: Edge[] = []
 
@@ -69,6 +59,21 @@ export function FlowchartCanvas({ phoneNumber, pathwayInfo }: FlowchartCanvasPro
   const [isJsonPreviewOpen, setIsJsonPreviewOpen] = useState(false)
   const [isConvertedJsonOpen, setIsConvertedJsonOpen] = useState(false)
   const [isLoadingFlowchart, setIsLoadingFlowchart] = useState(false)
+
+  const onEditNode = useCallback((node: Node) => {
+    setSelectedNode(node)
+    setIsEditorOpen(true)
+  }, [])
+
+  const nodeTypes = useMemo(() => ({
+    greetingNode: (props: any) => <GreetingNode {...props} onEdit={() => onEditNode(props)} />,
+    Default: (props: any) => <CustomerResponseNode {...props} onEdit={() => onEditNode(props)} />,
+    questionNode: (props: any) => <QuestionNode {...props} onEdit={() => onEditNode(props)} />,
+    customerResponseNode: (props: any) => <CustomerResponseNode {...props} onEdit={() => onEditNode(props)} />,
+    endCallNode: (props: any) => <EndCallNode {...props} onEdit={() => onEditNode(props)} />,
+    'End Call': (props: any) => <EndCallNode {...props} onEdit={() => onEditNode(props)} />,
+    transferNode: (props: any) => <TransferNode {...props} onEdit={() => onEditNode(props)} />,
+  }), [onEditNode])
 
   // Load saved flowchart data when component mounts
   useEffect(() => {
@@ -130,11 +135,6 @@ export function FlowchartCanvas({ phoneNumber, pathwayInfo }: FlowchartCanvasPro
   const onDragOver = useCallback((event: React.DragEvent) => {
     event.preventDefault()
     event.dataTransfer.dropEffect = 'move'
-  }, [])
-
-  const onEditNode = useCallback((node: Node) => {
-    setSelectedNode(node)
-    setIsEditorOpen(true)
   }, [])
 
   const onPaneClick = useCallback(() => {
