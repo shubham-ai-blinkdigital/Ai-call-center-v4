@@ -449,6 +449,84 @@ getPurchaseNumbers("user@example.com").then(numbers => {
           <h2>📝 Rate Limiting</h2>
           <p>Currently, no rate limiting is implemented. Please use this API responsibly to ensure optimal performance for all users.</p>
 
+          <h2>🧪 Test the API</h2>
+          <div className="endpoint-info">
+            <h3>Try it yourself</h3>
+            <p>Enter an email address to test the getPurchaseNumber endpoint:</p>
+            
+            <div style={{marginTop: '20px'}}>
+              <label htmlFor="test-email" style={{display: 'block', marginBottom: '8px', fontWeight: 'bold'}}>Email Address:</label>
+              <input 
+                type="email" 
+                id="test-email" 
+                placeholder="user@example.com"
+                style={{
+                  width: '100%',
+                  maxWidth: '400px',
+                  padding: '12px',
+                  border: '2px solid #cbd5e1',
+                  borderRadius: '8px',
+                  fontSize: '16px',
+                  marginBottom: '15px'
+                }}
+              />
+              <br />
+              <button 
+                id="test-btn"
+                onClick={() => {
+                  const email = (document.getElementById('test-email') as HTMLInputElement).value;
+                  const resultDiv = document.getElementById('test-result');
+                  
+                  if (!email) {
+                    if (resultDiv) resultDiv.innerHTML = '<div style="color: #ef4444; padding: 15px; background: #fef2f2; border: 1px solid #fca5a5; border-radius: 8px;"><strong>Error:</strong> Please enter an email address</div>';
+                    return;
+                  }
+                  
+                  if (resultDiv) resultDiv.innerHTML = '<div style="color: #3b82f6; padding: 15px; background: #f0f9ff; border: 1px solid #7dd3fc; border-radius: 8px;">🔄 Testing API...</div>';
+                  
+                  fetch(`/Public_api/getPurchaseNumber?email=${encodeURIComponent(email)}`)
+                    .then(response => response.json())
+                    .then(data => {
+                      if (resultDiv) {
+                        resultDiv.innerHTML = `
+                          <div style="padding: 15px; background: #f0f9ff; border: 1px solid #7dd3fc; border-radius: 8px;">
+                            <h4 style="margin: 0 0 10px 0; color: #1e40af;">API Response:</h4>
+                            <pre style="background: #1e293b; color: #f8fafc; padding: 15px; border-radius: 6px; overflow-x: auto; font-size: 14px; margin: 0;">${JSON.stringify(data, null, 2)}</pre>
+                          </div>
+                        `;
+                      }
+                    })
+                    .catch(error => {
+                      if (resultDiv) {
+                        resultDiv.innerHTML = `
+                          <div style="color: #ef4444; padding: 15px; background: #fef2f2; border: 1px solid #fca5a5; border-radius: 8px;">
+                            <strong>Error:</strong> ${error.message}
+                          </div>
+                        `;
+                      }
+                    });
+                }}
+                style={{
+                  background: '#3b82f6',
+                  color: 'white',
+                  border: 'none',
+                  padding: '12px 24px',
+                  borderRadius: '8px',
+                  fontSize: '16px',
+                  fontWeight: 'bold',
+                  cursor: 'pointer',
+                  transition: 'background-color 0.2s'
+                }}
+                onMouseOver={(e) => e.target.style.backgroundColor = '#2563eb'}
+                onMouseOut={(e) => e.target.style.backgroundColor = '#3b82f6'}
+              >
+                Test API
+              </button>
+            </div>
+            
+            <div id="test-result" style={{marginTop: '20px'}}></div>
+          </div>
+
           <h2>🆘 Support</h2>
           <p>If you encounter any issues or have questions about this API, please contact our support team or check the server logs for detailed error information.</p>
         </div>
