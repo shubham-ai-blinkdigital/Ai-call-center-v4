@@ -1,4 +1,3 @@
-
 import { NextResponse } from "next/server"
 import { 
   createUserRecord,
@@ -129,7 +128,7 @@ export async function POST(request: Request) {
           phone_number: data.phone_number || null,
           passwordHash
         })
-        
+
         // Remove password hash from response
         const { passwordHash: _, ...safeRecord } = record
         record = safeRecord
@@ -297,7 +296,7 @@ export async function DELETE(request: Request) {
         const usersIndex = await db.get('index:users') || []
         const updatedUsersIndex = usersIndex.filter((userId: string) => userId !== id)
         await db.set('index:users', updatedUsersIndex)
-        
+
         // Remove email lookup
         if (existingRecord.email) {
           await db.delete(`users:email:${existingRecord.email}`)

@@ -5,6 +5,14 @@ import { getCurrentUser } from '@/lib/auth-utils'
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
+function getOrigin(req: Request) {
+  // Works behind Replit/Vercel proxies
+  const proto = req.headers.get('x-forwarded-proto') ?? 'https';
+  const host  = req.headers.get('x-forwarded-host')  // Replit
+            ?? req.headers.get('host');              // Fallback
+  return `${proto}://${host}`;
+}
+
 export async function POST(req: Request) {
   try {
     const body = await req.json().catch(() => ({}));
@@ -15,7 +23,7 @@ export async function POST(req: Request) {
     }
 
     const amountCents = Math.round(amount * 100);
-    const origin = new URL(req.url).origin; // robust on Replit
+    const origin = getOrigin(req); // <-- use dynamic origin detection
 
     // Get authenticated user
     const user = await getCurrentUser()

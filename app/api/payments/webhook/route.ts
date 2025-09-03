@@ -44,9 +44,16 @@ export async function POST(req: Request) {
 
         // Validate required data
         if (!userId || !amount) {
-          console.log('Missing userId or amount in checkout.session.completed:', { userId, amount })
+          console.error('Missing userId or amount in checkout.session.completed:', { 
+            userId, 
+            amount, 
+            sessionId: session.id,
+            metadata: session.metadata 
+          })
           break
         }
+
+        console.log('Processing payment for user:', userId, 'amount:', amount)
 
         try {
           // Insert payment record
