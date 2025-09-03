@@ -305,6 +305,7 @@ export default function DashboardPage() {
         </Card>
       </div>
     </div>
-  )</old_str>
+  )
+}</old_str>
   )
 }
