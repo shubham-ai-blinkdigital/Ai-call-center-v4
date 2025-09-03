@@ -423,7 +423,7 @@ export function FlowchartCanvas({ phoneNumber, pathwayInfo }: FlowchartCanvasPro
         onDuplicate={() => onDuplicateNode(props.id)}
       />,
     }),
-    [nodes, onDeleteNode, onDuplicateNode],
+    [nodes, onDeleteNode, onDuplicateNode, setSelectedNode, setIsEditorOpen],
   )
 
 
