@@ -1,8 +1,8 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Button } from './ui/button'
 import { loadStripe } from '@stripe/stripe-js'
 
-export default function TopUpStripeButton({ amount = 50 }) {
+export default function TopUpStripeButton({ amount, onSuccess }) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
 
@@ -36,7 +36,7 @@ export default function TopUpStripeButton({ amount = 50 }) {
         console.log('Redirecting to Stripe URL:', url)
         console.log('URL type:', typeof url)
         console.log('URL length:', url.length)
-        
+
         // Try different redirect methods
         try {
           window.location.href = url
@@ -75,6 +75,19 @@ export default function TopUpStripeButton({ amount = 50 }) {
       setLoading(false)
     }
   }
+
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search)
+    if (urlParams.get('success') === '1') {
+      alert('Payment successful! Your wallet will be updated shortly.')
+      // Call onSuccess callback to refresh balance
+      if (onSuccess) {
+        setTimeout(() => {
+          onSuccess()
+        }, 1000) // Give webhook a moment to process
+      }
+    }
+  }, [onSuccess])
 
   if (error) {
     return (

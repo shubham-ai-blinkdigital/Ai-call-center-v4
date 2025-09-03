@@ -73,16 +73,41 @@ export default function BillingPage() {
   const [transactions, setTransactions] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState("")
-  const [balance, setBalance] = useState("$25.00")
+  const [balance, setBalance] = useState("$0.00")
+  const [balanceLoading, setBalanceLoading] = useState(false)
   const { toast } = useToast()
   const router = useRouter()
 
+  const fetchWalletBalance = async () => {
+    try {
+      setBalanceLoading(true)
+      const response = await fetch('/api/wallet/balance')
+      
+      if (response.ok) {
+        const data = await response.json()
+        setBalance(`$${data.balance_dollars}`)
+      } else {
+        console.error('Failed to fetch wallet balance')
+        setError("Failed to load wallet balance")
+      }
+    } catch (err) {
+      console.error('Error fetching wallet balance:', err)
+      setError("Failed to load wallet balance")
+    } finally {
+      setBalanceLoading(false)
+    }
+  }
+
   useEffect(() => {
-    // In a real app, you would fetch this data from your API
+    // Fetch billing data and wallet balance
     const fetchBillingData = async () => {
       try {
         setLoading(true)
-        // Simulate API call
+        
+        // Fetch wallet balance
+        await fetchWalletBalance()
+        
+        // Simulate API call for other data
         await new Promise((resolve) => setTimeout(resolve, 1000))
 
         setSubscriptions(mockSubscriptions)
@@ -207,15 +232,34 @@ export default function BillingPage() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{balance}</div>
+                <div className="flex items-center justify-between mb-4">
+                  <div className="text-2xl font-bold">
+                    {balanceLoading ? (
+                      <div className="flex items-center space-x-2">
+                        <Loader2 className="h-5 w-5 animate-spin" />
+                        <span>Loading...</span>
+                      </div>
+                    ) : (
+                      balance
+                    )}
+                  </div>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={fetchWalletBalance}
+                    disabled={balanceLoading}
+                  >
+                    {balanceLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Refresh"}
+                  </Button>
+                </div>
 
                 <div className="grid grid-cols-2 gap-2 mb-2">
-                  <TopUpStripeButton amount={25} />
-                  <TopUpStripeButton amount={50} />
+                  <TopUpStripeButton amount={25} onSuccess={fetchWalletBalance} />
+                  <TopUpStripeButton amount={50} onSuccess={fetchWalletBalance} />
                 </div>
                 <div className="grid grid-cols-2 gap-2">
-                  <TopUpStripeButton amount={100} />
-                  <TopUpStripeButton amount={250} />
+                  <TopUpStripeButton amount={100} onSuccess={fetchWalletBalance} />
+                  <TopUpStripeButton amount={250} onSuccess={fetchWalletBalance} />
                 </div>
               </CardContent>
             </Card>

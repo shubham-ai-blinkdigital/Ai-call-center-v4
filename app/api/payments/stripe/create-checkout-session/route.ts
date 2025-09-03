@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
-import { stripe } from '../../../../../lib/stripeClient'
+import { stripe } from '@/lib/stripeClient'
+import { getCurrentUser } from '@/lib/auth-utils'
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -16,8 +17,17 @@ export async function POST(req: Request) {
     const amountCents = Math.round(amount * 100);
     const origin = new URL(req.url).origin; // robust on Replit
 
-    // TODO: replace with real authenticated user id
-    const userId = 'YOUR_TEST_USER_UUID';
+    // Get authenticated user
+    const user = await getCurrentUser()
+
+    if (!user) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      )
+    }
+
+    const userId = user.id
 
     console.log('Creating Stripe session with:', {
       amount: amountCents,
