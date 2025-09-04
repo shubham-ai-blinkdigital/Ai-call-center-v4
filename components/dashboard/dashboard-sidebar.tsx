@@ -29,9 +29,7 @@ const navigation = [
   { name: "Voices", href: "/dashboard/voices", icon: Mic },
   { name: "Call History", href: "/dashboard/call-history", icon: History },
   { name: "Phone Numbers", href: "/dashboard/phone-numbers", icon: Phone },
-  { name: "Team", href: "/dashboard/teams", icon: Users },
   { name: "Billing", href: "/dashboard/billing", icon: CreditCard },
-  { name: "Settings", href: "/dashboard/settings", icon: Settings },
 ]
 
 export function DashboardSidebar() {
