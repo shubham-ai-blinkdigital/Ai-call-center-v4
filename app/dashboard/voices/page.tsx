@@ -5,9 +5,8 @@ import { useState, useEffect, useRef } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { AlertCircle, Mic, Globe, Lock, RefreshCw, Play, Pause, Loader2 } from "lucide-react"
+import { AlertCircle, Mic, Globe, Lock, Play, Pause, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 
 interface BlandVoice {
   id: string
@@ -30,8 +29,6 @@ export default function VoicesPage() {
   const [voices, setVoices] = useState<BlandVoice[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [searchTerm, setSearchTerm] = useState("")
-  const [filteredVoices, setFilteredVoices] = useState<BlandVoice[]>([])
   const [totalAvailable, setTotalAvailable] = useState(0)
   
   // Audio preview states
@@ -61,7 +58,6 @@ export default function VoicesPage() {
       })
 
       setVoices(data.voices)
-      setFilteredVoices(data.voices)
       setTotalAvailable(data.total_available || data.voices.length)
     } catch (err) {
       console.error("Error fetching voices:", err)
@@ -184,19 +180,7 @@ export default function VoicesPage() {
     fetchVoices()
   }, [])
 
-  useEffect(() => {
-    if (!searchTerm) {
-      setFilteredVoices(voices)
-    } else {
-      const filtered = voices.filter(
-        (voice) =>
-          voice.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          voice.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          voice.tags.some((tag) => tag.toLowerCase().includes(searchTerm.toLowerCase())),
-      )
-      setFilteredVoices(filtered)
-    }
-  }, [searchTerm, voices])
+  
 
   const getTagColor = (tag: string) => {
     const lowerTag = tag.toLowerCase()
@@ -283,48 +267,26 @@ export default function VoicesPage() {
       <div className="flex-1 overflow-hidden flex flex-col">
         {!error && (
           <>
-            <div className="mb-6 flex items-center justify-between flex-shrink-0">
-              <div className="flex items-center space-x-4">
-                <Input
-                  placeholder="Search voices by name, description, or tags..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-96"
-                />
-                <span className="text-sm text-gray-500">
-                  {filteredVoices.length} of {voices.length} top voices
-                </span>
-              </div>
-              <Button
-                variant="outline"
-                onClick={fetchVoices}
-                disabled={loading}
-              >
-                <RefreshCw className={`h-4 w-4 mr-2 ${loading ? "animate-spin" : ""}`} />
-                Refresh
-              </Button>
-            </div>
+            
 
             <div className="flex-1 overflow-y-auto scrollbar-smooth pr-2">
-              {filteredVoices.length === 0 ? (
+              {voices.length === 0 ? (
                 <Card className="bg-white shadow-sm">
                   <CardContent className="py-12">
                     <div className="text-center">
                       <Mic className="h-12 w-12 text-gray-400 mx-auto mb-4" />
                       <h3 className="text-lg font-medium text-gray-900 mb-2">
-                        {searchTerm ? "No voices found" : "No voices available"}
+                        No voices available
                       </h3>
                       <p className="text-gray-500">
-                        {searchTerm
-                          ? "Try adjusting your search terms or clear the search to see all voices."
-                          : "There are no voices available at the moment."}
+                        There are no voices available at the moment.
                       </p>
                     </div>
                   </CardContent>
                 </Card>
               ) : (
                 <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 pb-6">
-                  {filteredVoices.map((voice) => (
+                  {voices.map((voice) => (
                     <Card key={voice.id} className="bg-white shadow-sm hover:shadow-md transition-shadow">
                       <CardHeader className="pb-4">
                         <div className="flex items-center justify-between">
