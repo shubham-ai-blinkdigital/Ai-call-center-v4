@@ -25,7 +25,7 @@ export async function GET(request: NextRequest) {
 
       // First, find the user by email
       const userResult = await client.query(
-        'SELECT id, email, name FROM users WHERE email = $1',
+        'SELECT id, email, "firstName", "lastName" FROM users WHERE email = $1',
         [email]
       )
 
@@ -77,7 +77,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({
         success: true,
         email: email,
-        user_name: user.name,
+        user_name: `${user.firstName || ''} ${user.lastName || ''}`.trim() || 'User',
         phoneNumbers: phoneNumbers,
         count: phoneNumbers.length
       })
