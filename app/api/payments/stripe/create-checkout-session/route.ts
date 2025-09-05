@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { stripe } from '@/lib/stripeClient'
 import { getCurrentUser } from '@/lib/auth-utils'
+import { getOrCreateStripeCustomer } from '@/lib/getOrCreateStripeCustomer'
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -37,15 +38,20 @@ export async function POST(req: Request) {
 
     const userId = user.id
 
+    // Get or create Stripe customer for this user
+    const stripeCustomerId = await getOrCreateStripeCustomer(userId)
+
     console.log('Creating Stripe session with:', {
       amount: amountCents,
       origin,
-      userId
+      userId,
+      stripeCustomerId
     });
 
     const session = await stripe.checkout.sessions.create({
       mode: 'payment',
       payment_method_types: ['card'],
+      customer: stripeCustomerId,
       line_items: [{
         price_data: {
           currency: 'usd',

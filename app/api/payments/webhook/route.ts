@@ -40,6 +40,7 @@ export async function POST(req: Request) {
 
         const amount = session.amount_total ?? 0 // cents
         const userId = session.metadata?.user_id
+        const stripeCustomerId = session.customer
 
         // Validate required data
         if (!userId || !amount) {
@@ -47,9 +48,34 @@ export async function POST(req: Request) {
             userId, 
             amount, 
             sessionId: session.id,
-            metadata: session.metadata 
+            metadata: session.metadata,
+            customer: stripeCustomerId
           })
           break
+        }
+
+        // Additional validation: verify the customer belongs to the user
+        if (stripeCustomerId) {
+          try {
+            const userResult = await db.query(
+              'SELECT stripe_customer_id FROM users WHERE id = $1',
+              [userId]
+            )
+            
+            if (userResult.rows.length > 0) {
+              const userStripeCustomerId = userResult.rows[0].stripe_customer_id
+              if (userStripeCustomerId && userStripeCustomerId !== stripeCustomerId) {
+                console.error('❌ Customer ID mismatch:', {
+                  sessionCustomer: stripeCustomerId,
+                  userCustomer: userStripeCustomerId,
+                  userId
+                })
+                break
+              }
+            }
+          } catch (error) {
+            console.error('❌ Error validating customer:', error)
+          }
         }
 
         console.log('Processing payment for user:', userId, 'amount:', amount)
