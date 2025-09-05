@@ -37,14 +37,14 @@ export async function POST(req: Request) {
       )
     }
 
-    // Read raw body as buffer first, then convert to string
+    // Read raw body as buffer - keep it as buffer for signature verification
     const buf = await req.arrayBuffer()
-    const rawBody = Buffer.from(buf).toString('utf8')
+    const rawBody = Buffer.from(buf)
 
     console.log('🔔 [WEBHOOK] Webhook signature received:', sig.substring(0, 20) + '...')
     console.log('🔔 [WEBHOOK] STRIPE_WEBHOOK_SECRET exists:', !!process.env.STRIPE_WEBHOOK_SECRET)
     console.log('🔔 [WEBHOOK] Raw body length:', rawBody.length)
-    console.log('🔔 [WEBHOOK] Raw body preview:', rawBody.substring(0, 200) + '...')
+    console.log('🔔 [WEBHOOK] Raw body type:', typeof rawBody)
     
     // Construct event
     let event: StripeType.Event
