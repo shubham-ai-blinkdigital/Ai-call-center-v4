@@ -6,7 +6,7 @@ export async function getOrCreateStripeCustomer(userId: string): Promise<string>
   try {
     // 1) Check if user already has a Stripe customer ID in our database
     const userResult = await db.query(
-      'SELECT stripe_customer_id, email, name FROM users WHERE id = $1',
+      'SELECT stripe_customer_id, email, first_name, last_name FROM users WHERE id = $1',
       [userId]
     )
 
@@ -45,7 +45,7 @@ export async function getOrCreateStripeCustomer(userId: string): Promise<string>
     
     const customer = await stripe.customers.create({
       email: user.email,
-      name: user.name || undefined,
+      name: user.first_name && user.last_name ? `${user.first_name} ${user.last_name}`.trim() : user.first_name || undefined,
       metadata: {
         userId: userId,
       },
@@ -73,7 +73,7 @@ export async function getOrCreateStripeCustomer(userId: string): Promise<string>
 export async function syncUserProfileToStripe(userId: string): Promise<void> {
   try {
     const userResult = await db.query(
-      'SELECT stripe_customer_id, email, name FROM users WHERE id = $1',
+      'SELECT stripe_customer_id, email, first_name, last_name FROM users WHERE id = $1',
       [userId]
     )
 
@@ -90,7 +90,7 @@ export async function syncUserProfileToStripe(userId: string): Promise<void> {
 
     await stripe.customers.update(user.stripe_customer_id, {
       email: user.email,
-      name: user.name || undefined,
+      name: user.first_name && user.last_name ? `${user.first_name} ${user.last_name}`.trim() : user.first_name || undefined,
     })
 
     console.log(`✅ Synced user profile to Stripe customer: ${user.stripe_customer_id}`)
