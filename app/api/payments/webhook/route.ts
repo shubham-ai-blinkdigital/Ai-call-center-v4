@@ -5,13 +5,26 @@ import type StripeType from 'stripe'
 
 export const runtime = 'nodejs'
 
+export async function GET() {
+  console.log('🔔 [WEBHOOK] GET request to webhook endpoint')
+  return NextResponse.json({ 
+    message: 'Webhook endpoint is working',
+    timestamp: new Date().toISOString(),
+    url: process.env.VERCEL_URL || 'localhost'
+  })
+}
+
 export async function POST(req: Request) {
+  console.log('🔔 [WEBHOOK] Webhook endpoint called!')
+  console.log('🔔 [WEBHOOK] Request URL:', req.url)
+  console.log('🔔 [WEBHOOK] Request method:', req.method)
+  
   try {
     // Read signature
     const sig = req.headers.get('stripe-signature')
     
     if (!sig) {
-      console.error('Missing stripe-signature header')
+      console.error('❌ [WEBHOOK] Missing stripe-signature header')
       return NextResponse.json(
         { error: 'Missing stripe-signature header' },
         { status: 400 }
@@ -22,16 +35,19 @@ export async function POST(req: Request) {
     const buf = await req.arrayBuffer()
     const rawBody = Buffer.from(buf).toString('utf8')
 
-    console.log('Webhook signature received:', sig)
-    console.log('STRIPE_WEBHOOK_SECRET exists:', !!process.env.STRIPE_WEBHOOK_SECRET)
+    console.log('🔔 [WEBHOOK] Webhook signature received:', sig.substring(0, 20) + '...')
+    console.log('🔔 [WEBHOOK] STRIPE_WEBHOOK_SECRET exists:', !!process.env.STRIPE_WEBHOOK_SECRET)
+    console.log('🔔 [WEBHOOK] Raw body length:', rawBody.length)
     
     // Construct event
     let event: StripeType.Event
     try {
       event = stripe.webhooks.constructEvent(rawBody, sig, process.env.STRIPE_WEBHOOK_SECRET!)
-      console.log('✅ Webhook signature verified successfully')
+      console.log('✅ [WEBHOOK] Webhook signature verified successfully')
+      console.log('🔔 [WEBHOOK] Event type:', event.type)
+      console.log('🔔 [WEBHOOK] Event ID:', event.id)
     } catch (err: any) {
-      console.error('❌ Webhook signature verification failed:', err.message)
+      console.error('❌ [WEBHOOK] Webhook signature verification failed:', err.message)
       return new NextResponse(`Webhook Error: ${err.message}`, { status: 400 })
     }
 
@@ -85,7 +101,7 @@ export async function POST(req: Request) {
           }
         }
 
-        console.log('Processing payment for user:', userId, 'amount:', amount)
+        console.log('🔔 [WEBHOOK] Processing payment for user:', userId, 'amount:', amount)
 
         try {
           // Insert payment record using direct database query
