@@ -261,6 +261,7 @@ export async function POST(req: Request) {
             `, [newBalance, new Date().toISOString(), walletId])
 
             console.log('✅ [WEBHOOK] Updated wallet balance:', walletId, 'new balance:', newBalance)
+            console.log('✅ [WEBHOOK] Balance update result:', updateResult.rowCount, 'rows affected')
           } else {
             // Create new wallet
             console.log('🔔 [WEBHOOK] Creating new wallet for user:', userId)

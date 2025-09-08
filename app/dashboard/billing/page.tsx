@@ -81,11 +81,20 @@ export default function BillingPage() {
   const fetchWalletBalance = async () => {
     try {
       setBalanceLoading(true)
-      const response = await fetch('/api/wallet/balance')
+      // Add cache busting to ensure fresh data
+      const response = await fetch(`/api/wallet/balance?t=${Date.now()}`, {
+        cache: 'no-cache',
+        headers: {
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache',
+          'Expires': '0'
+        }
+      })
       
       if (response.ok) {
         const data = await response.json()
         setBalance(`$${data.balance_dollars}`)
+        console.log('✅ Balance fetched:', data.balance_dollars)
       } else {
         console.error('Failed to fetch wallet balance')
         setError("Failed to load wallet balance")

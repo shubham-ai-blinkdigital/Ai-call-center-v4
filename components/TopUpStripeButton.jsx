@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react'
 import { Button } from './ui/button'
 import { loadStripe } from '@stripe/stripe-js'
+import { useToast } from './ui/use-toast'
 
 export default function TopUpStripeButton({ amount, onSuccess }) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
+  const { toast } = useToast()
 
   const handleTopUp = async () => {
     try {
@@ -79,15 +81,43 @@ export default function TopUpStripeButton({ amount, onSuccess }) {
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search)
     if (urlParams.get('success') === '1') {
-      alert('Payment successful! Your wallet will be updated shortly.')
+      // Show success toast instead of native alert
+      toast({
+        title: "Payment Successful!",
+        description: "Your wallet will be updated shortly.",
+        duration: 5000,
+      })
+      
+      // Clean up URL parameters
+      const newUrl = new URL(window.location)
+      newUrl.searchParams.delete('success')
+      newUrl.searchParams.delete('canceled')
+      window.history.replaceState({}, '', newUrl.pathname + newUrl.search)
+      
       // Call onSuccess callback to refresh balance
       if (onSuccess) {
         setTimeout(() => {
           onSuccess()
-        }, 1000) // Give webhook a moment to process
+        }, 2000) // Give webhook a moment to process
       }
     }
-  }, [onSuccess])
+    
+    // Also handle canceled payments
+    if (urlParams.get('canceled') === '1') {
+      toast({
+        title: "Payment Canceled",
+        description: "Your payment was canceled. No charges were made.",
+        variant: "destructive",
+        duration: 5000,
+      })
+      
+      // Clean up URL parameters
+      const newUrl = new URL(window.location)
+      newUrl.searchParams.delete('success')
+      newUrl.searchParams.delete('canceled')
+      window.history.replaceState({}, '', newUrl.pathname + newUrl.search)
+    }
+  }, [onSuccess, toast])
 
   if (error) {
     return (
