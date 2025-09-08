@@ -254,7 +254,7 @@ export async function POST(req: Request) {
 
             console.log('🔔 [WEBHOOK] Updating existing wallet:', walletId, 'from', currentBalance, 'to', newBalance)
 
-            await db.query(`
+            const updateResult = await db.query(`
               UPDATE wallets 
               SET balance_cents = $1, updated_at = $2 
               WHERE id = $3

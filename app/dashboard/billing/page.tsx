@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge"
 import { Loader2, CreditCard, AlertCircle, Plus, Download, Receipt, CheckCircle2 } from "lucide-react"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { useToast } from "@/components/ui/use-toast"
+import { Toaster } from "@/components/ui/toaster"
 import { useRouter } from "next/navigation"
 import { ScrollArea } from "@/components/ui/scroll-area"
 
@@ -587,6 +588,7 @@ export default function BillingPage() {
           </Tabs>
         </div>
       </ScrollArea>
+      <Toaster />
     </div>
   )
 }
