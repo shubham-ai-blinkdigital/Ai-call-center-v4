@@ -2,12 +2,11 @@
 -- Add calls table migration
 -- Run this to add the calls table to existing database
 
--- Enable UUID extension (if not already enabled)
-CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+-- Note: Using gen_random_uuid() which is built into modern PostgreSQL
 
 -- Calls table for storing Bland.ai call data
 CREATE TABLE IF NOT EXISTS calls (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     call_id VARCHAR(255) UNIQUE NOT NULL, -- Bland.ai's call ID
     user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     to_number VARCHAR(50) NOT NULL,
