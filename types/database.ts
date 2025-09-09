@@ -72,3 +72,27 @@ export interface PhoneNumber {
   created_at: string
   updated_at: string
 }
+
+export interface Call {
+  id: string
+  call_id: string
+  user_id: string
+  to_number: string
+  from_number: string
+  duration_seconds: number | null
+  status: string | null
+  created_at: string
+  updated_at: string
+  recording_url: string | null
+  transcript: string | null
+  summary: string | null
+  cost_cents: number | null
+  pathway_id: string | null
+  ended_reason: string | null
+  start_time: string | null
+  end_time: string | null
+  queue_time: number | null
+  latency_ms: number | null
+  interruptions: number | null
+  phone_number_id: string | null
+}
