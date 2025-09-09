@@ -131,7 +131,7 @@ export default function BillingPage() {
     // Fetch billing data and wallet balance
     const fetchBillingData = async () => {
       try {
-        setLoading(true)
+        setIsLoading(true)
 
         // Fetch wallet balance
         await fetchWalletBalance()
@@ -149,7 +149,7 @@ export default function BillingPage() {
         console.error("Error fetching billing data:", err)
         setError("Failed to load billing data")
       } finally {
-        setLoading(false)
+        setIsLoading(false)
       }
     }
 
