@@ -249,7 +249,7 @@ export async function POST(req: Request) {
           if (existingWallet.rows.length > 0) {
             // Update existing wallet balance
             walletId = existingWallet.rows[0].id
-            const currentBalance = existingWallet.rows[0].balance_cents || 0
+            const currentBalance = parseInt(existingWallet.rows[0].balance_cents) || 0
             newBalance = currentBalance + amount
 
             console.log('🔔 [WEBHOOK] Updating existing wallet:', walletId, 'from', currentBalance, 'to', newBalance)
