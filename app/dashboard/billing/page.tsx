@@ -96,7 +96,7 @@ export default function BillingPage() {
 
       if (response.ok) {
         const data = await response.json()
-        setBalance(data.balance_dollars)
+        setBalance(Number(data.balance_dollars) || 0)
         console.log('✅ Balance fetched:', data.balance_dollars)
       } else {
         console.error('Failed to fetch wallet balance')
