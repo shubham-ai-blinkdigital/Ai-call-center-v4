@@ -25,7 +25,9 @@ import {
   Wallet,
   BarChart3,
   PieChart,
-  Calendar
+  Calendar,
+  CreditCard,
+  AlertTriangle
 } from "lucide-react"
 import { toast } from "sonner"
 import { ScrollArea } from "@/components/ui/scroll-area"
@@ -74,13 +76,22 @@ interface TimeframeCounts {
   lastMonth: number
 }
 
+interface BillingStats {
+  totalBilledCalls: number
+  totalSpentCents: number
+  unbilledCalls: number
+  estimatedUnbilledCostCents: number
+}
+
 export default function CallsPage() {
   const { user } = useAuth()
   const [calls, setCalls] = useState<DatabaseCall[]>([])
   const [callStats, setCallStats] = useState<CallStats | null>(null)
   const [timeframeCounts, setTimeframeCounts] = useState<TimeframeCounts | null>(null)
+  const [billingStats, setBillingStats] = useState<BillingStats | null>(null)
   const [loading, setLoading] = useState(true)
   const [syncing, setSyncing] = useState(false)
+  const [billing, setBilling] = useState(false)
   const [timeframe, setTimeframe] = useState("7d")
   const [page, setPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
@@ -107,6 +118,13 @@ export default function CallsPage() {
         const callsData = await callsResponse.json()
         setCalls(callsData.calls || [])
         setTotalPages(Math.ceil(callsData.total / 50))
+      }
+
+      // Fetch billing stats
+      const billingResponse = await fetch(`/api/calls/billing?userId=${user.id}`)
+      if (billingResponse.ok) {
+        const billingData = await billingResponse.json()
+        setBillingStats(billingData.stats)
       }
 
     } catch (error) {
@@ -143,6 +161,38 @@ export default function CallsPage() {
       toast.error('Failed to sync calls')
     } finally {
       setSyncing(false)
+    }
+  }
+
+  const processPendingBills = async () => {
+    if (!user?.id || billing) return
+
+    try {
+      setBilling(true)
+      const response = await fetch('/api/calls/billing', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ 
+          action: 'process_pending',
+          userId: user.id 
+        })
+      })
+
+      const data = await response.json()
+      
+      if (data.success) {
+        toast.success(`${data.message} - Processed ${data.processedCalls} calls`)
+        fetchCallStats() // Refresh data
+      } else {
+        toast.error(data.message || 'Failed to process bills')
+      }
+    } catch (error) {
+      console.error('Error processing bills:', error)
+      toast.error('Failed to process bills')
+    } finally {
+      setBilling(false)
     }
   }
 
@@ -224,10 +274,16 @@ export default function CallsPage() {
               <SelectItem value="90d">Last 90 days</SelectItem>
             </SelectContent>
           </Select>
-          <Button onClick={syncCalls} disabled={syncing}>
+          <Button onClick={syncCalls} disabled={syncing} variant="outline">
             <RefreshCcw className={`h-4 w-4 mr-2 ${syncing ? 'animate-spin' : ''}`} />
             Sync Now
           </Button>
+          {billingStats && billingStats.unbilledCalls > 0 && (
+            <Button onClick={processPendingBills} disabled={billing}>
+              <CreditCard className={`h-4 w-4 mr-2 ${billing ? 'animate-spin' : ''}`} />
+              Process Bills ({billingStats.unbilledCalls})
+            </Button>
+          )}
         </div>
       </div>
 
@@ -366,6 +422,74 @@ export default function CallsPage() {
               <div className="text-xs text-muted-foreground">
                 Standard rate
               </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {/* Billing Stats Row */}
+      {billingStats && (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Total Spent</CardTitle>
+              <CreditCard className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{formatCost(billingStats.totalSpentCents)}</div>
+              <div className="text-xs text-muted-foreground">
+                From {billingStats.totalBilledCalls} billed calls
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className={billingStats.unbilledCalls > 0 ? "border-orange-200 bg-orange-50" : ""}>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Unbilled Calls</CardTitle>
+              <AlertTriangle className={`h-4 w-4 ${billingStats.unbilledCalls > 0 ? 'text-orange-500' : 'text-muted-foreground'}`} />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{billingStats.unbilledCalls}</div>
+              <div className="text-xs text-muted-foreground">
+                Est. cost: {formatCost(billingStats.estimatedUnbilledCostCents)}
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Avg Cost/Call</CardTitle>
+              <DollarSign className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">
+                {billingStats.totalBilledCalls > 0 
+                  ? formatCost(Math.round(billingStats.totalSpentCents / billingStats.totalBilledCalls))
+                  : '$0.00'
+                }
+              </div>
+              <div className="text-xs text-muted-foreground">
+                Per completed call
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Actions</CardTitle>
+              <Wallet className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <Button 
+                onClick={processPendingBills} 
+                disabled={billing || billingStats.unbilledCalls === 0}
+                size="sm"
+                className="w-full"
+                variant={billingStats.unbilledCalls > 0 ? "default" : "outline"}
+              >
+                <CreditCard className={`h-4 w-4 mr-2 ${billing ? 'animate-spin' : ''}`} />
+                Process Bills
+              </Button>
             </CardContent>
           </Card>
         </div>
