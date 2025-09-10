@@ -201,21 +201,21 @@ export class CallDatabaseService {
       try {
         // Map Bland.ai API response to our call data format
         const callData: CallData = {
-          call_id: apiCall.c_id || apiCall.id,
+          call_id: apiCall.c_id || apiCall.id || apiCall.call_id,
           user_id: userId,
           to_number: apiCall.to || apiCall.to_number || '',
           from_number: apiCall.from || apiCall.from_number || '',
-          duration_seconds: apiCall.call_length || apiCall.duration,
+          duration_seconds: apiCall.call_length || apiCall.duration || apiCall.duration_seconds,
           status: apiCall.status,
           recording_url: apiCall.recording_url,
-          transcript: apiCall.transcription,
+          transcript: apiCall.transcription || apiCall.transcript,
           summary: apiCall.summary,
           pathway_id: apiCall.pathway_id,
           ended_reason: apiCall.ended_reason,
           start_time: apiCall.started_at || apiCall.start_time,
           end_time: apiCall.ended_at || apiCall.end_time,
           queue_time: apiCall.queue_time,
-          latency_ms: apiCall.latency,
+          latency_ms: apiCall.latency || apiCall.latency_ms,
           interruptions: apiCall.interruptions
         }
 

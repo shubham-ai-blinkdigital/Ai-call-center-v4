@@ -6,70 +6,96 @@ import { useAuth } from "@/contexts/auth-context"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Skeleton } from "@/components/ui/skeleton"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Phone, Clock, DollarSign, Activity, RefreshCw } from "lucide-react"
+import { Alert, AlertDescription } from "@/components/ui/alert"
+import { Phone, Clock, DollarSign, RefreshCcw, Download, AlertCircle } from "lucide-react"
 import { toast } from "sonner"
+import { ScrollArea } from "@/components/ui/scroll-area"
 
 interface CallStats {
-  total_calls: number
-  completed_calls: number
-  failed_calls: number
-  avg_duration: number
-  total_duration: number
-  total_cost_cents: number
-  first_call: string
-  last_call: string
+  totalCalls: number
+  completedCalls: number
+  failedCalls: number
+  totalDuration: number
+  totalCost: number
 }
 
-interface Call {
+interface DatabaseCall {
   id: string
   call_id: string
   to_number: string
   from_number: string
   duration_seconds: number
   status: string
+  recording_url?: string
+  transcript?: string
+  summary?: string
+  cost_cents?: number
+  pathway_id?: string
+  ended_reason?: string
+  start_time?: string
+  end_time?: string
   created_at: string
-  cost_cents: number
-  phone_detail: string
+  updated_at: string
+  phone_number_detail?: string
+}
+
+interface CallsData {
+  calls: DatabaseCall[]
+  total: number
 }
 
 export default function CallsPage() {
   const { user } = useAuth()
-  const [stats, setStats] = useState<CallStats | null>(null)
-  const [calls, setCalls] = useState<Call[]>([])
+  const [callStats, setCallStats] = useState<CallStats | null>(null)
+  const [callsData, setCallsData] = useState<CallsData | null>(null)
   const [loading, setLoading] = useState(true)
   const [syncing, setSyncing] = useState(false)
-  const [timeframe, setTimeframe] = useState('7d')
+  const [timeframe, setTimeframe] = useState("7d")
+  const [page, setPage] = useState(1)
+  const [limit] = useState(50)
 
   const fetchCallStats = async () => {
     if (!user) return
 
     try {
-      const response = await fetch(`/api/calls/stats?userId=${user.id}&timeframe=${timeframe}`)
-      const data = await response.json()
-
-      if (data.success) {
-        setStats(data.data.summary)
-        setCalls(data.data.recentCalls)
+      setLoading(true)
+      
+      // Fetch call statistics
+      const statsResponse = await fetch(`/api/calls/stats?userId=${user.id}&timeframe=${timeframe}`)
+      if (statsResponse.ok) {
+        const stats = await statsResponse.json()
+        setCallStats(stats)
       }
+
+      // Fetch calls from database
+      const callsResponse = await fetch(`/api/calls/database?userId=${user.id}&limit=${limit}&offset=${(page - 1) * limit}`)
+      if (callsResponse.ok) {
+        const calls = await callsResponse.json()
+        setCallsData(calls)
+      }
+
     } catch (error) {
-      console.error('Error fetching call stats:', error)
-      toast.error('Failed to fetch call statistics')
+      console.error('Error fetching call data:', error)
+      toast.error('Failed to fetch call data')
     } finally {
       setLoading(false)
     }
   }
 
-  const syncCalls = async () => {
+  const handleSync = async () => {
     if (!user) return
 
-    setSyncing(true)
     try {
+      setSyncing(true)
+      toast.info('Syncing calls from Bland.ai...')
+
       const response = await fetch('/api/calls/sync', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify({ userId: user.id })
       })
@@ -92,7 +118,7 @@ export default function CallsPage() {
 
   useEffect(() => {
     fetchCallStats()
-  }, [user, timeframe])
+  }, [user, timeframe, page])
 
   const formatDuration = (seconds: number) => {
     if (!seconds) return 'N/A'
@@ -112,52 +138,75 @@ export default function CallsPage() {
     return <Badge variant={variant}>{status}</Badge>
   }
 
+  const formatDate = (dateString: string) => {
+    if (!dateString) return 'N/A'
+    return new Date(dateString).toLocaleString()
+  }
+
   if (loading) {
     return <div className="flex items-center justify-center h-64">Loading...</div>
   }
 
   return (
-    <div className="space-y-6">
+    <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Call Analytics</h1>
+          <h1 className="text-3xl font-bold tracking-tight">Call Database</h1>
           <p className="text-muted-foreground">
-            Monitor and analyze your call data from Bland AI
+            View and manage your synced call data from the database
           </p>
         </div>
         
-        <div className="flex items-center gap-2">
-          <select
-            value={timeframe}
-            onChange={(e) => setTimeframe(e.target.value)}
-            className="px-3 py-2 border rounded-md"
-          >
-            <option value="1d">Last 24 hours</option>
-            <option value="7d">Last 7 days</option>
-            <option value="30d">Last 30 days</option>
-            <option value="all">All time</option>
-          </select>
+        <div className="flex items-center gap-4">
+          <Select value={timeframe} onValueChange={setTimeframe}>
+            <SelectTrigger className="w-32">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="24h">Last 24h</SelectItem>
+              <SelectItem value="7d">Last 7 days</SelectItem>
+              <SelectItem value="30d">Last 30 days</SelectItem>
+              <SelectItem value="90d">Last 90 days</SelectItem>
+            </SelectContent>
+          </Select>
           
-          <Button onClick={syncCalls} disabled={syncing}>
-            <RefreshCw className={`w-4 h-4 mr-2 ${syncing ? 'animate-spin' : ''}`} />
-            {syncing ? 'Syncing...' : 'Sync Calls'}
+          <Button onClick={handleSync} disabled={syncing}>
+            <RefreshCcw className={`h-4 w-4 mr-2 ${syncing ? 'animate-spin' : ''}`} />
+            {syncing ? 'Syncing...' : 'Sync Now'}
           </Button>
         </div>
       </div>
 
       {/* Stats Cards */}
-      {stats && (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      {callStats && (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Total Calls</CardTitle>
               <Phone className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{stats.total_calls}</div>
-              <p className="text-xs text-muted-foreground">
-                {stats.completed_calls} completed, {stats.failed_calls} failed
-              </p>
+              <div className="text-2xl font-bold">{callStats.totalCalls}</div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Completed</CardTitle>
+              <Phone className="h-4 w-4 text-green-600" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-green-600">{callStats.completedCalls}</div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Failed</CardTitle>
+              <AlertCircle className="h-4 w-4 text-red-600" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-red-600">{callStats.failedCalls}</div>
             </CardContent>
           </Card>
 
@@ -167,12 +216,7 @@ export default function CallsPage() {
               <Clock className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">
-                {formatDuration(stats.total_duration)}
-              </div>
-              <p className="text-xs text-muted-foreground">
-                Avg: {formatDuration(Math.round(stats.avg_duration))}
-              </p>
+              <div className="text-2xl font-bold">{formatDuration(callStats.totalDuration)}</div>
             </CardContent>
           </Card>
 
@@ -182,81 +226,100 @@ export default function CallsPage() {
               <DollarSign className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">
-                {formatCost(stats.total_cost_cents)}
-              </div>
-              <p className="text-xs text-muted-foreground">
-                Call costs from Bland AI
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Success Rate</CardTitle>
-              <Activity className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                {stats.total_calls > 0 
-                  ? Math.round((stats.completed_calls / stats.total_calls) * 100)
-                  : 0}%
-              </div>
-              <p className="text-xs text-muted-foreground">
-                Call completion rate
-              </p>
+              <div className="text-2xl font-bold">{formatCost(callStats.totalCost)}</div>
             </CardContent>
           </Card>
         </div>
       )}
 
-      {/* Recent Calls Table */}
+      {/* Calls Table */}
       <Card>
         <CardHeader>
-          <CardTitle>Recent Calls</CardTitle>
+          <CardTitle>Recent Calls (Database)</CardTitle>
           <CardDescription>
-            Latest calls from your phone numbers
+            Call data synced from Bland.ai and stored in your database
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Call ID</TableHead>
-                <TableHead>From</TableHead>
-                <TableHead>To</TableHead>
-                <TableHead>Duration</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Cost</TableHead>
-                <TableHead>Date</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {calls.map((call) => (
-                <TableRow key={call.id}>
-                  <TableCell className="font-mono text-sm">
-                    {call.call_id.slice(0, 8)}...
-                  </TableCell>
-                  <TableCell>{call.from_number}</TableCell>
-                  <TableCell>{call.to_number}</TableCell>
-                  <TableCell>{formatDuration(call.duration_seconds)}</TableCell>
-                  <TableCell>{getStatusBadge(call.status)}</TableCell>
-                  <TableCell>{formatCost(call.cost_cents)}</TableCell>
-                  <TableCell>
-                    {new Date(call.created_at).toLocaleDateString()}
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-          
-          {calls.length === 0 && (
-            <div className="text-center py-8 text-muted-foreground">
-              No calls found. Try syncing your calls or check your timeframe.
-            </div>
+          {callsData && callsData.calls.length > 0 ? (
+            <ScrollArea className="h-[600px]">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Date</TableHead>
+                    <TableHead>To Number</TableHead>
+                    <TableHead>From Number</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Duration</TableHead>
+                    <TableHead>Cost</TableHead>
+                    <TableHead>Reason</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {callsData.calls.map((call) => (
+                    <TableRow key={call.call_id}>
+                      <TableCell className="font-mono text-xs">
+                        {formatDate(call.start_time || call.created_at)}
+                      </TableCell>
+                      <TableCell className="font-mono">
+                        {call.to_number || 'N/A'}
+                      </TableCell>
+                      <TableCell className="font-mono">
+                        {call.from_number || 'N/A'}
+                      </TableCell>
+                      <TableCell>
+                        {getStatusBadge(call.status || 'unknown')}
+                      </TableCell>
+                      <TableCell>
+                        {formatDuration(call.duration_seconds || 0)}
+                      </TableCell>
+                      <TableCell>
+                        {formatCost(call.cost_cents || 0)}
+                      </TableCell>
+                      <TableCell className="text-xs text-muted-foreground">
+                        {call.ended_reason || 'N/A'}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </ScrollArea>
+          ) : (
+            <Alert>
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>
+                No calls found in database. Try clicking "Sync Now" to fetch data from Bland.ai, 
+                or visit the Call History page to trigger automatic sync.
+              </AlertDescription>
+            </Alert>
           )}
         </CardContent>
       </Card>
+
+      {/* Pagination */}
+      {callsData && callsData.total > limit && (
+        <div className="flex items-center justify-between">
+          <p className="text-sm text-muted-foreground">
+            Showing {(page - 1) * limit + 1} to {Math.min(page * limit, callsData.total)} of {callsData.total} calls
+          </p>
+          <div className="flex items-center space-x-2">
+            <Button 
+              variant="outline" 
+              onClick={() => setPage(p => Math.max(1, p - 1))}
+              disabled={page === 1}
+            >
+              Previous
+            </Button>
+            <Button 
+              variant="outline" 
+              onClick={() => setPage(p => p + 1)}
+              disabled={page * limit >= callsData.total}
+            >
+              Next
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
