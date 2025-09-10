@@ -10,7 +10,23 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Phone, Clock, DollarSign, RefreshCcw, Download, AlertCircle } from "lucide-react"
+import { 
+  Phone, 
+  Clock, 
+  DollarSign, 
+  RefreshCcw, 
+  Download, 
+  AlertCircle,
+  TrendingUp,
+  TrendingDown,
+  Activity,
+  PhoneCall,
+  Timer,
+  Wallet,
+  BarChart3,
+  PieChart,
+  Calendar
+} from "lucide-react"
 import { toast } from "sonner"
 import { ScrollArea } from "@/components/ui/scroll-area"
 
@@ -20,6 +36,13 @@ interface CallStats {
   failedCalls: number
   totalDuration: number
   totalCost: number
+  averageDuration: number
+  successRate: number
+  averageCostPerCall: number
+  callsThisWeek: number
+  callsThisMonth: number
+  costThisWeek: number
+  costThisMonth: number
 }
 
 interface DatabaseCall {
@@ -42,56 +65,63 @@ interface DatabaseCall {
   phone_number_detail?: string
 }
 
-interface CallsData {
-  calls: DatabaseCall[]
-  total: number
+interface TimeframeCounts {
+  today: number
+  yesterday: number
+  thisWeek: number
+  lastWeek: number
+  thisMonth: number
+  lastMonth: number
 }
 
 export default function CallsPage() {
   const { user } = useAuth()
+  const [calls, setCalls] = useState<DatabaseCall[]>([])
   const [callStats, setCallStats] = useState<CallStats | null>(null)
-  const [callsData, setCallsData] = useState<CallsData | null>(null)
+  const [timeframeCounts, setTimeframeCounts] = useState<TimeframeCounts | null>(null)
   const [loading, setLoading] = useState(true)
   const [syncing, setSyncing] = useState(false)
   const [timeframe, setTimeframe] = useState("7d")
   const [page, setPage] = useState(1)
-  const [limit] = useState(50)
+  const [totalPages, setTotalPages] = useState(1)
+  const [error, setError] = useState<string | null>(null)
 
   const fetchCallStats = async () => {
-    if (!user) return
+    if (!user?.id) return
 
     try {
       setLoading(true)
-      
-      // Fetch call statistics
+      setError(null)
+
+      // Fetch enhanced stats
       const statsResponse = await fetch(`/api/calls/stats?userId=${user.id}&timeframe=${timeframe}`)
       if (statsResponse.ok) {
-        const stats = await statsResponse.json()
-        setCallStats(stats)
+        const statsData = await statsResponse.json()
+        setCallStats(statsData.stats)
+        setTimeframeCounts(statsData.timeframeCounts)
       }
 
       // Fetch calls from database
-      const callsResponse = await fetch(`/api/calls/database?userId=${user.id}&limit=${limit}&offset=${(page - 1) * limit}`)
+      const callsResponse = await fetch(`/api/calls/database?userId=${user.id}&limit=50&offset=${(page - 1) * 50}`)
       if (callsResponse.ok) {
-        const calls = await callsResponse.json()
-        setCallsData(calls)
+        const callsData = await callsResponse.json()
+        setCalls(callsData.calls || [])
+        setTotalPages(Math.ceil(callsData.total / 50))
       }
 
     } catch (error) {
-      console.error('Error fetching call data:', error)
-      toast.error('Failed to fetch call data')
+      console.error('Error fetching data:', error)
+      setError('Failed to fetch call data')
     } finally {
       setLoading(false)
     }
   }
 
-  const handleSync = async () => {
-    if (!user) return
+  const syncCalls = async () => {
+    if (!user?.id || syncing) return
 
     try {
       setSyncing(true)
-      toast.info('Syncing calls from Bland.ai...')
-
       const response = await fetch('/api/calls/sync', {
         method: 'POST',
         headers: {
@@ -143,43 +173,74 @@ export default function CallsPage() {
     return new Date(dateString).toLocaleString()
   }
 
+  const calculateGrowth = (current: number, previous: number) => {
+    if (previous === 0) return current > 0 ? 100 : 0
+    return ((current - previous) / previous) * 100
+  }
+
   if (loading) {
-    return <div className="flex items-center justify-center h-64">Loading...</div>
+    return (
+      <div className="p-6 space-y-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold">Call Database</h1>
+            <p className="text-muted-foreground">View and manage your synced call data from the database</p>
+          </div>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          {[1, 2, 3, 4].map((i) => (
+            <Card key={i}>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <Skeleton className="h-4 w-20" />
+                <Skeleton className="h-4 w-4" />
+              </CardHeader>
+              <CardContent>
+                <Skeleton className="h-8 w-16" />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+    )
   }
 
   return (
     <div className="p-6 space-y-6">
+      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Call Database</h1>
-          <p className="text-muted-foreground">
-            View and manage your synced call data from the database
-          </p>
+          <h1 className="text-3xl font-bold">Call Database</h1>
+          <p className="text-muted-foreground">View and manage your synced call data from the database</p>
         </div>
-        
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2">
           <Select value={timeframe} onValueChange={setTimeframe}>
             <SelectTrigger className="w-32">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="24h">Last 24h</SelectItem>
+              <SelectItem value="1d">Last day</SelectItem>
               <SelectItem value="7d">Last 7 days</SelectItem>
               <SelectItem value="30d">Last 30 days</SelectItem>
               <SelectItem value="90d">Last 90 days</SelectItem>
             </SelectContent>
           </Select>
-          
-          <Button onClick={handleSync} disabled={syncing}>
+          <Button onClick={syncCalls} disabled={syncing}>
             <RefreshCcw className={`h-4 w-4 mr-2 ${syncing ? 'animate-spin' : ''}`} />
-            {syncing ? 'Syncing...' : 'Sync Now'}
+            Sync Now
           </Button>
         </div>
       </div>
 
-      {/* Stats Cards */}
+      {error && (
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
+
+      {/* Analytics Cards */}
       {callStats && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Total Calls</CardTitle>
@@ -187,26 +248,35 @@ export default function CallsPage() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{callStats.totalCalls}</div>
+              {timeframeCounts && (
+                <div className="flex items-center text-xs text-muted-foreground">
+                  <span>This week: {timeframeCounts.thisWeek}</span>
+                  {timeframeCounts.lastWeek > 0 && (
+                    <>
+                      <span className="mx-1">•</span>
+                      {calculateGrowth(timeframeCounts.thisWeek, timeframeCounts.lastWeek) >= 0 ? (
+                        <TrendingUp className="h-3 w-3 text-green-500 mr-1" />
+                      ) : (
+                        <TrendingDown className="h-3 w-3 text-red-500 mr-1" />
+                      )}
+                      <span>{Math.abs(calculateGrowth(timeframeCounts.thisWeek, timeframeCounts.lastWeek)).toFixed(1)}%</span>
+                    </>
+                  )}
+                </div>
+              )}
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Completed</CardTitle>
-              <Phone className="h-4 w-4 text-green-600" />
+              <CardTitle className="text-sm font-medium">Success Rate</CardTitle>
+              <Activity className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-green-600">{callStats.completedCalls}</div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Failed</CardTitle>
-              <AlertCircle className="h-4 w-4 text-red-600" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-red-600">{callStats.failedCalls}</div>
+              <div className="text-2xl font-bold">{callStats.successRate.toFixed(1)}%</div>
+              <div className="text-xs text-muted-foreground">
+                {callStats.completedCalls} completed, {callStats.failedCalls} failed
+              </div>
             </CardContent>
           </Card>
 
@@ -217,6 +287,9 @@ export default function CallsPage() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{formatDuration(callStats.totalDuration)}</div>
+              <div className="text-xs text-muted-foreground">
+                Avg: {formatDuration(callStats.averageDuration)}
+              </div>
             </CardContent>
           </Card>
 
@@ -227,22 +300,95 @@ export default function CallsPage() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{formatCost(callStats.totalCost)}</div>
+              <div className="text-xs text-muted-foreground">
+                Avg: {formatCost(callStats.averageCostPerCall)} per call
+              </div>
             </CardContent>
           </Card>
         </div>
       )}
 
-      {/* Calls Table */}
+      {/* Additional Analytics Row */}
+      {callStats && timeframeCounts && (
+        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">This Month</CardTitle>
+              <Calendar className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{timeframeCounts.thisMonth}</div>
+              <div className="text-xs text-muted-foreground">
+                Cost: {formatCost(callStats.costThisMonth)}
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">This Week</CardTitle>
+              <BarChart3 className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{timeframeCounts.thisWeek}</div>
+              <div className="text-xs text-muted-foreground">
+                Cost: {formatCost(callStats.costThisWeek)}
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Today vs Yesterday</CardTitle>
+              <TrendingUp className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{timeframeCounts.today}</div>
+              <div className="text-xs text-muted-foreground">
+                Yesterday: {timeframeCounts.yesterday}
+                {timeframeCounts.yesterday > 0 && (
+                  <span className="ml-1">
+                    ({calculateGrowth(timeframeCounts.today, timeframeCounts.yesterday) >= 0 ? '+' : ''}
+                    {calculateGrowth(timeframeCounts.today, timeframeCounts.yesterday).toFixed(1)}%)
+                  </span>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Rate per Minute</CardTitle>
+              <Wallet className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">$0.11</div>
+              <div className="text-xs text-muted-foreground">
+                Standard rate
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {/* Recent Calls Table */}
       <Card>
         <CardHeader>
           <CardTitle>Recent Calls (Database)</CardTitle>
-          <CardDescription>
-            Call data synced from Bland.ai and stored in your database
-          </CardDescription>
+          <CardDescription>Call data synced from Bland.ai and stored in your database</CardDescription>
         </CardHeader>
         <CardContent>
-          {callsData && callsData.calls.length > 0 ? (
-            <ScrollArea className="h-[600px]">
+          {calls.length === 0 ? (
+            <div className="text-center py-8">
+              <Phone className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+              <p className="text-muted-foreground">No calls found in database</p>
+              <Button onClick={syncCalls} className="mt-4">
+                <RefreshCcw className="h-4 w-4 mr-2" />
+                Sync Calls
+              </Button>
+            </div>
+          ) : (
+            <ScrollArea className="h-[400px]">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -256,68 +402,60 @@ export default function CallsPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {callsData.calls.map((call) => (
-                    <TableRow key={call.call_id}>
-                      <TableCell className="font-mono text-xs">
-                        {formatDate(call.start_time || call.created_at)}
+                  {calls.map((call) => (
+                    <TableRow key={call.id}>
+                      <TableCell>
+                        <div className="text-sm">
+                          {formatDate(call.created_at)}
+                        </div>
                       </TableCell>
-                      <TableCell className="font-mono">
-                        {call.to_number || 'N/A'}
+                      <TableCell className="font-mono text-sm">
+                        {call.to_number}
                       </TableCell>
-                      <TableCell className="font-mono">
-                        {call.from_number || 'N/A'}
+                      <TableCell className="font-mono text-sm">
+                        {call.from_number}
                       </TableCell>
                       <TableCell>
-                        {getStatusBadge(call.status || 'unknown')}
+                        {getStatusBadge(call.status)}
                       </TableCell>
                       <TableCell>
-                        {formatDuration(call.duration_seconds || 0)}
+                        {formatDuration(call.duration_seconds)}
                       </TableCell>
                       <TableCell>
                         {formatCost(call.cost_cents || 0)}
                       </TableCell>
-                      <TableCell className="text-xs text-muted-foreground">
-                        {call.ended_reason || 'N/A'}
+                      <TableCell className="text-muted-foreground text-sm">
+                        {call.ended_reason || 'unknown'}
                       </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
               </Table>
             </ScrollArea>
-          ) : (
-            <Alert>
-              <AlertCircle className="h-4 w-4" />
-              <AlertDescription>
-                No calls found in database. Try clicking "Sync Now" to fetch data from Bland.ai, 
-                or visit the Call History page to trigger automatic sync.
-              </AlertDescription>
-            </Alert>
           )}
         </CardContent>
       </Card>
 
       {/* Pagination */}
-      {callsData && callsData.total > limit && (
-        <div className="flex items-center justify-between">
-          <p className="text-sm text-muted-foreground">
-            Showing {(page - 1) * limit + 1} to {Math.min(page * limit, callsData.total)} of {callsData.total} calls
-          </p>
-          <div className="flex items-center space-x-2">
-            <Button 
-              variant="outline" 
-              onClick={() => setPage(p => Math.max(1, p - 1))}
-              disabled={page === 1}
-            >
-              Previous
-            </Button>
-            <Button 
-              variant="outline" 
-              onClick={() => setPage(p => p + 1)}
-              disabled={page * limit >= callsData.total}
-            >
-              Next
-            </Button>
-          </div>
+      {totalPages > 1 && (
+        <div className="flex items-center justify-center space-x-2">
+          <Button 
+            variant="outline" 
+            onClick={() => setPage(p => Math.max(1, p - 1))}
+            disabled={page === 1}
+          >
+            Previous
+          </Button>
+          <span className="text-sm text-muted-foreground">
+            Page {page} of {totalPages}
+          </span>
+          <Button 
+            variant="outline" 
+            onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+            disabled={page === totalPages}
+          >
+            Next
+          </Button>
         </div>
       )}
     </div>
