@@ -243,9 +243,9 @@ export class CallDatabaseService {
           INSERT INTO calls (
             call_id, user_id, to_number, from_number, duration_seconds, status,
             recording_url, transcript, summary, pathway_id, ended_reason,
-            started_at, ended_at, variables, created_at, updated_at
+            start_time, end_time, created_at, updated_at
           ) VALUES (
-            $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, NOW(), NOW()
+            $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, NOW(), NOW()
           ) RETURNING *
         `, [
           apiCall.c_id || apiCall.id,
@@ -260,8 +260,7 @@ export class CallDatabaseService {
           apiCall.pathway_id || null,
           apiCall.ended_reason || null,
           apiCall.started_at || apiCall.start_time,
-          apiCall.ended_at || apiCall.end_time,
-          apiCall.variables ? JSON.stringify(apiCall.variables) : null
+          apiCall.ended_at || apiCall.end_time
         ])
 
         const insertedCall = insertResult.rows[0]
@@ -280,6 +279,12 @@ export class CallDatabaseService {
 
             if (billingResult.success) {
               console.log(`✅ [AUTO-BILLING] Successfully billed call ${insertedCall.call_id}: $${(billingResult.costCents! / 100).toFixed(2)}`)
+              
+              // Update the call record with the cost
+              await db.query(
+                'UPDATE calls SET cost_cents = $1, updated_at = NOW() WHERE call_id = $2',
+                [billingResult.costCents, insertedCall.call_id]
+              )
             } else {
               console.error(`❌ [AUTO-BILLING] Failed to bill call ${insertedCall.call_id}: ${billingResult.message}`)
             }
@@ -292,7 +297,7 @@ export class CallDatabaseService {
       }
     }
 
-    return syncCount
+    return newCallsCount
   }
 
   /**

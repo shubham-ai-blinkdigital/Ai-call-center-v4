@@ -42,9 +42,7 @@ export async function POST(request: NextRequest) {
       summary: call.summary,
       pathway_id: call.pathway_id,
       ended_reason: call.ended_reason,
-      started_at: call.start_time,
       start_time: call.start_time,
-      ended_at: call.end_time,
       end_time: call.end_time,
       variables: call.variables
     }))
