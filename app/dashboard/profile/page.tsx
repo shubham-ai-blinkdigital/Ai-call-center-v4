@@ -4,17 +4,19 @@ import type React from "react"
 
 import { useState } from "react"
 import { useAuth, type User } from "@/contexts/auth-context"
+import { useTheme } from "next-themes"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { AlertCircle, CheckCircle2 } from "lucide-react"
+import { AlertCircle, CheckCircle2, Moon, Sun, Monitor } from "lucide-react"
 import { Switch } from "@/components/ui/switch"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
 export default function ProfilePage() {
   const { user, updateProfile, enableTwoFactor, verifyTwoFactor } = useAuth()
+  const { theme, setTheme } = useTheme()
   const [profileData, setProfileData] = useState<Partial<User>>(user || {})
   const [isUpdating, setIsUpdating] = useState(false)
   const [error, setError] = useState("")
@@ -266,6 +268,41 @@ export default function ProfilePage() {
                     <p className="text-sm text-gray-500">Update your password regularly for better security</p>
                   </div>
                   <Button variant="outline">Change Password</Button>
+                </div>
+
+                <div className="flex items-center justify-between pt-4 border-t">
+                  <div>
+                    <h3 className="text-lg font-medium">Theme Preferences</h3>
+                    <p className="text-sm text-gray-500">Choose your preferred theme</p>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <div className="flex items-center space-x-1 rounded-lg border p-1">
+                      <Button
+                        variant={theme === "light" ? "default" : "ghost"}
+                        size="sm"
+                        onClick={() => setTheme("light")}
+                        className="h-8 w-8 p-0"
+                      >
+                        <Sun className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant={theme === "dark" ? "default" : "ghost"}
+                        size="sm"
+                        onClick={() => setTheme("dark")}
+                        className="h-8 w-8 p-0"
+                      >
+                        <Moon className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant={theme === "system" ? "default" : "ghost"}
+                        size="sm"
+                        onClick={() => setTheme("system")}
+                        className="h-8 w-8 p-0"
+                      >
+                        <Monitor className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
                 </div>
 
                 <div className="flex items-center justify-between pt-4 border-t">
