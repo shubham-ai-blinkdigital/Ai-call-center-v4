@@ -8,9 +8,8 @@ import { Badge } from "@/components/ui/badge"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { useState, useEffect } from "react"
-import { useAuth } from "@/contexts/auth-context"
 import { useState, useRef, useEffect } from "react"
+import { useAuth } from "@/contexts/auth-context"
 
 export default function CallHistoryPage() {
   const { user } = useAuth()
