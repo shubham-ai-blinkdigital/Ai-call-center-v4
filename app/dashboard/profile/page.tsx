@@ -1,8 +1,6 @@
 "use client"
 
-import type React from "react"
-
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useAuth, type User } from "@/contexts/auth-context"
 import { useTheme } from "next-themes"
 import { Button } from "@/components/ui/button"
