@@ -111,7 +111,7 @@ export class CallSyncService {
         recording_url: blandCall.recording_url || null,
         transcript: blandCall.transcription || null,
         summary: blandCall.summary || null,
-        cost_cents: blandCall.price ? Math.round(blandCall.price * 100) : null,
+        cost_cents: null, // Always null to trigger auto-billing
         pathway_id: blandCall.pathway_id || null,
         ended_reason: blandCall.ended_reason || null,
         phone_number_id: phoneNumberId
@@ -164,6 +164,24 @@ export class CallSyncService {
         } catch (error) {
           const errorMessage = error instanceof Error ? error.message : 'Unknown error'
           results.errors.push(`Call ${call.call_id}: ${errorMessage}`)
+        }
+      }
+
+      // After syncing, process auto-billing for newly synced calls
+      if (results.synced > 0) {
+        try {
+          const { CallBillingService } = await import('./call-billing-service')
+          console.log(`💰 [SYNC] Processing auto-billing for ${results.synced} synced calls for user ${userId}`)
+          
+          const billingResult = await CallBillingService.processPendingBills(userId)
+          console.log(`✅ [SYNC] Auto-billing result: ${billingResult.message}`)
+          
+          if (!billingResult.success) {
+            results.errors.push(`Billing warning: ${billingResult.message}`)
+          }
+        } catch (error) {
+          console.error('❌ [SYNC] Auto-billing failed:', error)
+          results.errors.push(`Auto-billing failed: ${error instanceof Error ? error.message : 'Unknown error'}`)
         }
       }
 
