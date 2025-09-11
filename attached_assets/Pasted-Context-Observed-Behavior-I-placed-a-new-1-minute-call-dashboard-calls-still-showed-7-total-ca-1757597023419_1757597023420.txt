@@ -1,0 +1,75 @@
+Context (Observed Behavior):
+
+I placed a new 1-minute call.
+
+dashboard/calls still showed 7 total calls (old data).
+
+Visiting dashboard/call-history showed 8 total calls (correct).
+
+Returning to dashboard/calls then showed 8 total calls (correct), but the wallet was not debited.
+
+Interpretation (for you to verify against the code):
+
+It appears dashboard/calls only updates after visiting dashboard/call-history.
+
+dashboard/call-history is for call logs.
+
+dashboard/calls is for amount debit/transaction view and is intended to show only a limited recent subset of calls (e.g., last 5–7).
+
+Important Constraints:
+
+Do not make any code changes.
+
+Bland.ai does not send a post-call webhook to /api/webhooks/bland/route.ts.
+
+Billing/debits must be computed from our calls database, which is the same source used by dashboard/calls.
+
+Your Task (Read & Explain):
+
+Explain the current code paths for dashboard/calls and dashboard/call-history: files, components, server/client boundaries, and data-fetching logic.
+
+Map the data flow end-to-end for both pages:
+
+Queries (which tables/columns), filters, ordering, and any pagination/limits.
+
+Caching, ISR/SSG/SSR, client-side state, SWR/polling, or revalidation behavior.
+
+Any dependencies between the two pages that could cause dashboard/calls to refresh only after visiting dashboard/call-history.
+
+Identify why the wallet debit did not occur for the 1-minute call:
+
+Where is debit logic implemented? (functions/files)
+
+What triggers it (page load, job/cron, DB listener, mutation, etc.)?
+
+What conditions might have prevented it (status flags, missing fields, rounding, locks, errors)?
+
+Document the exact schema usage for billing:
+
+Which calls columns are read for computing cost/duration?
+
+Which wallet/ledger tables & columns are touched (reads/writes)?
+
+Any transactions, idempotency keys, or guards currently implemented.
+
+List all relevant configuration used by these flows:
+
+Feature flags, env vars, runtime config, job schedules.
+
+Provide a concise diagnosis of the mismatch (7 → 8) and the debit failure, with file names, function names, and line references.
+
+Propose a step-by-step fix plan (no code yet), including test cases:
+
+Repro steps for the bug.
+
+Expected vs actual.
+
+Acceptance criteria for dashboard/calls and wallet debits.
+
+Output Format:
+
+Use structured sections: Files & Entry Points, Data Flow, Caching/Revalidation, Billing Logic, Schema & Tables, Findings (Root Cause), Fix Plan, Test Cases.
+
+Include file paths and line numbers wherever possible.
+
+No code changes—analysis and explanation only.
