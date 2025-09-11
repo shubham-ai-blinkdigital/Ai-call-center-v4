@@ -97,6 +97,37 @@ export default function CallsPage() {
   const [page, setPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
   const [error, setError] = useState<string | null>(null)
+  
+  // Wallet balance state
+  const [walletBalance, setWalletBalance] = useState<string>("$0.00")
+  const [walletLoading, setWalletLoading] = useState(false)
+
+  // Fetch wallet balance
+  const fetchWalletBalance = async () => {
+    if (!user?.id) return
+
+    setWalletLoading(true)
+    try {
+      const response = await fetch('/api/wallet/balance', {
+        credentials: 'include'
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        const balanceInDollars = (data.balance_cents / 100).toFixed(2)
+        setWalletBalance(`$${balanceInDollars}`)
+        console.log('✅ Balance fetched:', balanceInDollars)
+      } else {
+        console.error('Failed to fetch wallet balance')
+        setWalletBalance("$0.00")
+      }
+    } catch (err) {
+      console.error('Error fetching wallet balance:', err)
+      setWalletBalance("$0.00")
+    } finally {
+      setWalletLoading(false)
+    }
+  }
 
   const fetchCallStats = async () => {
     if (!user?.id) return
@@ -163,6 +194,7 @@ export default function CallsPage() {
   useEffect(() => {
     if (user?.id) {
       fetchCallStats()
+      fetchWalletBalance()
     }
   }, [user?.id, timeframe]) // Changed timeframe state name to match usage
 
@@ -412,7 +444,11 @@ export default function CallsPage() {
               <Wallet className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">${(user?.balance_cents || 0) / 100}</div>
+              {walletLoading ? (
+                <div className="h-8 w-20 bg-gray-200 animate-pulse rounded"></div>
+              ) : (
+                <div className="text-2xl font-bold">{walletBalance}</div>
+              )}
               <p className="text-xs text-muted-foreground">
                 <Link href="/dashboard/billing" className="text-blue-600 hover:underline">
                   Add funds
