@@ -26,7 +26,8 @@ import {
   Calendar,
   CreditCard,
   AlertTriangle,
-  CheckCircle
+  CheckCircle,
+  RefreshCw // Import RefreshCw
 } from "lucide-react"
 import { toast } from "sonner"
 import { ScrollArea } from "@/components/ui/scroll-area"
@@ -316,8 +317,33 @@ export default function CallsPage() {
             </SelectContent>
           </Select>
           <Button onClick={syncCalls} disabled={syncing} variant="outline">
-            <RefreshCcw className={`h-4 w-4 mr-2 ${syncing ? 'animate-spin' : ''}`} />
+            <RefreshCw className={`h-4 w-4 mr-2 ${syncing ? 'animate-spin' : ''}`} />
             Sync Now
+          </Button>
+          <Button onClick={async () => {
+            try {
+              setSyncing(true)
+              const response = await fetch('/api/calls/ingestion', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'trigger' })
+              })
+              const data = await response.json()
+              if (data.message) {
+                toast.success(data.message)
+                // Refresh data after ingestion
+                await Promise.all([fetchCalls(), fetchCallStats(), fetchWalletBalance()])
+              } else {
+                toast.error(data.error || 'Failed to trigger ingestion')
+              }
+            } catch (error) {
+              toast.error('Error triggering ingestion')
+            } finally {
+              setSyncing(false)
+            }
+          }} disabled={syncing} variant="secondary">
+            <Activity className={`h-4 w-4 mr-2 ${syncing ? 'animate-spin' : ''}`} />
+            Force Ingestion
           </Button>
           <Button onClick={() => setAutoRefresh(prev => !prev)} variant="ghost" className="flex items-center gap-1">
             {autoRefresh ? <CheckCircle className="h-4 w-4 text-green-500" /> : <AlertTriangle className="h-4 w-4 text-yellow-500" />}

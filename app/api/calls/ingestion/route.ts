@@ -4,11 +4,21 @@ import { getCurrentUser } from '@/lib/auth-utils'
 import { callIngestionService } from '@/services/call-ingestion-service'
 
 // Auto-start ingestion service when module loads (server startup)
-if (process.env.NODE_ENV === 'production' || process.env.AUTO_START_INGESTION === 'true') {
+console.log('🔍 [INGESTION] Checking auto-start conditions...', {
+  NODE_ENV: process.env.NODE_ENV,
+  AUTO_START_INGESTION: process.env.AUTO_START_INGESTION
+})
+
+if (process.env.NODE_ENV === 'production' || process.env.AUTO_START_INGESTION === 'true' || process.env.NODE_ENV === 'development') {
   console.log('🚀 [INGESTION] Auto-starting ingestion service...')
   setTimeout(() => {
-    callIngestionService.startIngestion()
-  }, 5000) // Wait 5 seconds for app to initialize
+    try {
+      callIngestionService.startIngestion()
+      console.log('✅ [INGESTION] Auto-start completed successfully')
+    } catch (error) {
+      console.error('❌ [INGESTION] Auto-start failed:', error)
+    }
+  }, 3000) // Wait 3 seconds for app to initialize
 }
 
 export async function GET() {
