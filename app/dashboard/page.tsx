@@ -29,21 +29,29 @@ export default function DashboardPage() {
   // Fetch wallet balance
   const fetchWalletBalance = async () => {
     if (!user?.id) return
-    
+
+    setWalletLoading(true)
     try {
-      setWalletLoading(true)
       const response = await fetch('/api/wallet/balance', {
         credentials: 'include'
       })
-      
+
       if (response.ok) {
         const data = await response.json()
-        setWalletBalance(`$${data.balance_dollars}`)
+        const balanceInDollars = (data.balance_cents / 100).toFixed(2)
+        setWalletBalance(`$${balanceInDollars}`)
+        // Store balance cents in user context for other components
+        if (user) {
+          user.balance_cents = data.balance_cents
+        }
+        console.log('✅ Balance fetched:', balanceInDollars)
       } else {
         console.error('Failed to fetch wallet balance')
+        setWalletBalance("$0.00")
       }
-    } catch (error) {
-      console.error('Error fetching wallet balance:', error)
+    } catch (err) {
+      console.error('Error fetching wallet balance:', err)
+      setWalletBalance("$0.00")
     } finally {
       setWalletLoading(false)
     }

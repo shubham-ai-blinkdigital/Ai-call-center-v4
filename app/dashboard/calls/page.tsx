@@ -1,14 +1,12 @@
-
 "use client"
 
 import { useState, useEffect } from "react"
 import { useAuth } from "@/contexts/auth-context"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { 
   Phone, 
@@ -27,10 +25,12 @@ import {
   PieChart,
   Calendar,
   CreditCard,
-  AlertTriangle
+  AlertTriangle,
+  CheckCircle
 } from "lucide-react"
 import { toast } from "sonner"
 import { ScrollArea } from "@/components/ui/scroll-area"
+import Link from "next/link"
 
 interface CallStats {
   totalCalls: number
@@ -88,10 +88,10 @@ export default function CallsPage() {
   const [calls, setCalls] = useState<DatabaseCall[]>([])
   const [callStats, setCallStats] = useState<CallStats | null>(null)
   const [timeframeCounts, setTimeframeCounts] = useState<TimeframeCounts | null>(null)
-  const [billingStats, setBillingStats] = useState<BillingStats | null>(null)
+  // Removed billingStats as it's no longer relevant for manual billing
   const [loading, setLoading] = useState(true)
   const [syncing, setSyncing] = useState(false)
-  const [billing, setBilling] = useState(false)
+  // Removed billing state and related functions
   const [timeframe, setTimeframe] = useState("7d")
   const [page, setPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
@@ -120,13 +120,6 @@ export default function CallsPage() {
         setTotalPages(Math.ceil(callsData.total / 50))
       }
 
-      // Fetch billing stats
-      const billingResponse = await fetch(`/api/calls/billing?userId=${user.id}`)
-      if (billingResponse.ok) {
-        const billingData = await billingResponse.json()
-        setBillingStats(billingData.stats)
-      }
-
     } catch (error) {
       console.error('Error fetching data:', error)
       setError('Failed to fetch call data')
@@ -149,7 +142,7 @@ export default function CallsPage() {
       })
 
       const data = await response.json()
-      
+
       if (data.success) {
         toast.success(data.message)
         fetchCallStats() // Refresh data
@@ -164,41 +157,13 @@ export default function CallsPage() {
     }
   }
 
-  const processPendingBills = async () => {
-    if (!user?.id || billing) return
-
-    try {
-      setBilling(true)
-      const response = await fetch('/api/calls/billing', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ 
-          action: 'process_pending',
-          userId: user.id 
-        })
-      })
-
-      const data = await response.json()
-      
-      if (data.success) {
-        toast.success(`${data.message} - Processed ${data.processedCalls} calls`)
-        fetchCallStats() // Refresh data
-      } else {
-        toast.error(data.message || 'Failed to process bills')
-      }
-    } catch (error) {
-      console.error('Error processing bills:', error)
-      toast.error('Failed to process bills')
-    } finally {
-      setBilling(false)
-    }
-  }
+  // Removed processPendingBills function as manual billing is no longer supported
 
   useEffect(() => {
-    fetchCallStats()
-  }, [user, timeframe, page])
+    if (user?.id) {
+      fetchCallStats()
+    }
+  }, [user?.id, timeframe]) // Changed timeframe state name to match usage
 
   const formatDuration = (seconds: number) => {
     if (!seconds) return 'N/A'
@@ -278,12 +243,7 @@ export default function CallsPage() {
             <RefreshCcw className={`h-4 w-4 mr-2 ${syncing ? 'animate-spin' : ''}`} />
             Sync Now
           </Button>
-          {billingStats && billingStats.unbilledCalls > 0 && (
-            <Button onClick={processPendingBills} disabled={billing}>
-              <CreditCard className={`h-4 w-4 mr-2 ${billing ? 'animate-spin' : ''}`} />
-              Process Bills ({billingStats.unbilledCalls})
-            </Button>
-          )}
+          {/* Removed the "Process Bills" button */}
         </div>
       </div>
 
@@ -427,69 +387,36 @@ export default function CallsPage() {
         </div>
       )}
 
-      {/* Billing Stats Row */}
-      {billingStats && (
+      {/* Billing Stats Row - Replaced with Auto Billing and Wallet Balance */}
+      {user && ( // Ensure user object is available
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          {/* Replaced Unbilled Calls Card */}
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Spent</CardTitle>
-              <CreditCard className="h-4 w-4 text-muted-foreground" />
+              <CardTitle className="text-sm font-medium">Auto Billing</CardTitle>
+              <CheckCircle className="h-4 w-4 text-green-600" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{formatCost(billingStats.totalSpentCents)}</div>
-              <div className="text-xs text-muted-foreground">
-                From {billingStats.totalBilledCalls} billed calls
-              </div>
+              <div className="text-2xl font-bold text-green-600">Active</div>
+              <p className="text-xs text-muted-foreground">
+                Calls billed automatically
+              </p>
             </CardContent>
           </Card>
 
-          <Card className={billingStats.unbilledCalls > 0 ? "border-orange-200 bg-orange-50" : ""}>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Unbilled Calls</CardTitle>
-              <AlertTriangle className={`h-4 w-4 ${billingStats.unbilledCalls > 0 ? 'text-orange-500' : 'text-muted-foreground'}`} />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{billingStats.unbilledCalls}</div>
-              <div className="text-xs text-muted-foreground">
-                Est. cost: {formatCost(billingStats.estimatedUnbilledCostCents)}
-              </div>
-            </CardContent>
-          </Card>
-
+          {/* Replaced Actions Card */}
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Avg Cost/Call</CardTitle>
-              <DollarSign className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                {billingStats.totalBilledCalls > 0 
-                  ? formatCost(Math.round(billingStats.totalSpentCents / billingStats.totalBilledCalls))
-                  : '$0.00'
-                }
-              </div>
-              <div className="text-xs text-muted-foreground">
-                Per completed call
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Actions</CardTitle>
+              <CardTitle className="text-sm font-medium">Wallet Balance</CardTitle>
               <Wallet className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <Button 
-                onClick={processPendingBills} 
-                disabled={billing || billingStats.unbilledCalls === 0}
-                size="sm"
-                className="w-full"
-                variant={billingStats.unbilledCalls > 0 ? "default" : "outline"}
-              >
-                <CreditCard className={`h-4 w-4 mr-2 ${billing ? 'animate-spin' : ''}`} />
-                Process Bills
-              </Button>
+              <div className="text-2xl font-bold">${(user?.balance_cents || 0) / 100}</div>
+              <p className="text-xs text-muted-foreground">
+                <Link href="/dashboard/billing" className="text-blue-600 hover:underline">
+                  Add funds
+                </Link>
+              </p>
             </CardContent>
           </Card>
         </div>

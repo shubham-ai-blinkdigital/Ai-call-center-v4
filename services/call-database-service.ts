@@ -1,4 +1,3 @@
-
 import { db } from "@/lib/db"
 import { Call } from "@/types/database"
 
@@ -146,7 +145,7 @@ export class CallDatabaseService {
       ORDER BY c.created_at DESC
       LIMIT $${paramCount + 1} OFFSET $${paramCount + 2}
     `
-    
+
     values.push(limit, offset)
     const callsResult = await db.query(callsQuery, values)
 
@@ -166,7 +165,7 @@ export class CallDatabaseService {
       LEFT JOIN phone_numbers pn ON c.phone_number_id = pn.id
       WHERE c.call_id = $1
     `
-    
+
     const result = await db.query(query, [callId])
     return result.rows[0] || null
   }
@@ -196,6 +195,8 @@ export class CallDatabaseService {
    */
   static async syncCallsForUser(userId: string, blandApiCalls: any[]): Promise<number> {
     let syncCount = 0
+    const insertedCalls: Call[] = [];
+    let newCallsCount = 0;
 
     for (const apiCall of blandApiCalls) {
       try {
@@ -231,14 +232,61 @@ export class CallDatabaseService {
             callData.from_number, 
             callData.to_number
           ])
-          
+
           if (phoneResult.rows[0]) {
             callData.phone_number_id = phoneResult.rows[0].id
           }
         }
 
-        await this.storeCall(callData)
-        syncCount++
+        // Insert the new call
+        const insertResult = await db.query(`
+          INSERT INTO calls (
+            call_id, user_id, to_number, from_number, duration_seconds, status,
+            recording_url, transcript, summary, pathway_id, ended_reason,
+            started_at, ended_at, variables, created_at, updated_at
+          ) VALUES (
+            $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, NOW(), NOW()
+          ) RETURNING *
+        `, [
+          apiCall.c_id || apiCall.id,
+          userId,
+          apiCall.to_number || apiCall.to,
+          apiCall.from_number || apiCall.from,
+          apiCall.duration || apiCall.call_length || 0,
+          apiCall.status || 'unknown',
+          apiCall.recording_url || null,
+          apiCall.transcription || null,
+          apiCall.summary || null,
+          apiCall.pathway_id || null,
+          apiCall.ended_reason || null,
+          apiCall.started_at || apiCall.start_time,
+          apiCall.ended_at || apiCall.end_time,
+          apiCall.variables ? JSON.stringify(apiCall.variables) : null
+        ])
+
+        const insertedCall = insertResult.rows[0]
+        insertedCalls.push(insertedCall)
+        newCallsCount++
+
+        // Automatically bill completed calls with duration > 0
+        if (insertedCall.status === 'completed' && insertedCall.duration_seconds > 0) {
+          try {
+            const { CallBillingService } = await import('./call-billing-service')
+            const billingResult = await CallBillingService.billCall(
+              insertedCall.call_id,
+              userId,
+              insertedCall.duration_seconds
+            )
+
+            if (billingResult.success) {
+              console.log(`✅ [AUTO-BILLING] Successfully billed call ${insertedCall.call_id}: $${(billingResult.costCents! / 100).toFixed(2)}`)
+            } else {
+              console.error(`❌ [AUTO-BILLING] Failed to bill call ${insertedCall.call_id}: ${billingResult.message}`)
+            }
+          } catch (error) {
+            console.error(`❌ [AUTO-BILLING] Error billing call ${insertedCall.call_id}:`, error)
+          }
+        }
       } catch (error) {
         console.error(`Error syncing call ${apiCall.c_id || apiCall.id}:`, error)
       }

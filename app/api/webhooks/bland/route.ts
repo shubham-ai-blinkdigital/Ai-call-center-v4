@@ -88,17 +88,18 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Could not determine user for call" }, { status: 400 })
     }
     
-    // Process the call cost
-    console.log(`💰 [BLAND-WEBHOOK] Processing call cost for:`)
+    // Process the call billing
+    console.log(`💰 [BLAND-WEBHOOK] Processing call billing for:`)
     console.log(`   - Call ID: ${actualCallId}`)
     console.log(`   - User ID: ${actualUserId}`)
     console.log(`   - Duration: ${durationSeconds} seconds`)
     
-    const result = await CallCostService.processCallCost({
-      callId: actualCallId,
-      userId: actualUserId,
-      durationSeconds: parseInt(durationSeconds.toString())
-    })
+    const { CallBillingService } = await import('@/services/call-billing-service')
+    const result = await CallBillingService.billCall(
+      actualCallId,
+      actualUserId,
+      parseInt(durationSeconds.toString())
+    )
     
     if (result.success) {
       console.log(`✅ [BLAND-WEBHOOK] ${result.message}`)
