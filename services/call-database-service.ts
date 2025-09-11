@@ -206,7 +206,7 @@ export class CallDatabaseService {
           user_id: userId,
           to_number: apiCall.to || apiCall.to_number || '',
           from_number: apiCall.from || apiCall.from_number || '',
-          duration_seconds: apiCall.call_length || apiCall.duration || apiCall.duration_seconds,
+          duration_seconds: Math.round((apiCall.call_length || apiCall.duration || apiCall.duration_seconds || 0) * 60), // Convert minutes to seconds and round
           status: apiCall.status,
           recording_url: apiCall.recording_url,
           transcript: apiCall.transcription || apiCall.transcript,
@@ -262,7 +262,7 @@ export class CallDatabaseService {
           userId,
           apiCall.to_number || apiCall.to,
           apiCall.from_number || apiCall.from,
-          apiCall.duration || apiCall.call_length || 0,
+          Math.round((apiCall.duration || apiCall.call_length || 0) * 60), // Convert minutes to seconds and round to integer
           apiCall.status || 'unknown',
           apiCall.recording_url || null,
           apiCall.transcription || null,

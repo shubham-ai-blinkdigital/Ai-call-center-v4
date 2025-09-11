@@ -129,7 +129,8 @@ export class CallIngestionService {
       // Fetch calls from Bland.ai API for user's phone numbers
       const blandApiKey = process.env.BLAND_AI_API_KEY
       if (!blandApiKey) {
-        throw new Error('Bland.ai API key not configured')
+        console.error('❌ [INGESTION] BLAND_AI_API_KEY environment variable not set')
+        return { synced: 0, errors: ['Bland.ai API key not configured'] }
       }
 
       // Get calls from Bland.ai (last 1000 to catch recent ones)
