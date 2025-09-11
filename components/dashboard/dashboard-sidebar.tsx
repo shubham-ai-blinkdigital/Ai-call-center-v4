@@ -90,7 +90,16 @@ export function DashboardSidebar() {
               src="/logo/ConvLogoG.png" 
               alt="Conversation Logo" 
               className="h-8 w-8 object-contain"
+              onError={(e) => {
+                // Fallback to a styled letter if image fails to load
+                const target = e.target as HTMLImageElement;
+                target.style.display = 'none';
+                target.nextElementSibling?.classList.remove('hidden');
+              }}
             />
+            <div className="hidden h-8 w-8 rounded-md bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
+              <span className="text-white font-bold text-sm">C</span>
+            </div>
           </div>
           <div className="ml-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300 delay-100 overflow-hidden whitespace-nowrap">
             <span className="text-xl font-bold text-gray-900">Conversation</span>
