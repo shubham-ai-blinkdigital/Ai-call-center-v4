@@ -345,6 +345,31 @@ export default function CallsPage() {
             <Activity className={`h-4 w-4 mr-2 ${syncing ? 'animate-spin' : ''}`} />
             Force Ingestion
           </Button>
+          <Button onClick={async () => {
+            try {
+              setSyncing(true)
+              const response = await fetch('/api/calls/ingestion', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'trigger' })
+              })
+              const data = await response.json()
+              if (data.message) {
+                toast.success(data.message)
+                // Refresh data after ingestion
+                await Promise.all([fetchCalls(), fetchCallStats(), fetchWalletBalance()])
+              } else {
+                toast.error(data.error || 'Failed to trigger ingestion')
+              }
+            } catch (error) {
+              toast.error('Error refreshing data')
+            } finally {
+              setSyncing(false)
+            }
+          }} disabled={syncing} variant="default">
+            <RefreshCw className={`h-4 w-4 mr-2 ${syncing ? 'animate-spin' : ''}`} />
+            Refresh Data
+          </Button>
           <Button onClick={() => setAutoRefresh(prev => !prev)} variant="ghost" className="flex items-center gap-1">
             {autoRefresh ? <CheckCircle className="h-4 w-4 text-green-500" /> : <AlertTriangle className="h-4 w-4 text-yellow-500" />}
             Auto-Refresh {autoRefresh ? "On" : "Off"}
