@@ -171,7 +171,7 @@ export default function CallsPage() {
     }
   }
 
-  const syncCalls = async () => {
+  const syncCalls = async (showToast = true) => {
     if (!user?.id || syncing) return
 
     try {
@@ -194,7 +194,9 @@ export default function CallsPage() {
       }
 
       const result = await response.json()
-      toast.success(result.message || 'Calls synced successfully')
+      if (showToast) {
+        toast.success(result.message || 'Calls synced successfully')
+      }
       console.log('Sync result:', result)
 
       // Refresh all data after sync
@@ -204,10 +206,15 @@ export default function CallsPage() {
         fetchWalletBalance()
       ])
 
+      return result
+
     } catch (error) {
       console.error('Sync error:', error)
-      toast.error('Failed to sync calls')
+      if (showToast) {
+        toast.error('Failed to sync calls')
+      }
       setError('Failed to sync calls')
+      throw error
     } finally {
       setSyncing(false)
     }
@@ -218,24 +225,46 @@ export default function CallsPage() {
   useEffect(() => {
     if (user?.id) {
       setLoading(true)
-      Promise.all([
-        fetchCalls(),
-        fetchCallStats(),
-        fetchWalletBalance()
-      ]).finally(() => {
-        setLoading(false)
-      })
+      // Auto-sync on page load, then fetch data
+      const initializeData = async () => {
+        try {
+          console.log('🔄 [CALLS-PAGE] Auto-syncing on page load...')
+          // Auto-sync calls first (without toast to avoid spam)
+          await syncCalls(false)
+        } catch (error) {
+          console.warn('⚠️ [CALLS-PAGE] Auto-sync failed, continuing with cached data:', error)
+        } finally {
+          // Always fetch data regardless of sync success
+          Promise.all([
+            fetchCalls(),
+            fetchCallStats(),
+            fetchWalletBalance()
+          ]).finally(() => {
+            setLoading(false)
+          })
+        }
+      }
+
+      initializeData()
     }
   }, [user?.id, timeframe, page]) // Added page dependency
 
-  // Auto-refresh every 30 seconds
+  // Auto-refresh with sync every 30 seconds
   useEffect(() => {
     if (!autoRefresh || !user?.id) return
 
-    const interval = setInterval(() => {
-      fetchCalls()
-      fetchCallStats()
-      fetchWalletBalance()
+    const interval = setInterval(async () => {
+      console.log('🔄 [CALLS-PAGE] Periodic auto-refresh with sync...')
+      try {
+        // Sync calls first (without toast to avoid spam)
+        await syncCalls(false)
+      } catch (error) {
+        console.warn('⚠️ [CALLS-PAGE] Periodic sync failed, refreshing cached data:', error)
+        // If sync fails, still refresh the cached data
+        fetchCalls()
+        fetchCallStats()
+        fetchWalletBalance()
+      }
     }, 30000) // 30 seconds
 
     return () => clearInterval(interval)
@@ -315,7 +344,7 @@ export default function CallsPage() {
               <SelectItem value="90d">Last 90 days</SelectItem>
             </SelectContent>
           </Select>
-          <Button onClick={syncCalls} disabled={syncing} variant="outline">
+          <Button onClick={() => syncCalls(true)} disabled={syncing} variant="outline">
             <RefreshCcw className={`h-4 w-4 mr-2 ${syncing ? 'animate-spin' : ''}`} />
             Sync Now
           </Button>
@@ -516,7 +545,7 @@ export default function CallsPage() {
             <div className="text-center py-8">
               <Phone className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
               <p className="text-muted-foreground">No calls found in database</p>
-              <Button onClick={syncCalls} className="mt-4">
+              <Button onClick={() => syncCalls(true)} className="mt-4">
                 <RefreshCcw className="h-4 w-4 mr-2" />
                 Sync Calls
               </Button>

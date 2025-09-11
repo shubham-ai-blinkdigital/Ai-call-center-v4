@@ -45,13 +45,19 @@ export async function POST(request: Request) {
     }
 
     if (userId) {
-      // Sync calls for specific user
+      // Sync calls for specific user with enhanced billing
       const result = await callSyncService.syncCallsForUser(userId)
+
+      // Additional message for billing
+      const billingInfo = result.synced > 0 ? 
+        ` (${result.synced} calls synced and automatically billed)` : 
+        ''
 
       return NextResponse.json({
         success: true,
-        message: `Synced ${result.synced} calls for user`,
-        data: result
+        message: `Synced ${result.synced} calls for user${billingInfo}`,
+        data: result,
+        syncedCount: result.synced
       })
     }
 
