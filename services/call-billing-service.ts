@@ -113,7 +113,7 @@ export class CallBillingService {
       try {
         // Check user's current wallet balance
         const walletResult = await db.query(
-          'SELECT id, balance_cents FROM wallets WHERE user_id = $1',
+          'SELECT balance_cents FROM users WHERE id = $1',
           [userId]
         )
 
@@ -121,7 +121,7 @@ export class CallBillingService {
           await db.query('ROLLBACK')
           return {
             success: false,
-            message: 'Wallet not found for user'
+            message: 'User not found'
           }
         }
 
@@ -139,7 +139,7 @@ export class CallBillingService {
         // Deduct from wallet
         const newBalance = currentBalance - costCents
         await db.query(
-          'UPDATE wallets SET balance_cents = $1, updated_at = NOW() WHERE user_id = $2',
+          'UPDATE users SET balance_cents = $1, updated_at = NOW() WHERE id = $2',
           [newBalance, userId]
         )
 
@@ -149,23 +149,17 @@ export class CallBillingService {
           [costCents, callId]
         )
 
-        // Get wallet ID for transaction record
-        const walletId = walletResult.rows[0].id || null
-
         // Record transaction
         await db.query(`
           INSERT INTO wallet_transactions (
-            wallet_id, amount_cents, type, metadata, created_at
-          ) VALUES ($1, $2, $3, $4, NOW())
+            user_id, amount_cents, type, description, reference_id, created_at
+          ) VALUES ($1, $2, $3, $4, $5, NOW())
         `, [
-          walletId,
+          userId,
           -costCents, // Negative for debit
-          'debit',
-          JSON.stringify({
-            call_id: callId,
-            duration_minutes: durationMinutes,
-            description: `Call charge for ${durationMinutes} minutes`
-          })
+          'call_charge',
+          `Call charge for ${durationMinutes} minutes`,
+          callId
         ])
 
         await db.query('COMMIT')

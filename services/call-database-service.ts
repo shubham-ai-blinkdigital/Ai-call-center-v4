@@ -206,7 +206,7 @@ export class CallDatabaseService {
           user_id: userId,
           to_number: apiCall.to || apiCall.to_number || '',
           from_number: apiCall.from || apiCall.from_number || '',
-          duration_seconds: Math.round((apiCall.call_length || apiCall.duration || apiCall.duration_seconds || 0) * 60), // Convert minutes to seconds and round
+          duration_seconds: apiCall.call_length || apiCall.duration || apiCall.duration_seconds,
           status: apiCall.status,
           recording_url: apiCall.recording_url,
           transcript: apiCall.transcription || apiCall.transcript,
@@ -238,7 +238,7 @@ export class CallDatabaseService {
           }
         }
 
-        // Insert or update call with proper deduplication
+        // Insert the new call
         const insertResult = await db.query(`
           INSERT INTO calls (
             call_id, user_id, to_number, from_number, duration_seconds, status,
@@ -246,23 +246,13 @@ export class CallDatabaseService {
             start_time, end_time, created_at, updated_at
           ) VALUES (
             $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, NOW(), NOW()
-          ) 
-          ON CONFLICT (call_id) DO UPDATE SET
-            duration_seconds = EXCLUDED.duration_seconds,
-            status = EXCLUDED.status,
-            recording_url = EXCLUDED.recording_url,
-            transcript = EXCLUDED.transcript,
-            summary = EXCLUDED.summary,
-            ended_reason = EXCLUDED.ended_reason,
-            end_time = EXCLUDED.end_time,
-            updated_at = NOW()
-          RETURNING *
+          ) RETURNING *
         `, [
           apiCall.c_id || apiCall.id,
           userId,
           apiCall.to_number || apiCall.to,
           apiCall.from_number || apiCall.from,
-          Math.round((apiCall.duration || apiCall.call_length || 0) * 60), // Convert minutes to seconds and round to integer
+          apiCall.duration || apiCall.call_length || 0,
           apiCall.status || 'unknown',
           apiCall.recording_url || null,
           apiCall.transcription || null,
