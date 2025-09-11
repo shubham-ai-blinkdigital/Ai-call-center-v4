@@ -86,9 +86,9 @@ export function DashboardSidebar() {
       <div className="flex h-16 items-center border-b border-gray-200 px-4">
         <div className="flex items-center min-w-0">
           <div className="flex-shrink-0">
-            <img 
-              src="/ConvLogoG.png" 
-              alt="Conversation Logo" 
+            <img
+              src="/ConvLogoG.png"
+              alt="Conversation Logo"
               className="h-8 w-8 object-contain"
               onError={(e) => {
                 // Fallback to a styled letter if image fails to load

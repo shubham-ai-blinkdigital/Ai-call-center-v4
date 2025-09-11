@@ -15,6 +15,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 export default function ProfilePage() {
   const { user, updateProfile, enableTwoFactor, verifyTwoFactor } = useAuth()
   const { theme, setTheme } = useTheme()
+  const [mounted, setMounted] = useState(false)
   const [profileData, setProfileData] = useState<Partial<User>>(user || {})
   const [isUpdating, setIsUpdating] = useState(false)
   const [error, setError] = useState("")
@@ -25,6 +26,10 @@ export default function ProfilePage() {
   const [twoFactorSetupData, setTwoFactorSetupData] = useState<any>(null)
   const [verificationCode, setVerificationCode] = useState("")
   const [isVerifying, setIsVerifying] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   if (!user) {
     return (
@@ -271,35 +276,46 @@ export default function ProfilePage() {
                 <div className="flex items-center justify-between pt-4 border-t">
                   <div>
                     <h3 className="text-lg font-medium">Theme Preferences</h3>
-                    <p className="text-sm text-gray-500">Choose your preferred theme</p>
+                    <p className="text-sm text-muted-foreground">Choose your preferred theme</p>
                   </div>
                   <div className="flex items-center space-x-2">
-                    <div className="flex items-center space-x-1 rounded-lg border p-1">
-                      <Button
-                        variant={theme === "light" ? "default" : "ghost"}
-                        size="sm"
-                        onClick={() => setTheme("light")}
-                        className="h-8 w-8 p-0"
-                      >
-                        <Sun className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant={theme === "dark" ? "default" : "ghost"}
-                        size="sm"
-                        onClick={() => setTheme("dark")}
-                        className="h-8 w-8 p-0"
-                      >
-                        <Moon className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant={theme === "system" ? "default" : "ghost"}
-                        size="sm"
-                        onClick={() => setTheme("system")}
-                        className="h-8 w-8 p-0"
-                      >
-                        <Monitor className="h-4 w-4" />
-                      </Button>
-                    </div>
+                    {mounted ? (
+                      <div className="flex items-center space-x-1 rounded-lg border p-1">
+                        <Button
+                          variant={theme === "light" ? "default" : "ghost"}
+                          size="sm"
+                          onClick={() => setTheme("light")}
+                          className="h-8 w-8 p-0"
+                          title="Light theme"
+                        >
+                          <Sun className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant={theme === "dark" ? "default" : "ghost"}
+                          size="sm"
+                          onClick={() => setTheme("dark")}
+                          className="h-8 w-8 p-0"
+                          title="Dark theme"
+                        >
+                          <Moon className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant={theme === "system" ? "default" : "ghost"}
+                          size="sm"
+                          onClick={() => setTheme("system")}
+                          className="h-8 w-8 p-0"
+                          title="System theme"
+                        >
+                          <Monitor className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    ) : (
+                      <div className="flex items-center space-x-1 rounded-lg border p-1">
+                        <div className="h-8 w-8 bg-muted animate-pulse rounded"></div>
+                        <div className="h-8 w-8 bg-muted animate-pulse rounded"></div>
+                        <div className="h-8 w-8 bg-muted animate-pulse rounded"></div>
+                      </div>
+                    )}
                   </div>
                 </div>
 
