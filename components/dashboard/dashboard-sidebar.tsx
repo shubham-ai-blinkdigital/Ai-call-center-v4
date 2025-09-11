@@ -86,10 +86,10 @@ export function DashboardSidebar() {
       <div className="flex h-16 items-center border-b border-gray-200 px-4">
         <div className="flex items-center min-w-0">
           <div className="flex-shrink-0">
-            <span className="text-xl font-bold text-gray-900">B</span>
+            <span className="text-xl font-bold text-gray-900">C</span>
           </div>
           <div className="ml-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300 delay-100 overflow-hidden whitespace-nowrap">
-            <span className="text-xl font-bold text-gray-900">land.ai</span>
+            <span className="text-xl font-bold text-gray-900">onversation</span>
           </div>
         </div>
       </div>
