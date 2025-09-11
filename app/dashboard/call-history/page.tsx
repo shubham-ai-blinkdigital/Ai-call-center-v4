@@ -8,11 +8,18 @@ import { Badge } from "@/components/ui/badge"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { useUserCallData } from "@/hooks/use-user-call-data"
+import { useState, useEffect } from "react"
+import { useAuth } from "@/contexts/auth-context"
 import { useState, useRef, useEffect } from "react"
 
 export default function CallHistoryPage() {
-  const { calls, totalCalls, userPhoneNumber, loading, error, lastUpdated, refetch } = useUserCallData()
+  const { user } = useAuth()
+  const [calls, setCalls] = useState<any[]>([])
+  const [totalCalls, setTotalCalls] = useState(0)
+  const [userPhoneNumber, setUserPhoneNumber] = useState<string | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(null)
   const [pageSize, setPageSize] = useState("50")
   
   // Audio player state
@@ -93,6 +100,89 @@ export default function CallHistoryPage() {
     return `${minutes}:${remainingSeconds.toString().padStart(2, "0")}`
   }
   
+  // Fetch calls from database
+  const fetchCalls = async () => {
+    if (!user?.id) return
+
+    try {
+      setError(null)
+      const response = await fetch(`/api/calls/database?userId=${user.id}&limit=1000&offset=0`)
+      
+      if (!response.ok) {
+        throw new Error('Failed to fetch calls')
+      }
+
+      const data = await response.json()
+      
+      // Transform database calls to match the expected format
+      const transformedCalls = (data.calls || []).map((call: any) => ({
+        id: call.call_id,
+        to_number: call.to_number || "",
+        from_number: call.from_number || "",
+        status: call.status || "unknown",
+        duration: call.duration_seconds || 0,
+        start_time: call.created_at || new Date().toISOString(),
+        pathway_id: call.pathway_id,
+        outcome: call.ended_reason,
+        recording_url: call.recording_url,
+        transcript: call.transcript,
+        summary: call.summary,
+        ended_reason: call.ended_reason
+      }))
+
+      setCalls(transformedCalls)
+      setTotalCalls(data.total || transformedCalls.length)
+      setLastUpdated(new Date())
+
+    } catch (error: any) {
+      console.error('Error fetching calls from database:', error)
+      setError(error.message)
+    }
+  }
+
+  // Fetch user phone number
+  const fetchUserPhone = async () => {
+    if (!user?.id) return
+
+    try {
+      const response = await fetch('/api/user/phone-numbers')
+      if (response.ok) {
+        const data = await response.json()
+        if (data.success && data.phoneNumbers?.length > 0) {
+          setUserPhoneNumber(data.phoneNumbers[0].number)
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching phone numbers:', error)
+    }
+  }
+
+  // Initial load
+  useEffect(() => {
+    if (user?.id) {
+      setLoading(true)
+      Promise.all([fetchCalls(), fetchUserPhone()])
+        .finally(() => setLoading(false))
+    }
+  }, [user?.id])
+
+  // Auto-refresh every 30 seconds for real-time updates
+  useEffect(() => {
+    if (!user?.id) return
+
+    const interval = setInterval(() => {
+      fetchCalls()
+    }, 30000) // 30 seconds to match ingestion interval
+
+    return () => clearInterval(interval)
+  }, [user?.id])
+
+  const refetch = () => {
+    setLoading(true)
+    Promise.all([fetchCalls(), fetchUserPhone()])
+      .finally(() => setLoading(false))
+  }
+
   // Cleanup audio elements on unmount
   useEffect(() => {
     return () => {

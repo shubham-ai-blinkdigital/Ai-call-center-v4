@@ -238,7 +238,7 @@ export class CallDatabaseService {
           }
         }
 
-        // Insert the new call
+        // Insert or update call with proper deduplication
         const insertResult = await db.query(`
           INSERT INTO calls (
             call_id, user_id, to_number, from_number, duration_seconds, status,
@@ -246,7 +246,17 @@ export class CallDatabaseService {
             start_time, end_time, created_at, updated_at
           ) VALUES (
             $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, NOW(), NOW()
-          ) RETURNING *
+          ) 
+          ON CONFLICT (call_id) DO UPDATE SET
+            duration_seconds = EXCLUDED.duration_seconds,
+            status = EXCLUDED.status,
+            recording_url = EXCLUDED.recording_url,
+            transcript = EXCLUDED.transcript,
+            summary = EXCLUDED.summary,
+            ended_reason = EXCLUDED.ended_reason,
+            end_time = EXCLUDED.end_time,
+            updated_at = NOW()
+          RETURNING *
         `, [
           apiCall.c_id || apiCall.id,
           userId,
