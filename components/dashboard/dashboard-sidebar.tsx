@@ -87,7 +87,7 @@ export function DashboardSidebar() {
         <div className="flex items-center min-w-0">
           <div className="flex-shrink-0">
             <img 
-              src="/logo/ConvLogoG.png" 
+              src="/ConvLogoG.png" 
               alt="Conversation Logo" 
               className="h-8 w-8 object-contain"
               onError={(e) => {
