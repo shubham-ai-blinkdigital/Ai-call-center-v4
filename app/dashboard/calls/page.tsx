@@ -265,7 +265,7 @@ export default function CallsPage() {
         fetchCallStats()
         fetchWalletBalance()
       }
-    }, 30000) // 30 seconds
+    }, 30000) // 100 seconds
 
     return () => clearInterval(interval)
   }, [autoRefresh, user?.id, timeframe, page]) // Added dependencies
