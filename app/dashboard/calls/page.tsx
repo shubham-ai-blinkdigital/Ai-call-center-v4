@@ -439,7 +439,7 @@ export default function CallsPage() {
                 {timeframeCounts.yesterday > 0 && (
                   <span className="ml-1">
                     ({calculateGrowth(timeframeCounts.today, timeframeCounts.yesterday) >= 0 ? '+' : ''}
-                    {calculateGrowth(timeframecounts.today, timeframeCounts.yesterday).toFixed(1)}%)
+                    {calculateGrowth(timeframeCounts.today, timeframeCounts.yesterday).toFixed(1)}%)
                   </span>
                 )}
               </div>
