@@ -217,9 +217,14 @@ export default function CallsPage() {
 
   useEffect(() => {
     if (user?.id) {
-      fetchCalls()
-      fetchCallStats()
-      fetchWalletBalance()
+      setLoading(true)
+      Promise.all([
+        fetchCalls(),
+        fetchCallStats(),
+        fetchWalletBalance()
+      ]).finally(() => {
+        setLoading(false)
+      })
     }
   }, [user?.id, timeframe, page]) // Added page dependency
 
