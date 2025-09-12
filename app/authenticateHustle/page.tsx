@@ -13,7 +13,7 @@ export default function AuthenticateHustlePage() {
   const [message, setMessage] = useState("")
   const router = useRouter()
   const searchParams = useSearchParams()
-  const { login } = useAuth()
+  const { refreshAuth } = useAuth()
 
   const token = searchParams.get("token")
 
@@ -47,10 +47,18 @@ export default function AuthenticateHustlePage() {
           setStatus("success")
           setMessage("Authentication successful! Redirecting to dashboard...")
           
-          // Redirect to dashboard after 2 seconds
+          // Update auth context to reflect the new session
+          try {
+            await refreshAuth()
+            console.log("[AUTH-HUSTLE] Auth context refreshed successfully")
+          } catch (error) {
+            console.log("[AUTH-HUSTLE] Auth context refresh failed, but token validation succeeded")
+          }
+          
+          // Redirect to dashboard after 1 second
           setTimeout(() => {
             router.push("/dashboard")
-          }, 2000)
+          }, 1000)
         } else {
           console.log("[AUTH-HUSTLE] Token validation failed:", result.message)
           setStatus("error")
