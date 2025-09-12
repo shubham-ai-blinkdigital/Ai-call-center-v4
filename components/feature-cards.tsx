@@ -1,85 +1,70 @@
-import { MessageSquare, Phone, Zap, BarChart2 } from "lucide-react"
+import { Workflow, Phone, BarChart3, Users, Zap, Shield } from "lucide-react"
 
 export function FeatureCards() {
   const features = [
     {
-      icon: Phone,
-      title: "Voice AI Agents",
-      description: "Deploy low latency voice agents in under 10 minutes for seamless inbound and outbound support.",
-      badge: "CUSTOMERS",
-      color: "from-blue-600 to-blue-400",
+      icon: Workflow,
+      title: "Visual Flow Builder",
+      description: "Design call flows with our intuitive drag-and-drop interface. No coding required - just connect nodes and build your logic visually.",
+      badge: "Core Feature"
     },
     {
-      icon: MessageSquare,
-      title: "Chat AI Agents",
-      description:
-        "Deliver hyper-personalized interactions across channels with empathy, for a truly human-like support experience.",
-      badge: "CUSTOMERS",
-      color: "from-purple-600 to-purple-400",
+      icon: Phone,
+      title: "Phone Number Management",
+      description: "Purchase and manage phone numbers directly in the platform. Connect your flows to real phone lines instantly.",
+      badge: "Integration"
+    },
+    {
+      icon: BarChart3,
+      title: "Call Analytics",
+      description: "Track call performance, conversion rates, and customer interactions with detailed analytics and reporting.",
+      badge: "Analytics"
+    },
+    {
+      icon: Users,
+      title: "Team Collaboration",
+      description: "Work together on call flows with your team. Share, edit, and manage flows with role-based access control.",
+      badge: "Collaboration"
     },
     {
       icon: Zap,
-      title: "Agent Assistance",
-      description: "Works alongside your agents to provide next best actions and automates repetitive workflows.",
-      badge: "AGENTS",
-      color: "from-pink-600 to-pink-400",
+      title: "Instant Deployment",
+      description: "Deploy your call flows instantly. Test with our built-in simulator and go live with one click.",
+      badge: "Deployment"
     },
     {
-      icon: BarChart2,
-      title: "Conversation Intelligence",
-      description: "Quality checks interactions across all channels to provide invaluable customer insights.",
-      badge: "LEADERS",
-      color: "from-amber-600 to-amber-400",
-    },
+      icon: Shield,
+      title: "Enterprise Security",
+      description: "SOC 2 compliant with end-to-end encryption. Your call data and customer information stays secure.",
+      badge: "Security"
+    }
   ]
 
   return (
-    <section className="py-20 bg-gray-900">
+    <section className="py-20 bg-gray-50">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="max-w-3xl mx-auto text-center mb-16">
-          <h2 className="text-3xl font-bold text-white">AI Solutions for Every Need</h2>
-          <p className="mt-4 text-xl text-gray-300">
-            Our platform offers a comprehensive suite of AI-powered tools to enhance your customer interactions.
+          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+            Everything you need to build call flows
+          </h2>
+          <p className="text-xl text-gray-600">
+            From visual design to deployment, our platform provides all the tools to create intelligent phone systems.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {features.map((feature, index) => (
-            <div
-              key={index}
-              className="relative overflow-hidden rounded-2xl bg-gray-800 border border-gray-700 p-8 transition-all duration-300 hover:shadow-lg hover:shadow-blue-500/10 hover:-translate-y-1"
-            >
-              <div className="absolute top-0 right-0 -mt-4 -mr-4 h-24 w-24 rounded-full bg-gradient-to-r from-gray-800 to-gray-700 blur-2xl opacity-50"></div>
-
-              <div className="relative">
-                <div className="inline-block px-3 py-1 rounded-full bg-gray-700 text-gray-300 text-xs font-medium mb-4">
-                  {feature.badge}
-                </div>
-
-                <div
-                  className={`w-12 h-12 rounded-lg bg-gradient-to-r ${feature.color} flex items-center justify-center mb-4`}
-                >
+            <div key={index} className="bg-white rounded-xl p-8 shadow-lg hover:shadow-xl transition-shadow duration-300">
+              <div className="flex items-center justify-between mb-4">
+                <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
                   <feature.icon className="h-6 w-6 text-white" />
                 </div>
-
-                <h3 className="text-xl font-bold text-white mb-2">{feature.title}</h3>
-                <p className="text-gray-400">{feature.description}</p>
-
-                <div className="mt-6 flex items-center">
-                  <a href="#" className="text-blue-400 hover:text-blue-300 font-medium flex items-center">
-                    Learn more
-                    <svg
-                      className="ml-2 w-4 h-4"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                    </svg>
-                  </a>
-                </div>
+                <span className="text-xs font-medium text-blue-600 bg-blue-50 px-2 py-1 rounded-full">
+                  {feature.badge}
+                </span>
               </div>
+              <h3 className="text-xl font-bold text-gray-900 mb-3">{feature.title}</h3>
+              <p className="text-gray-600 leading-relaxed">{feature.description}</p>
             </div>
           ))}
         </div>
