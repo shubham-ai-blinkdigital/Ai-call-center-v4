@@ -28,19 +28,48 @@ export async function POST(request: NextRequest) {
       }, { status: 500 })
     }
 
-    // Validate token with external API
+    // Validate token with external API - try multiple endpoints
     let externalUserData: any
     try {
-      const response = await fetch(`${EXTERNAL_API_URL}/api/accounts/me`, {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      })
+      // Try different possible endpoints for user profile
+      const endpoints = [
+        `${EXTERNAL_API_URL}/api/accounts/profile`,
+        `${EXTERNAL_API_URL}/api/accounts/me`,
+        `${EXTERNAL_API_URL}/api/user/profile`,
+        `${EXTERNAL_API_URL}/api/user/me`
+      ]
 
-      if (!response.ok) {
-        console.log("[VALIDATE-TOKEN] External API validation failed:", response.status)
+      let response: Response | null = null
+      let lastError: string = ""
+
+      for (const endpoint of endpoints) {
+        try {
+          console.log(`[VALIDATE-TOKEN] Trying endpoint: ${endpoint}`)
+          response = await fetch(endpoint, {
+            method: 'GET',
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json'
+            }
+          })
+
+          if (response.ok) {
+            console.log(`[VALIDATE-TOKEN] Success with endpoint: ${endpoint}`)
+            break
+          } else {
+            lastError = `${endpoint}: ${response.status}`
+            console.log(`[VALIDATE-TOKEN] Failed with ${endpoint}: ${response.status}`)
+            response = null
+          }
+        } catch (endpointError: any) {
+          lastError = `${endpoint}: ${endpointError.message}`
+          console.log(`[VALIDATE-TOKEN] Error with ${endpoint}:`, endpointError.message)
+          continue
+        }
+      }
+
+      if (!response || !response.ok) {
+        console.log("[VALIDATE-TOKEN] All external API endpoints failed. Last error:", lastError)
         return NextResponse.json({
           success: false,
           message: "Invalid or expired token"
