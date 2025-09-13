@@ -294,7 +294,7 @@ export default function CallHistoryPage() {
               <div className="overflow-auto max-h-[75vh] border rounded-lg">
                 <div className="min-w-[1400px]">
                   <Table>
-                    <TableHeader className="sticky top-0 bg-gray-50 z-10">
+                    <TableHeader className="sticky top-0 bg-card z-10">
                       <TableRow>
                         <TableHead className="font-semibold w-[130px] text-foreground">
                           <div className="flex items-center gap-1">
@@ -330,7 +330,7 @@ export default function CallHistoryPage() {
                     </TableHeader>
                     <TableBody>
                       {paginatedCalls.map((call, index) => (
-                        <TableRow key={call.id || index} className="hover:bg-gray-50">
+                        <TableRow key={call.id || index}>
                           <TableCell className="font-mono text-xs">
                             {call.from_number || "—"}
                           </TableCell>
