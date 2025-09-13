@@ -1,4 +1,3 @@
-
 "use client"
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -14,22 +13,22 @@ import { useState, useRef, useEffect } from "react"
 export default function CallHistoryPage() {
   const { calls, totalCalls, userPhoneNumber, loading, error, lastUpdated, refetch } = useUserCallData()
   const [pageSize, setPageSize] = useState("50")
-  
+
   // Audio player state
   const [currentlyPlaying, setCurrentlyPlaying] = useState<string | null>(null)
   const [audioProgress, setAudioProgress] = useState<{ [key: string]: number }>({})
   const [audioDuration, setAudioDuration] = useState<{ [key: string]: number }>({})
   const audioRefs = useRef<{ [key: string]: HTMLAudioElement }>({})
-  
+
   // Audio player functions
   const handlePlayPause = (callId: string, recordingUrl: string) => {
     const audio = audioRefs.current[callId]
-    
+
     if (!audio) {
       // Create new audio element if it doesn't exist
       const newAudio = new Audio(recordingUrl)
       audioRefs.current[callId] = newAudio
-      
+
       // Set up event listeners
       newAudio.addEventListener('loadedmetadata', () => {
         setAudioDuration(prev => ({
@@ -37,14 +36,14 @@ export default function CallHistoryPage() {
           [callId]: newAudio.duration
         }))
       })
-      
+
       newAudio.addEventListener('timeupdate', () => {
         setAudioProgress(prev => ({
           ...prev,
           [callId]: newAudio.currentTime
         }))
       })
-      
+
       newAudio.addEventListener('ended', () => {
         setCurrentlyPlaying(null)
         setAudioProgress(prev => ({
@@ -52,7 +51,7 @@ export default function CallHistoryPage() {
           [callId]: 0
         }))
       })
-      
+
       // Start playing
       newAudio.play()
       setCurrentlyPlaying(callId)
@@ -68,13 +67,13 @@ export default function CallHistoryPage() {
             otherAudio.pause()
           }
         })
-        
+
         audio.play()
         setCurrentlyPlaying(callId)
       }
     }
   }
-  
+
   const handleSeek = (callId: string, seekTime: number) => {
     const audio = audioRefs.current[callId]
     if (audio) {
@@ -85,14 +84,14 @@ export default function CallHistoryPage() {
       }))
     }
   }
-  
+
   const formatAudioTime = (seconds: number) => {
     if (!seconds || isNaN(seconds)) return "0:00"
     const minutes = Math.floor(seconds / 60)
     const remainingSeconds = Math.floor(seconds % 60)
     return `${minutes}:${remainingSeconds.toString().padStart(2, "0")}`
   }
-  
+
   // Cleanup audio elements on unmount
   useEffect(() => {
     return () => {
@@ -170,7 +169,7 @@ export default function CallHistoryPage() {
       "Call ID", "From", "To", "Date", "Time", "Duration", "Status", 
       "Pathway ID", "Ended Reason", "Recording URL", "Has Transcript", "Has Summary"
     ]
-    
+
     const csvContent = [
       headers.join(","),
       ...calls.map((call) =>
@@ -352,17 +351,17 @@ export default function CallHistoryPage() {
                               {call.status || "unknown"}
                             </Badge>
                           </TableCell>
-                          <TableCell className="text-xs text-gray-600">
+                          <TableCell className="text-xs text-muted-foreground">
                             {call.ended_reason || call.outcome || "—"}
                           </TableCell>
-                          <TableCell className="text-xs text-gray-600 font-mono">
+                          <TableCell className="text-xs text-muted-foreground font-mono">
                             {call.pathway_id ? (
                               <div className="truncate max-w-[180px]" title={call.pathway_id}>
                                 {call.pathway_id}
                               </div>
                             ) : "—"}
                           </TableCell>
-                          <TableCell className="text-xs text-gray-600">
+                          <TableCell className="text-xs text-muted-foreground">
                             {call.summary ? (
                               <div className="truncate max-w-[200px]" title={call.summary}>
                                 {call.summary}
@@ -386,7 +385,7 @@ export default function CallHistoryPage() {
                                       <Play className="h-3 w-3" />
                                     )}
                                   </Button>
-                                  
+
                                   {/* Audio Progress Bar */}
                                   <div className="flex items-center gap-1 flex-1 min-w-0">
                                     <div className="flex-1 min-w-0">
@@ -415,7 +414,7 @@ export default function CallHistoryPage() {
                                   </div>
                                 </div>
                               )}
-                              
+
                               {call.transcript && (
                                 <Button
                                   variant="ghost"
@@ -439,7 +438,7 @@ export default function CallHistoryPage() {
                                   <FileText className="h-3 w-3" />
                                 </Button>
                               )}
-                              
+
                               {call.id && (
                                 <Button
                                   variant="ghost"
@@ -465,7 +464,7 @@ export default function CallHistoryPage() {
               {/* Pagination */}
               {totalPages > 1 && (
                 <div className="flex items-center justify-between mt-4">
-                  <div className="text-sm text-gray-600">
+                  <div className="text-sm text-muted-foreground">
                     Showing {startIndex + 1} to {Math.min(endIndex, totalCalls)} of {totalCalls} calls
                   </div>
                   <div className="flex items-center space-x-2">
