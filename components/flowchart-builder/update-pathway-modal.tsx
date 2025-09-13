@@ -1,4 +1,3 @@
-
 'use client'
 
 import React, { useState } from 'react'
@@ -72,7 +71,7 @@ export function UpdatePathwayModal({ reactFlowData, pathwayId }: UpdatePathwayMo
 
       if (result.status === 'success') {
         setIsSuccess(true)
-        
+
         toast({
           title: "✅ Success!",
           description: "Pathway updated successfully on Bland.ai",
@@ -116,6 +115,9 @@ export function UpdatePathwayModal({ reactFlowData, pathwayId }: UpdatePathwayMo
     nodes: convertedData.nodes,
     edges: convertedData.edges,
   }
+
+  const nodeCount = reactFlowData.nodes.length;
+  const edgeCount = reactFlowData.edges.length;
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
