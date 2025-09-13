@@ -206,9 +206,9 @@ export default function CallHistoryPage() {
       {/* Page Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Call History</h1>
-          <p className="text-gray-600">View real-time call logs from Bland.ai</p>
-          {userPhoneNumber && <p className="text-sm text-gray-500 mt-1">Showing calls for: {userPhoneNumber}</p>}
+          <h1 className="text-2xl font-bold text-foreground">Call History</h1>
+          <p className="text-muted-foreground">View real-time call logs from Bland.ai</p>
+          {userPhoneNumber && <p className="text-sm text-muted-foreground mt-1">Showing calls for: {userPhoneNumber}</p>}
         </div>
         <div className="flex items-center space-x-3">
           <Button variant="outline" onClick={refetch} disabled={loading}>
@@ -296,36 +296,36 @@ export default function CallHistoryPage() {
                   <Table>
                     <TableHeader className="sticky top-0 bg-gray-50 z-10">
                       <TableRow>
-                        <TableHead className="font-semibold w-[130px]">
+                        <TableHead className="font-semibold w-[130px] text-foreground">
                           <div className="flex items-center gap-1">
                             <Phone className="h-3 w-3" />
                             From
                           </div>
                         </TableHead>
-                        <TableHead className="font-semibold w-[130px]">
+                        <TableHead className="font-semibold w-[130px] text-foreground">
                           <div className="flex items-center gap-1">
                             <Phone className="h-3 w-3" />
                             To
                           </div>
                         </TableHead>
-                        <TableHead className="font-semibold w-[110px]">
+                        <TableHead className="font-semibold w-[110px] text-foreground">
                           <div className="flex items-center gap-1">
                             <Calendar className="h-3 w-3" />
                             Date
                           </div>
                         </TableHead>
-                        <TableHead className="font-semibold w-[100px]">
+                        <TableHead className="font-semibold w-[100px] text-foreground">
                           <div className="flex items-center gap-1">
                             <Clock className="h-3 w-3" />
                             Time
                           </div>
                         </TableHead>
-                        <TableHead className="font-semibold w-[80px]">Duration</TableHead>
-                        <TableHead className="font-semibold w-[110px]">Status</TableHead>
-                        <TableHead className="font-semibold w-[120px]">Ended Reason</TableHead>
-                        <TableHead className="font-semibold w-[200px]">Pathway ID</TableHead>
-                        <TableHead className="font-semibold w-[250px]">Summary</TableHead>
-                        <TableHead className="font-semibold w-[280px]">Actions</TableHead>
+                        <TableHead className="font-semibold w-[80px] text-foreground">Duration</TableHead>
+                        <TableHead className="font-semibold w-[110px] text-foreground">Status</TableHead>
+                        <TableHead className="font-semibold w-[120px] text-foreground">Ended Reason</TableHead>
+                        <TableHead className="font-semibold w-[200px] text-foreground">Pathway ID</TableHead>
+                        <TableHead className="font-semibold w-[250px] text-foreground">Summary</TableHead>
+                        <TableHead className="font-semibold w-[280px] text-foreground">Actions</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
