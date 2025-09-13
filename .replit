@@ -1,8 +1,8 @@
-modules = ["nodejs-20", "web", "postgresql-16"]
+modules = ["nodejs-20", "web"]
 run = "npm run dev"
 
 [nix]
-channel = "stable-24_05"
+channel = "stable-25_05"
 
 [deployment]
 run = ["sh", "-c", "npm start"]
@@ -18,11 +18,13 @@ localPort = 3001
 externalPort = 3001
 
 [[ports]]
+Develop
 localPort = 3002
 externalPort = 3002
 
+
 [workflows]
-runButton = "Run"
+runButton = "Project"
 
 [[workflows.workflow]]
 name = "Run"
@@ -32,6 +34,27 @@ mode = "sequential"
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "npm run dev"
+
+[[workflows.workflow]]
+name = "Project"
+mode = "parallel"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "Next.js Server"
+
+[[workflows.workflow]]
+name = "Next.js Server"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "npm run dev -- --port 5000 --hostname 0.0.0.0"
+waitForPort = 5000
+
+[workflows.workflow.metadata]
+outputType = "webview"
 
 [agent]
 expertMode = true
