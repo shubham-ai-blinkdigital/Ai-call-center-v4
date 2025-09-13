@@ -48,23 +48,23 @@ export function NodePalette() {
   }
 
   return (
-    <div className="w-64 bg-white border-r border-gray-200 p-4 h-full overflow-y-auto">
-      <h3 className="text-lg font-semibold text-gray-900 mb-4">Node Palette</h3>
+    <div className="w-64 bg-card border-r border-border p-4 h-full overflow-y-auto scrollbar-smooth">
+      <h3 className="text-lg font-semibold text-foreground mb-4">Node Palette</h3>
       <div className="space-y-3">
         {nodeTypes.map((node) => {
           const IconComponent = node.icon
           return (
             <div
               key={node.type}
-              className={`p-3 rounded-lg border-2 cursor-grab active:cursor-grabbing hover:shadow-md transition-all duration-200 ${node.color}`}
+              className="p-3 rounded-lg border-2 border-border bg-secondary hover:bg-secondary/80 cursor-grab active:cursor-grabbing hover:shadow-md transition-all duration-200"
               draggable
               onDragStart={(event) => onDragStart(event, node.type)}
             >
               <div className="flex items-center space-x-2">
-                <IconComponent className="w-5 h-5" />
+                <IconComponent className="w-5 h-5 text-primary" />
                 <div>
-                  <div className="font-medium">{node.label}</div>
-                  <div className="text-xs opacity-80">{node.description}</div>
+                  <div className="font-medium text-foreground">{node.label}</div>
+                  <div className="text-xs text-muted-foreground">{node.description}</div>
                 </div>
               </div>
             </div>
