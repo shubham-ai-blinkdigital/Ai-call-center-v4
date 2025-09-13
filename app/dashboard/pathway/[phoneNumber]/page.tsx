@@ -273,27 +273,27 @@ export default function PathwayEditorPage({ params, searchParams }: PathwayEdito
   return (
     <div className="h-full flex flex-col">
       {/* Compact Top Bar */}
-      <div className="flex items-center justify-between px-6 py-3 border-b bg-white z-50">
+      <div className="flex items-center justify-between px-6 py-3 border-b border-border bg-background z-50">
         <div className="flex items-center gap-3">
           <Button variant="ghost" size="sm" onClick={() => router.push("/dashboard/pathway")} className="h-8 w-8 p-0">
             <ArrowLeft className="h-4 w-4" />
           </Button>
           <div className="flex items-center gap-3">
-            <h1 className="text-xl font-semibold text-gray-900">Pathway for {formattedNumber}</h1>
+            <h1 className="text-xl font-semibold text-foreground">Pathway for {formattedNumber}</h1>
             {pathwayInfo?.pathway_name && (
-              <span className="text-sm text-gray-500 bg-gray-100 px-2 py-1 rounded">{pathwayInfo.pathway_name}</span>
+              <span className="text-sm text-muted-foreground bg-muted px-2 py-1 rounded">{pathwayInfo.pathway_name}</span>
             )}
           </div>
         </div>
-        <Button variant="outline" className="gap-2 text-sm bg-transparent" onClick={handleAIGeneratorClick}>
+        <Button variant="outline" className="gap-2 text-sm" onClick={handleAIGeneratorClick}>
           <Sparkles className="h-4 w-4" />
           AI Generator
         </Button>
       </div>
 
       {error && (
-        <div className="px-6 py-2 bg-red-50 border-b border-red-200">
-          <div className="text-sm text-red-800">
+        <div className="px-6 py-2 bg-destructive/10 border-b border-destructive/20">
+          <div className="text-sm text-destructive">
             <strong>Error:</strong> {error}
           </div>
         </div>
