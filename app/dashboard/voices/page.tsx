@@ -223,8 +223,8 @@ export default function VoicesPage() {
   return (
     <div className="container mx-auto py-8 h-screen overflow-hidden flex flex-col">
       <div className="mb-6 flex-shrink-0">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Voice Library</h1>
-        <p className="text-gray-600">
+        <h1 className="text-3xl font-bold text-foreground mb-2">Voice Library</h1>
+        <p className="text-muted-foreground">
           Top rated voices + Indian voices from {totalAvailable} available voices
         </p>
       </div>
@@ -271,14 +271,14 @@ export default function VoicesPage() {
 
             <div className="flex-1 overflow-y-auto scrollbar-smooth pr-2">
               {voices.length === 0 ? (
-                <Card className="bg-white shadow-sm">
+                <Card className="bg-card border-border shadow-sm">
                   <CardContent className="py-12">
                     <div className="text-center">
-                      <Mic className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                      <h3 className="text-lg font-medium text-gray-900 mb-2">
+                      <Mic className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                      <h3 className="text-lg font-medium text-foreground mb-2">
                         No voices available
                       </h3>
-                      <p className="text-gray-500">
+                      <p className="text-muted-foreground">
                         There are no voices available at the moment.
                       </p>
                     </div>
@@ -287,11 +287,11 @@ export default function VoicesPage() {
               ) : (
                 <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 pb-6">
                   {voices.map((voice) => (
-                    <Card key={voice.id} className="bg-white shadow-sm hover:shadow-md transition-shadow">
+                    <Card key={voice.id} className="bg-card border-border shadow-sm hover:shadow-md transition-shadow">
                       <CardHeader className="pb-4">
                         <div className="flex items-center justify-between">
-                          <CardTitle className="text-lg font-semibold capitalize flex items-center">
-                            <Mic className="h-4 w-4 mr-2 text-blue-600" />
+                          <CardTitle className="text-lg font-semibold capitalize flex items-center text-foreground">
+                            <Mic className="h-4 w-4 mr-2 text-primary" />
                             {voice.name}
                           </CardTitle>
                           <div className="flex items-center space-x-2">
@@ -339,11 +339,11 @@ export default function VoicesPage() {
                             </Badge>
                           </div>
                         </div>
-                        <CardDescription className="text-sm text-gray-600 mt-2">
+                        <CardDescription className="text-sm text-muted-foreground mt-2">
                           {voice.description}
                         </CardDescription>
                         {voice.total_ratings && (
-                          <div className="text-xs text-gray-500 mt-1">
+                          <div className="text-xs text-muted-foreground mt-1">
                             Based on {voice.total_ratings} rating{voice.total_ratings !== 1 ? 's' : ''}
                           </div>
                         )}
@@ -351,14 +351,14 @@ export default function VoicesPage() {
                       <CardContent>
                         <div className="space-y-3">
                           <div>
-                            <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">Voice ID</span>
-                            <p className="text-sm font-mono text-gray-800 bg-gray-50 px-2 py-1 rounded mt-1">
+                            <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Voice ID</span>
+                            <p className="text-sm font-mono text-foreground bg-muted px-2 py-1 rounded mt-1">
                               {voice.id}
                             </p>
                           </div>
                           {voice.tags && voice.tags.length > 0 && (
                             <div>
-                              <span className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2 block">
+                              <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2 block">
                                 Tags
                               </span>
                               <div className="flex flex-wrap gap-2">
