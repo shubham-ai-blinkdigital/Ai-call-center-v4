@@ -1,3 +1,4 @@
+import React from "react"
 import { HeroSection } from "@/components/hero-section"
 import { FeatureCards } from "@/components/feature-cards"
 import { UseCases } from "@/components/use-cases"
