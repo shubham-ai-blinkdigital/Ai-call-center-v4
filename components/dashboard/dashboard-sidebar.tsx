@@ -190,7 +190,7 @@ export function DashboardSidebar() {
               <div className="py-1">
                 <Link
                   href="/dashboard/profile"
-                  className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                  className="flex items-center px-4 py-2 text-sm text-popover-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
                   onClick={() => setIsDropdownOpen(false)}
                 >
                   <User className="mr-3 h-4 w-4" />
@@ -198,7 +198,7 @@ export function DashboardSidebar() {
                 </Link>
                 <Link
                   href="/dashboard/settings"
-                  className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                  className="flex items-center px-4 py-2 text-sm text-popover-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
                   onClick={() => setIsDropdownOpen(false)}
                 >
                   <Settings className="mr-3 h-4 w-4" />
