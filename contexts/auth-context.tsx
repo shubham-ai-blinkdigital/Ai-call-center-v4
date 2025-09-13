@@ -21,6 +21,7 @@ interface AuthContextType {
   logout: () => Promise<void>
   updateProfile: (data: Partial<User>) => Promise<{ success: boolean; message: string }>
   resetPassword: (email: string) => Promise<{ success: boolean; message: string }>
+  refreshAuth: () => Promise<void>
   isAuthenticated: boolean
 }
 
@@ -267,6 +268,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }
 
+  const refreshAuth = async () => {
+    console.log("🔄 [AUTH-CONTEXT] Manually refreshing auth state...")
+    await checkAuth()
+  }
+
   // Prevent hydration mismatch by waiting for initialization
   if (!isInitialized && loading) {
     return null
@@ -282,6 +288,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         logout,
         updateProfile,
         resetPassword,
+        refreshAuth,
         isAuthenticated,
       }}
     >

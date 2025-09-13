@@ -126,7 +126,7 @@ export function Navbar() {
                   Login
                 </Link>
                 <div className="px-3 py-2">
-                  <Button className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white">
+                  <Button className="w-full bg-gradient-purple hover:opacity-90 text-white">
                     <Link href="/signup">Request Demo</Link>
                   </Button>
                 </div>

@@ -1,9 +1,10 @@
+
 "use client"
 
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { ArrowRight, Phone } from "lucide-react"
+import { ArrowRight, Workflow, Phone, Users } from "lucide-react"
 import Link from "next/link"
 
 export function HeroSection() {
@@ -22,14 +23,14 @@ export function HeroSection() {
         <div className="flex flex-col lg:flex-row items-center gap-12">
           <div className="lg:w-1/2 text-center lg:text-left">
             <div className="inline-block px-3 py-1 mb-6 rounded-full bg-gradient-to-r from-blue-500/20 to-purple-600/20 text-blue-400 text-sm font-medium">
-              AI-Powered Conversation Platform
+              No-Code Call Flow Builder
             </div>
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white leading-tight">
-              Transform Customer Conversations with AI
+              Build AI Call Flows Visually
             </h1>
             <p className="mt-6 text-xl text-gray-300 max-w-2xl">
-              Deploy intelligent voice and chat agents that understand context, show empathy, and deliver exceptional
-              customer experiences.
+              Create intelligent phone systems with our drag-and-drop flowchart builder. Design call routing, 
+              lead qualification, and customer service flows without writing code.
             </p>
 
             <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
@@ -43,19 +44,21 @@ export function HeroSection() {
                 />
               </div>
               <div className="flex gap-2">
-                <Button className="h-12 px-6 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white">
-                  Contact Us <ArrowRight className="ml-2 h-4 w-4" />
-                </Button>
                 <Link href="/signup">
+                  <Button className="h-12 px-6 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white">
+                    Start Building <ArrowRight className="ml-2 h-4 w-4" />
+                  </Button>
+                </Link>
+                <Link href="/dashboard/call-flows/editor">
                   <Button variant="outline" className="h-12 px-6 border-gray-600 text-gray-300 hover:bg-gray-800 hover:text-white">
-                    Sign Up
+                    Try Demo
                   </Button>
                 </Link>
               </div>
             </div>
 
             <div className="mt-6 text-sm text-gray-400">
-              No credit card required. Start your 14-day free trial today.
+              No credit card required. Start building flows in minutes.
               <span className="ml-2">
                 Already have an account?{" "}
                 <Link href="/login" className="text-blue-400 hover:text-blue-300">
@@ -67,58 +70,79 @@ export function HeroSection() {
 
           <div className="lg:w-1/2">
             <div className="relative">
-              {/* Glowing effect behind the phone */}
-              <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full filter blur-3xl opacity-20"></div>
+              {/* Glowing effect behind the flowchart */}
+              <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-purple-600 rounded-3xl filter blur-3xl opacity-20"></div>
 
-              {/* Phone mockup */}
+              {/* Flowchart mockup */}
               <div className="relative bg-gray-800 border border-gray-700 rounded-3xl p-6 shadow-2xl">
                 <div className="flex items-center justify-between mb-6">
                   <div className="flex items-center">
                     <div className="w-10 h-10 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center">
-                      <Phone className="h-5 w-5 text-white" />
+                      <Workflow className="h-5 w-5 text-white" />
                     </div>
                     <div className="ml-3">
-                      <h3 className="text-white font-medium">Blink.AI Assistant</h3>
-                      <p className="text-gray-400 text-sm">Online</p>
+                      <h3 className="text-white font-medium">Call Flow Builder</h3>
+                      <p className="text-gray-400 text-sm">Visual Designer</p>
                     </div>
                   </div>
                 </div>
 
+                {/* Simple flowchart visualization */}
                 <div className="space-y-4">
-                  <div className="bg-gray-700 rounded-2xl rounded-tl-none p-3 max-w-[80%]">
-                    <p className="text-white">Hello! How can I help you today?</p>
+                  {/* Start node */}
+                  <div className="flex justify-center">
+                    <div className="bg-green-600 rounded-lg p-3 text-white text-sm font-medium flex items-center">
+                      <Phone className="h-4 w-4 mr-2" />
+                      Incoming Call
+                    </div>
                   </div>
 
-                  <div className="bg-blue-600 rounded-2xl rounded-tr-none p-3 max-w-[80%] ml-auto">
-                    <p className="text-white">I need to check my order status</p>
+                  {/* Arrow */}
+                  <div className="flex justify-center">
+                    <div className="w-px h-8 bg-gray-600"></div>
                   </div>
 
-                  <div className="bg-gray-700 rounded-2xl rounded-tl-none p-3 max-w-[80%]">
-                    <p className="text-white">
-                      I'd be happy to help you check your order status. Could you please provide your order number?
-                    </p>
+                  {/* Greeting node */}
+                  <div className="flex justify-center">
+                    <div className="bg-blue-600 rounded-lg p-3 text-white text-sm font-medium max-w-[200px] text-center">
+                      "Hi! How can I help you today?"
+                    </div>
                   </div>
 
-                  <div className="bg-blue-600 rounded-2xl rounded-tr-none p-3 max-w-[80%] ml-auto">
-                    <p className="text-white">It's #ORD-12345</p>
+                  {/* Arrow */}
+                  <div className="flex justify-center">
+                    <div className="w-px h-8 bg-gray-600"></div>
                   </div>
 
-                  <div className="bg-gray-700 rounded-2xl rounded-tl-none p-3 max-w-[80%]">
-                    <p className="text-white">
-                      Thanks! I can see your order #ORD-12345 is currently being prepared for shipping and should be
-                      dispatched within 24 hours.
-                    </p>
+                  {/* Decision node */}
+                  <div className="flex justify-center">
+                    <div className="bg-purple-600 rounded-lg p-3 text-white text-sm font-medium max-w-[180px] text-center">
+                      Customer Response
+                    </div>
+                  </div>
+
+                  {/* Branches */}
+                  <div className="flex justify-between items-start">
+                    <div className="bg-orange-600 rounded-lg p-2 text-white text-xs font-medium">
+                      Sales
+                    </div>
+                    <div className="bg-teal-600 rounded-lg p-2 text-white text-xs font-medium">
+                      Support
+                    </div>
+                    <div className="bg-pink-600 rounded-lg p-2 text-white text-xs font-medium">
+                      Billing
+                    </div>
                   </div>
                 </div>
 
-                <div className="mt-6 flex items-center">
-                  <Input
-                    placeholder="Type your message..."
-                    className="bg-gray-700 border-gray-600 text-white rounded-full"
-                  />
-                  <Button className="ml-2 rounded-full w-10 h-10 p-0 bg-gradient-to-r from-blue-500 to-purple-600">
-                    <ArrowRight className="h-5 w-5" />
-                  </Button>
+                <div className="mt-6 flex items-center justify-between">
+                  <div className="text-xs text-gray-400">
+                    <Users className="h-3 w-3 inline mr-1" />
+                    Team collaboration
+                  </div>
+                  <div className="text-xs text-gray-400">
+                    Drag & drop interface
+                  </div>
                 </div>
               </div>
             </div>

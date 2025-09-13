@@ -148,3 +148,87 @@ export async function getPathwayByPhoneNumber(phoneNumber: string, userId: strin
     ORDER BY p.updated_at DESC LIMIT 1
   `, [phoneNumber, userId])
 }
+
+// Call-related functions
+export async function createCall(callData: {
+  call_id: string
+  user_id: string
+  to_number: string
+  from_number: string
+  duration_seconds?: number
+  status?: string
+  recording_url?: string
+  transcript?: string
+  summary?: string
+  cost_cents?: number
+  pathway_id?: string
+  ended_reason?: string
+  phone_number_id?: string
+}) {
+  return executeQuery(`
+    INSERT INTO calls (
+      call_id, user_id, to_number, from_number, duration_seconds, 
+      status, recording_url, transcript, summary, cost_cents, 
+      pathway_id, ended_reason, phone_number_id, created_at, updated_at
+    ) VALUES (
+      $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, NOW(), NOW()
+    ) 
+    ON CONFLICT (call_id) 
+    DO UPDATE SET
+      duration_seconds = EXCLUDED.duration_seconds,
+      status = EXCLUDED.status,
+      recording_url = EXCLUDED.recording_url,
+      transcript = EXCLUDED.transcript,
+      summary = EXCLUDED.summary,
+      cost_cents = EXCLUDED.cost_cents,
+      ended_reason = EXCLUDED.ended_reason,
+      updated_at = NOW()
+    RETURNING *
+  `, [
+    callData.call_id,
+    callData.user_id,
+    callData.to_number,
+    callData.from_number,
+    callData.duration_seconds || null,
+    callData.status || null,
+    callData.recording_url || null,
+    callData.transcript || null,
+    callData.summary || null,
+    callData.cost_cents || null,
+    callData.pathway_id || null,
+    callData.ended_reason || null,
+    callData.phone_number_id || null
+  ])
+}
+
+export async function getCallsByUserId(userId: string, limit: number = 50, offset: number = 0) {
+  return executeQuery(`
+    SELECT c.*, pn.phone_number as phone_number_detail
+    FROM calls c
+    LEFT JOIN phone_numbers pn ON c.phone_number_id = pn.id
+    WHERE c.user_id = $1
+    ORDER BY c.created_at DESC
+    LIMIT $2 OFFSET $3
+  `, [userId, limit, offset])
+}
+
+export async function getCallById(callId: string) {
+  return executeQuery(`
+    SELECT c.*, pn.phone_number as phone_number_detail
+    FROM calls c
+    LEFT JOIN phone_numbers pn ON c.phone_number_id = pn.id
+    WHERE c.call_id = $1
+  `, [callId])
+}
+
+export async function updateCall(callId: string, updateData: any) {
+  const updates = Object.keys(updateData).map((key, index) => `${key} = $${index + 2}`).join(', ')
+  const values = Object.values(updateData)
+
+  return executeQuery(`
+    UPDATE calls 
+    SET ${updates}, updated_at = NOW()
+    WHERE call_id = $1
+    RETURNING *
+  `, [callId, ...values])
+}

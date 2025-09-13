@@ -2,6 +2,18 @@
 import { NextRequest, NextResponse } from "next/server"
 import { Client } from "pg"
 
+// Add OPTIONS handler for CORS preflight requests
+export async function OPTIONS(request: NextRequest) {
+  return new NextResponse(null, {
+    status: 200,
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+    },
+  })
+}
+
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
@@ -11,7 +23,14 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({
         success: false,
         message: "Email parameter is required"
-      }, { status: 400 })
+      }, { 
+        status: 400,
+        headers: {
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+          'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+        }
+      })
     }
 
     console.log(`[GET-PURCHASE-NUMBER] Looking up phone numbers for email: ${email}`)
@@ -37,6 +56,12 @@ export async function GET(request: NextRequest) {
           email: email,
           phoneNumbers: [],
           count: 0
+        }, {
+          headers: {
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+            'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+          }
         })
       }
 
@@ -80,6 +105,12 @@ export async function GET(request: NextRequest) {
         user_name: `${user.first_name || ''} ${user.last_name || ''}`.trim() || 'User',
         phoneNumbers: phoneNumbers,
         count: phoneNumbers.length
+      }, {
+        headers: {
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+          'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+        }
       })
 
     } finally {
@@ -91,6 +122,13 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       success: false,
       message: "Internal server error"
-    }, { status: 500 })
+    }, { 
+      status: 500,
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+      }
+    })
   }
 }
