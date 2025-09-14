@@ -156,6 +156,34 @@ export function useUserCallData(options: UseUserCallDataOptions = {}) {
         currentPage: page,
       }))
 
+      // Auto-sync the fetched data to database
+      if (transformedCalls.length > 0) {
+        try {
+          console.log("🔄 [USE-USER-CALL-DATA] Auto-syncing calls to database...")
+          const syncResponse = await fetch('/api/calls/auto-sync', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            credentials: 'include',
+            body: JSON.stringify({
+              calls: transformedCalls,
+              userId: user.id
+            })
+          })
+
+          if (syncResponse.ok) {
+            const syncResult = await syncResponse.json()
+            console.log("✅ [USE-USER-CALL-DATA] Auto-sync completed:", syncResult.syncedCount, "calls")
+          } else {
+            console.warn("⚠️ [USE-USER-CALL-DATA] Auto-sync failed:", syncResponse.status)
+          }
+        } catch (syncError) {
+          console.warn("⚠️ [USE-USER-CALL-DATA] Auto-sync error:", syncError)
+          // Don't fail the main operation if sync fails
+        }
+      }
+
       console.log("✅ [USE-USER-CALL-DATA] Data transformed successfully:", {
         transformedCount: transformedCalls.length,
         totalLoaded: resetData ? transformedCalls.length : callData.calls.length + transformedCalls.length,

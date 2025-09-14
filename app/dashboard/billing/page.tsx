@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge"
 import { Loader2, CreditCard, AlertCircle, Plus, Download, Receipt, CheckCircle2 } from "lucide-react"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { useToast } from "@/components/ui/use-toast"
+import { Toaster } from "@/components/ui/toaster"
 import { useRouter } from "next/navigation"
 import { ScrollArea } from "@/components/ui/scroll-area"
 
@@ -71,10 +72,12 @@ export default function BillingPage() {
   const [subscriptions, setSubscriptions] = useState<any[]>([])
   const [paymentMethods, setPaymentMethods] = useState<any[]>([])
   const [transactions, setTransactions] = useState<any[]>([])
-  const [loading, setLoading] = useState(true)
+  const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState("")
-  const [balance, setBalance] = useState("$0.00")
+  const [balance, setBalance] = useState<number>(0)
   const [balanceLoading, setBalanceLoading] = useState(false)
+  const [callCosts, setCallCosts] = useState<any[]>([])
+  const [loadingCallCosts, setLoadingCallCosts] = useState(false)
   const { toast } = useToast()
   const router = useRouter()
 
@@ -90,10 +93,10 @@ export default function BillingPage() {
           'Expires': '0'
         }
       })
-      
+
       if (response.ok) {
         const data = await response.json()
-        setBalance(`$${data.balance_dollars}`)
+        setBalance(Number(data.balance_dollars) || 0)
         console.log('✅ Balance fetched:', data.balance_dollars)
       } else {
         console.error('Failed to fetch wallet balance')
@@ -107,15 +110,35 @@ export default function BillingPage() {
     }
   }
 
+  const fetchCallCosts = async () => {
+    try {
+      setLoadingCallCosts(true)
+      const response = await fetch('/api/wallet/call-costs?limit=20', {
+        credentials: 'include'
+      })
+      if (response.ok) {
+        const data = await response.json()
+        setCallCosts(data.callCosts || [])
+      }
+    } catch (error) {
+      console.error('Error fetching call costs:', error)
+    } finally {
+      setLoadingCallCosts(false)
+    }
+  }
+
   useEffect(() => {
     // Fetch billing data and wallet balance
     const fetchBillingData = async () => {
       try {
-        setLoading(true)
-        
+        setIsLoading(true)
+
         // Fetch wallet balance
         await fetchWalletBalance()
-        
+
+        // Fetch call costs
+        await fetchCallCosts()
+
         // Simulate API call for other data
         await new Promise((resolve) => setTimeout(resolve, 1000))
 
@@ -126,7 +149,7 @@ export default function BillingPage() {
         console.error("Error fetching billing data:", err)
         setError("Failed to load billing data")
       } finally {
-        setLoading(false)
+        setIsLoading(false)
       }
     }
 
@@ -195,10 +218,10 @@ export default function BillingPage() {
     })
   }
 
-  
 
 
-  if (loading) {
+
+  if (isLoading) {
     return (
       <div className="flex items-center justify-center h-full">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -224,11 +247,12 @@ export default function BillingPage() {
           )}
 
           <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="subscriptions">Subscriptions</TabsTrigger>
           <TabsTrigger value="payment-methods">Payment Methods</TabsTrigger>
           <TabsTrigger value="history">Transaction History</TabsTrigger>
+          <TabsTrigger value="call-costs">Call Costs</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="space-y-4">
@@ -249,7 +273,7 @@ export default function BillingPage() {
                         <span>Loading...</span>
                       </div>
                     ) : (
-                      balance
+                      `$${balance.toFixed(2)}`
                     )}
                   </div>
                   <Button 
@@ -584,9 +608,49 @@ export default function BillingPage() {
             </CardContent>
           </Card>
         </TabsContent>
+
+        <TabsContent value="call-costs" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Call Costs</CardTitle>
+              <CardDescription>Details of your call costs</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {loadingCallCosts ? (
+                <div className="flex items-center justify-center h-full">
+                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                </div>
+              ) : callCosts.length === 0 ? (
+                <div className="text-center py-8">
+                  <p className="text-muted-foreground">No call cost data available</p>
+                </div>
+              ) : (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Date</TableHead>
+                      <TableHead>Call Duration (Minutes)</TableHead>
+                      <TableHead>Cost ($)</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {callCosts.map((cost) => (
+                      <TableRow key={cost.id}>
+                        <TableCell>{new Date(cost.timestamp).toLocaleDateString()}</TableCell>
+                        <TableCell>{(cost.duration / 60).toFixed(2)}</TableCell>
+                        <TableCell>{(cost.duration / 60 * 0.11).toFixed(2)}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
           </Tabs>
         </div>
       </ScrollArea>
+      <Toaster />
     </div>
   )
 }
