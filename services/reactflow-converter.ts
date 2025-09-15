@@ -39,9 +39,9 @@ export function convertReactFlowToBland(reactFlowData: ReactFlowData): BlandFlow
     data: node.data
   }))
 
-  // Clean edges - remove UI-specific properties and color, but keep type: "custom"
+  // Clean edges - remove UI-specific properties and use Bland.ai edge ID format
   const cleanEdges: BlandEdge[] = reactFlowData.edges.map(edge => ({
-    id: edge.id,
+    id: `reactflow__edge-${edge.source}-${edge.target}`,
     source: edge.source,
     target: edge.target,
     type: "custom",
