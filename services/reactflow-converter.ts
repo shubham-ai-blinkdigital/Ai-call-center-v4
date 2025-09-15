@@ -1,10 +1,10 @@
+
 import type { Node, Edge } from 'reactflow'
 
 export interface BlandNode {
   id: string
   type: string
   data: any
-  position?: { x: number; y: number }
 }
 
 export interface BlandEdge {
@@ -13,7 +13,6 @@ export interface BlandEdge {
   target: string
   type?: string
   data?: any
-  label?: string; // Added top-level label property
 }
 
 export interface BlandFlowData {
@@ -32,24 +31,23 @@ export interface ReactFlowData {
  */
 export function convertReactFlowToBland(reactFlowData: ReactFlowData): BlandFlowData {
   console.log('🔄 Converting ReactFlow data to Bland.ai format...')
-
-  // Clean nodes - remove UI-specific properties but keep position for proper rendering
+  
+  // Clean nodes - remove UI-specific properties
   const cleanNodes: BlandNode[] = reactFlowData.nodes.map(node => ({
     id: node.id,
     type: node.type || 'Default',
-    data: node.data,
-    position: node.position || { x: 0, y: 0 }
+    data: node.data
   }))
 
-  // Clean edges - remove UI-specific properties, use default type, and Bland.ai edge ID format
+  // Clean edges - remove UI-specific properties and color, but keep type: "custom"
   const cleanEdges: BlandEdge[] = reactFlowData.edges.map(edge => ({
-    id: `reactflow__edge-${edge.source}-${edge.target}`,
+    id: edge.id,
     source: edge.source,
     target: edge.target,
-    type: "default",
-    label: edge.data?.label || 'next',
-    ...(edge.data && {
+    type: "custom",
+    ...(edge.data && { 
       data: {
+        label: edge.data.label,
         ...(edge.data.description && { description: edge.data.description }),
         isHighlighted: false
       }
@@ -77,22 +75,22 @@ export function convertReactFlowToBland(reactFlowData: ReactFlowData): BlandFlow
  */
 export function convertBlandToReactFlow(blandData: BlandFlowData): ReactFlowData {
   console.log('🔄 Converting Bland.ai data to ReactFlow format...')
-
-  // Add UI properties to nodes, preserve positions if available
+  
+  // Add UI properties to nodes
   const reactFlowNodes: Node[] = blandData.nodes.map((node, index) => ({
     id: node.id,
     type: node.type,
-    position: node.position || { x: 250 + (index * 50), y: index * 100 }, // Use existing position or default
+    position: { x: 250 + (index * 50), y: index * 100 }, // Default positioning
     data: node.data,
     selected: false
   }))
 
-  // Add UI properties to edges, use default type for proper rendering
+  // Add UI properties to edges
   const reactFlowEdges: Edge[] = blandData.edges.map(edge => ({
     id: edge.id,
     source: edge.source,
     target: edge.target,
-    type: edge.type === 'custom' ? 'custom' : 'default', // Support both custom and default edge types
+    type: 'custom',
     animated: true,
     data: edge.data || { label: 'next' },
     style: { stroke: '#3b82f6', strokeWidth: 2 }
