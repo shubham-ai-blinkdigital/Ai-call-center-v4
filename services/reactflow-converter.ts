@@ -12,6 +12,7 @@ export interface BlandEdge {
   source: string
   target: string
   type?: string
+  label?: string
   data?: any
 }
 
@@ -45,9 +46,10 @@ export function convertReactFlowToBland(reactFlowData: ReactFlowData): BlandFlow
     source: edge.source,
     target: edge.target,
     type: "custom",
+    label: edge.data?.label || edge.label || 'next',
     ...(edge.data && { 
       data: {
-        label: edge.data.label,
+        label: edge.data.label || edge.label || 'next',
         ...(edge.data.description && { description: edge.data.description }),
         isHighlighted: false
       }
@@ -92,7 +94,8 @@ export function convertBlandToReactFlow(blandData: BlandFlowData): ReactFlowData
     target: edge.target,
     type: 'custom',
     animated: true,
-    data: edge.data || { label: 'next' },
+    label: edge.label || edge.data?.label || 'next',
+    data: edge.data || { label: edge.label || 'next' },
     style: { stroke: '#3b82f6', strokeWidth: 2 }
   }))
 
