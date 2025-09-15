@@ -5,6 +5,7 @@ export interface BlandNode {
   id: string
   type: string
   data: any
+  position?: { x: number; y: number }
 }
 
 export interface BlandEdge {
@@ -32,19 +33,20 @@ export interface ReactFlowData {
 export function convertReactFlowToBland(reactFlowData: ReactFlowData): BlandFlowData {
   console.log('🔄 Converting ReactFlow data to Bland.ai format...')
   
-  // Clean nodes - remove UI-specific properties
+  // Clean nodes - remove UI-specific properties but keep position for proper rendering
   const cleanNodes: BlandNode[] = reactFlowData.nodes.map(node => ({
     id: node.id,
     type: node.type || 'Default',
-    data: node.data
+    data: node.data,
+    position: node.position || { x: 0, y: 0 }
   }))
 
-  // Clean edges - remove UI-specific properties and use Bland.ai edge ID format
+  // Clean edges - remove UI-specific properties, use default type, and Bland.ai edge ID format
   const cleanEdges: BlandEdge[] = reactFlowData.edges.map(edge => ({
     id: `reactflow__edge-${edge.source}-${edge.target}`,
     source: edge.source,
     target: edge.target,
-    type: "custom",
+    type: "default",
     ...(edge.data && { 
       data: {
         label: edge.data.label,
@@ -76,21 +78,21 @@ export function convertReactFlowToBland(reactFlowData: ReactFlowData): BlandFlow
 export function convertBlandToReactFlow(blandData: BlandFlowData): ReactFlowData {
   console.log('🔄 Converting Bland.ai data to ReactFlow format...')
   
-  // Add UI properties to nodes
+  // Add UI properties to nodes, preserve positions if available
   const reactFlowNodes: Node[] = blandData.nodes.map((node, index) => ({
     id: node.id,
     type: node.type,
-    position: { x: 250 + (index * 50), y: index * 100 }, // Default positioning
+    position: node.position || { x: 250 + (index * 50), y: index * 100 }, // Use existing position or default
     data: node.data,
     selected: false
   }))
 
-  // Add UI properties to edges
+  // Add UI properties to edges, use default type for proper rendering
   const reactFlowEdges: Edge[] = blandData.edges.map(edge => ({
     id: edge.id,
     source: edge.source,
     target: edge.target,
-    type: 'custom',
+    type: edge.type === 'custom' ? 'custom' : 'default', // Support both custom and default edge types
     animated: true,
     data: edge.data || { label: 'next' },
     style: { stroke: '#3b82f6', strokeWidth: 2 }
