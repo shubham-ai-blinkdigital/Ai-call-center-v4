@@ -1,0 +1,130 @@
+{
+  "nodes": [
+    {
+      "id": "1",
+      "type": "Default",
+      "data": {
+        "name": "Start",
+        "text": "Hey there, how are you doing today?",
+        "isStart": true,
+        "extractVars": []
+      },
+      "position": {
+        "x": 268.66150000000005,
+        "y": -10.939499999999981
+      }
+    },
+    {
+      "id": "questionNode_1755677933604",
+      "type": "Default",
+      "data": {
+        "name": "New Question",
+        "text": "What would you like to know?",
+        "extractVars": [
+          [
+            "name",
+            "string",
+            "the name of the caller "
+          ]
+        ]
+      },
+      "position": {
+        "x": 287.13,
+        "y": 117.37449999999998
+      }
+    },
+    {
+      "id": "customerResponseNode_1755677940575",
+      "type": "Default",
+      "data": {
+        "name": "Customer Response",
+        "text": "Waiting for customer response..."
+      },
+      "position": {
+        "x": 532.1105000000001,
+        "y": 228.95749999999998
+      }
+    },
+    {
+      "id": "customerResponseNode_1755677941671",
+      "type": "Default",
+      "data": {
+        "name": "Customer Response",
+        "text": "Waiting for customer response..."
+      },
+      "position": {
+        "x": 34.49199999999996,
+        "y": 226.64100000000002
+      }
+    },
+    {
+      "id": "endCallNode_1755677945787",
+      "type": "End Call",
+      "data": {
+        "name": "End Call",
+        "prompt": "Say goodbye to the user"
+      },
+      "position": {
+        "x": 303.2819999999999,
+        "y": 385.1995
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "reactflow__edge-1-questionNode_1755677933604",
+      "source": "1",
+      "target": "questionNode_1755677933604",
+      "type": "default",
+      "data": {
+        "label": "after the Transfer",
+        "description": "user said Yes ",
+        "isHighlighted": false
+      }
+    },
+    {
+      "id": "reactflow__edge-questionNode_1755677933604-customerResponseNode_1755677941671",
+      "source": "questionNode_1755677933604",
+      "target": "customerResponseNode_1755677941671",
+      "type": "default",
+      "data": {
+        "label": "User said Yes",
+        "description": "user said Yes ",
+        "isHighlighted": false
+      }
+    },
+    {
+      "id": "reactflow__edge-customerResponseNode_1755677940575-endCallNode_1755677945787",
+      "source": "customerResponseNode_1755677940575",
+      "target": "endCallNode_1755677945787",
+      "type": "default",
+      "data": {
+        "label": "next",
+        "description": "user said Yes ",
+        "isHighlighted": false
+      }
+    },
+    {
+      "id": "reactflow__edge-customerResponseNode_1755677941671-endCallNode_1755677945787",
+      "source": "customerResponseNode_1755677941671",
+      "target": "endCallNode_1755677945787",
+      "type": "default",
+      "data": {
+        "label": "next",
+        "description": "user said Yes ",
+        "isHighlighted": false
+      }
+    },
+    {
+      "id": "reactflow__edge-questionNode_1755677933604-customerResponseNode_1755677940575",
+      "source": "questionNode_1755677933604",
+      "target": "customerResponseNode_1755677940575",
+      "type": "default",
+      "data": {
+        "label": "NO",
+        "description": "user said Yes ",
+        "isHighlighted": false
+      }
+    }
+  ]
+}
