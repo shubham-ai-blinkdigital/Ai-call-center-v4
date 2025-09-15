@@ -1,4 +1,3 @@
-
 import type { Node, Edge } from 'reactflow'
 
 export interface BlandNode {
@@ -14,6 +13,7 @@ export interface BlandEdge {
   target: string
   type?: string
   data?: any
+  label?: string; // Added top-level label property
 }
 
 export interface BlandFlowData {
@@ -32,7 +32,7 @@ export interface ReactFlowData {
  */
 export function convertReactFlowToBland(reactFlowData: ReactFlowData): BlandFlowData {
   console.log('🔄 Converting ReactFlow data to Bland.ai format...')
-  
+
   // Clean nodes - remove UI-specific properties but keep position for proper rendering
   const cleanNodes: BlandNode[] = reactFlowData.nodes.map(node => ({
     id: node.id,
@@ -47,9 +47,9 @@ export function convertReactFlowToBland(reactFlowData: ReactFlowData): BlandFlow
     source: edge.source,
     target: edge.target,
     type: "default",
-    ...(edge.data && { 
+    label: edge.data?.label || 'next',
+    ...(edge.data && {
       data: {
-        label: edge.data.label,
         ...(edge.data.description && { description: edge.data.description }),
         isHighlighted: false
       }
@@ -77,7 +77,7 @@ export function convertReactFlowToBland(reactFlowData: ReactFlowData): BlandFlow
  */
 export function convertBlandToReactFlow(blandData: BlandFlowData): ReactFlowData {
   console.log('🔄 Converting Bland.ai data to ReactFlow format...')
-  
+
   // Add UI properties to nodes, preserve positions if available
   const reactFlowNodes: Node[] = blandData.nodes.map((node, index) => ({
     id: node.id,
