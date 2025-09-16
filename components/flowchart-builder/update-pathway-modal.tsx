@@ -129,7 +129,7 @@ export function UpdatePathwayModal({ reactFlowData, pathwayId }: UpdatePathwayMo
       </DialogTrigger>
       <DialogContent className="max-w-4xl max-h-[90vh]">
         <DialogHeader>
-          <DialogTitle>Update Pathway on Bland.ai</DialogTitle>
+          <DialogTitle>Update Pathway</DialogTitle>
         </DialogHeader>
 
         <div className="space-y-6">
@@ -229,7 +229,7 @@ export function UpdatePathwayModal({ reactFlowData, pathwayId }: UpdatePathwayMo
                   ) : (
                     <Send className="w-4 h-4" />
                   )}
-                  {isLoading ? 'Updating...' : 'Send to Bland.ai'}
+                  {isLoading ? 'Updating...' : 'Deploy'}
                 </Button>
               </div>
             </form>
@@ -277,7 +277,7 @@ export function UpdatePathwayModal({ reactFlowData, pathwayId }: UpdatePathwayMo
                   ) : (
                     <>
                       <Send className="w-4 h-4 mr-2" />
-                      Confirm & Send to Bland.ai
+                      Confirm & Deploy
                     </>
                   )}
                 </Button>
