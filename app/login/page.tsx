@@ -1,4 +1,3 @@
-
 "use client"
 
 import type React from "react"
@@ -50,27 +49,27 @@ export default function LoginPage() {
   // ✅ Show loading state while auth is being determined
   if (authLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-[#000023]">
         <div className="text-center">
-          <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
-          <p>Loading...</p>
+          <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-white" />
+          <p className="text-white">Loading...</p>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen flex">
+    <div className="min-h-screen flex bg-[#000023]">
       {/* Left Side - Login Form */}
-      <div className="flex-1 flex items-center justify-center p-8 bg-white">
+      <div className="flex-1 flex items-center justify-center p-8">
         <div className="w-full max-w-md space-y-8">
           {/* Logo/Brand */}
           <div className="text-center">
             <h1 className="text-5xl font-bold mb-2">
-              <span className="bg-gradient-to-r from-blue-500 via-purple-600 to-pink-500 bg-clip-text text-transparent">
+              <span className="bg-gradient-to-r from-purple-500 via-pink-600 to-blue-500 bg-clip-text text-transparent">
                 hu$tle
               </span>
-              <span className="bg-gradient-to-r from-gray-500 to-gray-600 bg-clip-text text-transparent">
+              <span className="bg-gradient-to-r from-gray-300 to-gray-400 bg-clip-text text-transparent">
                 .conversation
               </span>
             </h1>
@@ -79,7 +78,7 @@ export default function LoginPage() {
           {/* Login Form */}
           <div className="space-y-6">
             <div>
-              <h2 className="text-2xl font-semibold text-gray-900 mb-2">
+              <h2 className="text-2xl font-semibold text-white mb-2">
                 Let's get you logged in
               </h2>
             </div>
@@ -100,7 +99,7 @@ export default function LoginPage() {
                   onChange={(e) => setEmail(e.target.value)}
                   required
                   disabled={isLoading}
-                  className="h-12 px-4 text-base border-gray-200 rounded-lg focus:border-purple-500 focus:ring-purple-500"
+                  className="h-12 px-4 text-base bg-gray-800 border-gray-600 text-white rounded-lg focus:border-purple-500 focus:ring-purple-500 placeholder:text-gray-400"
                 />
               </div>
 
@@ -114,12 +113,12 @@ export default function LoginPage() {
                     onChange={(e) => setPassword(e.target.value)}
                     required
                     disabled={isLoading}
-                    className="h-12 px-4 pr-12 text-base border-gray-200 rounded-lg focus:border-purple-500 focus:ring-purple-500"
+                    className="h-12 px-4 pr-12 text-base bg-gray-800 border-gray-600 text-white rounded-lg focus:border-purple-500 focus:ring-purple-500 placeholder:text-gray-400"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute inset-y-0 right-0 flex items-center pr-4 text-gray-500 hover:text-purple-600 focus:outline-none"
+                    className="absolute inset-y-0 right-0 flex items-center pr-4 text-gray-400 hover:text-purple-400 focus:outline-none"
                     disabled={isLoading}
                   >
                     {showPassword ? (
@@ -132,7 +131,7 @@ export default function LoginPage() {
               </div>
 
               <div className="text-right">
-                <Link href="/reset-password" className="text-sm text-purple-600 hover:text-purple-700">
+                <Link href="/reset-password" className="text-sm text-purple-400 hover:text-purple-300">
                   Forgot password?
                 </Link>
               </div>
@@ -153,9 +152,9 @@ export default function LoginPage() {
               </Button>
             </form>
 
-            <div className="text-center text-sm text-gray-600">
+            <div className="text-center text-sm text-gray-400">
               Don't have an account?{" "}
-              <Link href="/signup" className="font-semibold text-purple-600 hover:text-purple-700">
+              <Link href="/signup" className="font-semibold text-purple-400 hover:text-purple-300">
                 Sign up
               </Link>
             </div>
@@ -164,16 +163,16 @@ export default function LoginPage() {
       </div>
 
       {/* Right Side - Marketing Content */}
-      <div className="flex-1 bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 flex items-center justify-center p-8">
+      <div className="flex-1 bg-gradient-to-br from-gray-800 via-gray-900 to-black flex items-center justify-center p-8">
         <div className="max-w-md text-center space-y-8">
           <div className="space-y-4">
-            <h2 className="text-5xl font-bold text-gray-900 leading-tight">
+            <h2 className="text-5xl font-bold text-white leading-tight">
               One smart move.
             </h2>
-            <h3 className="text-5xl font-bold text-gray-900 leading-tight">
+            <h3 className="text-5xl font-bold text-white leading-tight">
               One smart tool.
             </h3>
-            <h4 className="text-5xl font-bold text-gray-900 leading-tight">
+            <h4 className="text-5xl font-bold text-white leading-tight">
               Unlimited chill.
             </h4>
           </div>
@@ -186,7 +185,7 @@ export default function LoginPage() {
           </div>
 
           {/* Additional Marketing Text */}
-          <div className="text-lg text-gray-600 leading-relaxed">
+          <div className="text-lg text-gray-300 leading-relaxed">
             Transform your business calls with AI-powered pathways. 
             Build, deploy, and scale your phone automation with ease.
           </div>
