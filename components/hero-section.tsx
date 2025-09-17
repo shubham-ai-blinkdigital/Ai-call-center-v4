@@ -46,18 +46,11 @@ export function HeroSection() {
                   </Button>
                 </Link>
                 <Link href="/login">
-                  <Button variant="outline" className="h-12 px-6 border-gray-600 text-white hover:bg-gray-700 hover:text-white">
+                  <Button className="h-12 px-6 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white">
                     Sign In
                   </Button>
                 </Link>
               </div>
-            </div>
-
-            <div className="mt-6 text-sm text-gray-400">
-              Already have an account?{" "}
-              <Link href="/login" className="text-blue-400 hover:text-blue-300">
-                Login here
-              </Link>
             </div>
           </div>
 
