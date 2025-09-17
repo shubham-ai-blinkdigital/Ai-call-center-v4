@@ -39,25 +39,25 @@ export function HeroSection() {
             </p>
 
             <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-              <div className="flex-1 sm:max-w-xs">
-              </div>
-              <div className="flex gap-2">
+              <div className="flex gap-4">
                 <Link href="/signup">
                   <Button className="h-12 px-6 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white">
                     Sign Up <ArrowRight className="ml-2 h-4 w-4" />
+                  </Button>
+                </Link>
+                <Link href="/login">
+                  <Button variant="outline" className="h-12 px-6 border-gray-600 text-white hover:bg-gray-700 hover:text-white">
+                    Sign In
                   </Button>
                 </Link>
               </div>
             </div>
 
             <div className="mt-6 text-sm text-gray-400">
-              Already have an account?.
-              <span className="ml-2">
-                Already have an account?{" "}
-                <Link href="/login" className="text-blue-400 hover:text-blue-300">
-                  Login
-                </Link>
-              </span>
+              Already have an account?{" "}
+              <Link href="/login" className="text-blue-400 hover:text-blue-300">
+                Login here
+              </Link>
             </div>
           </div>
 
