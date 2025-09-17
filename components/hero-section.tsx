@@ -25,8 +25,8 @@ export function HeroSection() {
             <div className="inline-block px-3 py-1 mb-6 rounded-full bg-gradient-to-r from-blue-500/20 to-purple-600/20 text-blue-400 text-sm font-medium">
               No-Code Call Flow Builder
             </div>
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white leading-tight">
-              Build AI Call Flows Visually
+            <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white leading-tight">
+              Conversation.ai
             </h1>
             <p className="mt-6 text-xl text-gray-300 max-w-2xl">
               Create intelligent conversation flows with Conversation's drag-and-drop flowchart builder. Design call routing, 
