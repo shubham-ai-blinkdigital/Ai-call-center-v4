@@ -252,60 +252,89 @@ export default function PathwayListingPage() {
 
             return (
               <Card key={phone.id} className="hover:shadow-md transition-shadow">
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between">
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-2">
-                        <Phone className="h-4 w-4 text-blue-600" />
-                        <span className="font-medium">{phone.number}</span>
-                        <Badge variant={phone.status === "active" ? "default" : "secondary"}>
-                          {phone.status}
-                        </Badge>
+                <CardContent className="p-6 pb-4">
+                  <div className="space-y-4">
+                    {/* Phone Number Header */}
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <Phone className="h-5 w-5 text-blue-600" />
+                        <div>
+                          <span className="font-semibold text-lg">{formatPhoneNumber(phone.number)}</span>
+                          <Badge 
+                            variant={phone.status === "active" ? "default" : "secondary"}
+                            className="ml-3"
+                          >
+                            {phone.status}
+                          </Badge>
+                        </div>
                       </div>
-                      <p className="text-sm text-gray-600">
-                        {phone.location} • {phone.type}
-                      </p>
-                      {hasPathway ? (
-                        <div className="space-y-1">
-                          <div className="flex items-center gap-2 text-sm">
-                            <div className="h-2 w-2 bg-green-500 rounded-full"></div>
-                            <span className="text-green-700">
-                              Pathway: {phone.pathway_name}
-                            </span>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="h-6 w-6 p-0"
-                              onClick={() => copyPathwayId(phone.pathway_id!)}
-                              title="Copy Pathway ID"
-                            >
-                              <Copy className="h-3 w-3" />
-                            </Button>
-                          </div>
-                          {phone.pathway_description && (
-                            <p className="text-xs text-gray-500 ml-4">
-                              {phone.pathway_description}
-                            </p>
-                          )}
-                          <p className="text-xs text-gray-400 ml-4">
-                            ID: {phone.pathway_id}
-                          </p>
-                        </div>
-                      ) : (
-                        <div className="flex items-center gap-2 text-sm">
-                          <div className="h-2 w-2 bg-gray-400 rounded-full"></div>
-                          <span className="text-gray-500">No pathway configured</span>
-                        </div>
-                      )}
                     </div>
+
+                    {/* Location Info */}
+                    <div className="text-sm text-gray-600 border-b border-gray-100 pb-3">
+                      <span className="font-medium">{phone.location}</span> • <span>{phone.type}</span>
+                    </div>
+
+                    {/* Pathway Status */}
+                    {hasPathway ? (
+                      <div className="space-y-3">
+                        <div className="flex items-start gap-3">
+                          <div className="h-2 w-2 bg-green-500 rounded-full mt-2 flex-shrink-0"></div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 mb-1">
+                              <span className="text-sm font-medium text-green-700">
+                                Pathway Connected
+                              </span>
+                            </div>
+                            <h4 className="font-medium text-gray-900 mb-2">
+                              {phone.pathway_name}
+                            </h4>
+                            {phone.pathway_description && (
+                              <p className="text-sm text-gray-600 mb-3 leading-relaxed">
+                                {phone.pathway_description}
+                              </p>
+                            )}
+                            
+                            {/* Pathway ID Section */}
+                            <div className="bg-gray-50 rounded-lg p-3 border">
+                              <div className="flex items-center justify-between gap-2">
+                                <div className="flex-1 min-w-0">
+                                  <p className="text-xs text-gray-500 mb-1">Pathway ID</p>
+                                  <p className="text-sm font-mono text-gray-700 break-all">
+                                    {phone.pathway_id}
+                                  </p>
+                                </div>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="h-8 w-8 p-0 flex-shrink-0"
+                                  onClick={() => copyPathwayId(phone.pathway_id!)}
+                                  title="Copy Pathway ID"
+                                >
+                                  <Copy className="h-4 w-4" />
+                                </Button>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-3 py-2">
+                        <div className="h-2 w-2 bg-gray-400 rounded-full flex-shrink-0"></div>
+                        <div>
+                          <span className="text-sm font-medium text-gray-500">No pathway configured</span>
+                          <p className="text-xs text-gray-400 mt-1">Create a pathway to handle incoming calls</p>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </CardContent>
-                <CardFooter className="pt-4">
+                <CardFooter className="px-6 py-4 pt-2 border-t border-gray-50">
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={() => handleManagePathway(phone.number)}
-                    className="w-full"
+                    className="w-full justify-center"
                   >
                     <ArrowRight className="h-4 w-4 mr-2" />
                     {hasPathway ? 'Edit Pathway' : 'Create Pathway'}
