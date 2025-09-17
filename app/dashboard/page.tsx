@@ -334,13 +334,13 @@ export default function DashboardPage() {
                 <div className="h-8 w-8 bg-primary/10 rounded-lg flex items-center justify-center">
                   <BarChart3 className="h-4 w-4 text-primary" />
                 </div>
-                <CardTitle className="text-lg font-semibold text-foreground">Analytics</CardTitle>
+                <CardTitle className="text-lg font-semibold text-foreground">Analytics & Database</CardTitle>
               </div>
-              <CardDescription className="text-muted-foreground">View detailed analytics and call history</CardDescription>
+              <CardDescription className="text-muted-foreground">View detailed analytics, call history, and database</CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
               <Button asChild className="w-full bg-primary hover:bg-primary/90">
-                <Link href="/dashboard/analytics">View Analytics</Link>
+                <Link href="/dashboard/calls">View Analytics</Link>
               </Button>
               <Button variant="outline" asChild className="w-full border-border hover:bg-accent hover:text-accent-foreground">
                 <Link href="/dashboard/call-history">Call History</Link>
