@@ -287,21 +287,21 @@ export default function DashboardPage() {
           <Card className="bg-card shadow-sm border border-border hover:shadow-md transition-shadow">
             <CardHeader className="pb-4">
               <div className="flex items-center space-x-2">
-                <div className="h-8 w-8 bg-primary/10 rounded-lg flex items-center justify-center">
-                  <Zap className="h-4 w-4 text-primary" />
+                <div className="h-8 w-8 bg-purple-100 rounded-lg flex items-center justify-center">
+                  <Activity className="h-4 w-4 text-purple-600" />
                 </div>
-                <CardTitle className="text-lg font-semibold text-foreground">Create New Flow</CardTitle>
+                <CardTitle className="text-lg font-semibold text-foreground">Explore Voices</CardTitle>
               </div>
               <CardDescription className="text-muted-foreground">
-                Build a new call flow from scratch or use a template
+                Browse and manage AI voices for your call flows
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
-              <Button asChild className="w-full bg-primary hover:bg-primary/90">
-                <Link href="/dashboard/call-flows/new">Create Flow</Link>
+              <Button asChild className="w-full bg-purple-600 hover:bg-purple-700">
+                <Link href="/dashboard/voices">Browse Voices</Link>
               </Button>
               <Button variant="outline" asChild className="w-full border-border hover:bg-accent hover:text-accent-foreground">
-                <Link href="/dashboard/call-flows/generate">Generate with AI</Link>
+                <Link href="/dashboard/voices">Voice Samples</Link>
               </Button>
             </CardContent>
           </Card>
