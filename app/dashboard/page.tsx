@@ -283,7 +283,29 @@ export default function DashboardPage() {
         </div>
 
         {/* Quick Actions Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 gap-6 mb-8">
+          <Card className="bg-card shadow-sm border border-border hover:shadow-md transition-shadow">
+            <CardHeader className="pb-4">
+              <div className="flex items-center space-x-2">
+                <div className="h-8 w-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                  <Zap className="h-4 w-4 text-blue-600" />
+                </div>
+                <CardTitle className="text-lg font-semibold text-foreground">Try Demo</CardTitle>
+              </div>
+              <CardDescription className="text-muted-foreground">
+                Experience our AI voice technology with an interactive demo
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <Button asChild className="w-full bg-blue-600 hover:bg-blue-700">
+                <Link href="/try-demo">Try Demo</Link>
+              </Button>
+              <Button variant="outline" asChild className="w-full border-border hover:bg-accent hover:text-accent-foreground">
+                <Link href="/try-demo">Interactive Experience</Link>
+              </Button>
+            </CardContent>
+          </Card>
+
           <Card className="bg-card shadow-sm border border-border hover:shadow-md transition-shadow">
             <CardHeader className="pb-4">
               <div className="flex items-center space-x-2">
