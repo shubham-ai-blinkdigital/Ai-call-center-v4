@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { useAuth } from "@/contexts/auth-context"
+import { useRouter } from "next/navigation"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Phone, BarChart3, Settings, TrendingUp, Activity, Zap, RefreshCw } from "lucide-react"
@@ -12,6 +13,7 @@ import { Wallet } from "lucide-react"
 
 export default function DashboardPage() {
   const { user, loading } = useAuth()
+  const router = useRouter()
   const {
     calls,
     totalCalls,
@@ -123,14 +125,18 @@ export default function DashboardPage() {
   }
 
   if (!user) {
+    // Redirect to home page if not authenticated
+    useEffect(() => {
+      if (!loading && !user) {
+        router.push("/")
+      }
+    }, [loading, user, router])
+
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center max-w-md mx-auto p-6">
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Please log in</h2>
-          <p className="text-gray-600 mb-6">You need to be authenticated to access the dashboard.</p>
-          <Button asChild size="lg">
-            <Link href="/login">Go to Login</Link>
-          </Button>
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Redirecting...</p>
         </div>
       </div>
     )
