@@ -196,7 +196,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setIsAuthenticated(false)
       
       console.log("✅ [AUTH-CONTEXT] Logout complete, redirecting to home page")
-      router.push("/")
+      // Small delay to ensure state is updated before redirect
+      setTimeout(() => {
+        router.push("/")
+      }, 100)
     } catch (err) {
       console.error("❌ [AUTH-CONTEXT] Logout error:", err)
       
@@ -205,7 +208,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       
       setUser(null)
       setIsAuthenticated(false)
-      router.push("/")
+      // Small delay to ensure state is updated before redirect
+      setTimeout(() => {
+        router.push("/")
+      }, 100)
     }
   }
 
