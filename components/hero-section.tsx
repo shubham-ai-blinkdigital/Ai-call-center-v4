@@ -29,7 +29,7 @@ export function HeroSection() {
               Build AI Call Flows Visually
             </h1>
             <p className="mt-6 text-xl text-gray-300 max-w-2xl">
-              Create intelligent phone systems with our drag-and-drop flowchart builder. Design call routing, 
+              Create intelligent conversation flows with Conversation's drag-and-drop flowchart builder. Design call routing, 
               lead qualification, and customer service flows without writing code.
             </p>
 
