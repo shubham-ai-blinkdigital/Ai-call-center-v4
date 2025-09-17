@@ -73,6 +73,12 @@ export async function middleware(req: NextRequest) {
       if (decoded) {
         console.log("[MIDDLEWARE] ✅ Redirecting authenticated user to dashboard")
         return NextResponse.redirect(new URL("/dashboard", req.url))
+      } else {
+        // Token exists but is invalid, clear it and allow access to login
+        console.log("[MIDDLEWARE] ❌ Invalid token on login page, clearing cookie")
+        const response = NextResponse.next()
+        response.cookies.delete("auth-token")
+        return response
       }
     }
 
