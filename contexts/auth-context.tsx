@@ -181,6 +181,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = async () => {
     try {
+      console.log("🚪 [AUTH-CONTEXT] Starting logout process...")
+      
       await fetch("/api/auth/logout", {
         method: "POST",
         credentials: "include",
@@ -191,17 +193,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       console.log("✅ [AUTH-CONTEXT] Token cleared from localStorage")
 
       setUser(null)
-      setIsAuthenticated(false) // Update isAuthenticated state
-      router.push("/login")
+      setIsAuthenticated(false)
+      
+      console.log("✅ [AUTH-CONTEXT] Logout complete, redirecting to home page")
+      // Small delay to ensure state is updated before redirect
+      setTimeout(() => {
+        router.push("/")
+      }, 100)
     } catch (err) {
-      console.error("Logout error:", err)
+      console.error("❌ [AUTH-CONTEXT] Logout error:", err)
       
       // Clear localStorage token even on error
       localStorage.removeItem('auth-token')
       
       setUser(null)
-      setIsAuthenticated(false) // Update isAuthenticated state
-      router.push("/login")
+      setIsAuthenticated(false)
+      // Small delay to ensure state is updated before redirect
+      setTimeout(() => {
+        router.push("/")
+      }, 100)
     }
   }
 

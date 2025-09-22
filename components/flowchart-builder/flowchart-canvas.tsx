@@ -68,10 +68,10 @@ export function FlowchartCanvas({ phoneNumber, pathwayInfo }: FlowchartCanvasPro
   const onDeleteNode = useCallback((nodeId: string) => {
     // Remove the node
     setNodes((nds) => nds.filter((node) => node.id !== nodeId))
-    
+
     // Remove all connected edges
     setEdges((eds) => eds.filter((edge) => edge.source !== nodeId && edge.target !== nodeId))
-    
+
     // Close any open editors if this node was selected
     setSelectedNode((prevSelected) => 
       prevSelected?.id === nodeId ? null : prevSelected
@@ -297,73 +297,7 @@ export function FlowchartCanvas({ phoneNumber, pathwayInfo }: FlowchartCanvasPro
               reactFlowData={{ nodes, edges }}
               pathwayId={pathwayInfo?.pathway_id}
             />
-
-          <Dialog open={isJsonPreviewOpen} onOpenChange={setIsJsonPreviewOpen}>
-            <DialogTrigger asChild>
-              <Button 
-                onClick={handleJsonPreview}
-                className="bg-green-600 hover:bg-green-700 text-white shadow-lg"
-                size="sm"
-              >
-                📄 ReactFlowJ
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-4xl max-h-[80vh]">
-              <DialogHeader>
-                <DialogTitle>ReactFlow JSON Data</DialogTitle>
-              </DialogHeader>
-              <div className="space-y-4">
-                <div>
-                  <h3 className="font-semibold mb-2">Current ReactFlow Data:</h3>
-                  <ScrollArea className="h-96 w-full rounded-md border p-4">
-                    <pre className="text-xs">
-                      {JSON.stringify({ nodes, edges }, null, 2)}
-                    </pre>
-                  </ScrollArea>
-                </div>
-                <div className="text-sm text-gray-600">
-                  <p><strong>Nodes:</strong> {nodes.length}</p>
-                  <p><strong>Edges:</strong> {edges.length}</p>
-                </div>
-              </div>
-            </DialogContent>
-          </Dialog>
-
-          <Dialog open={isConvertedJsonOpen} onOpenChange={setIsConvertedJsonOpen}>
-            <DialogTrigger asChild>
-              <Button 
-                onClick={handleConvertedJsonPreview}
-                className="bg-blue-600 hover:bg-blue-700 text-white shadow-lg"
-                size="sm"
-              >
-                🔄 ConvertedJ
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-4xl max-h-[80vh]">
-              <DialogHeader>
-                <DialogTitle>Converted Bland.ai JSON Data</DialogTitle>
-              </DialogHeader>
-              <div className="space-y-4">
-                <div>
-                  <h3 className="font-semibold mb-2">Clean Bland.ai Format:</h3>
-                  <ScrollArea className="h-96 w-full rounded-md border p-4">
-                    <pre className="text-xs">
-                      {JSON.stringify(convertReactFlowToBland({ nodes, edges }), null, 2)}
-                    </pre>
-                  </ScrollArea>
-                </div>
-                <div className="text-sm text-gray-600">
-                  <p><strong>Original Nodes:</strong> {nodes.length}</p>
-                  <p><strong>Original Edges:</strong> {edges.length}</p>
-                  <p><strong>Cleaned Nodes:</strong> {convertReactFlowToBland({ nodes, edges }).nodes.length}</p>
-                  <p><strong>Cleaned Edges:</strong> {convertReactFlowToBland({ nodes, edges }).edges.length}</p>
-                  <p className="text-green-600 font-medium mt-2">✅ UI-specific properties removed (position, selected, width, height, style, etc.)</p>
-                </div>
-              </div>
-            </DialogContent>
-          </Dialog>
-
-          <UpdatePathwayModal reactFlowData={{ nodes, edges }} />
+        <UpdatePathwayModal reactFlowData={{ nodes, edges }} />
         </div>
 
         <ReactFlow

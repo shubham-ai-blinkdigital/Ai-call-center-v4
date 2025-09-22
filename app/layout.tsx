@@ -11,8 +11,8 @@ import { cn } from "@/lib/utils"
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "Bland.ai Call Flow Builder",
-  description: "Create and manage AI phone call flows with Bland.ai",
+  title: "Conversation Call Flow Builder",
+  description: "Create and manage AI phone call flows with Conversation.ai",
   generator: "v0.dev",
 }
 

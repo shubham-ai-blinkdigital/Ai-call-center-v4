@@ -53,15 +53,15 @@ export async function middleware(req: NextRequest) {
 
     if (isProtectedPath) {
       if (!token) {
-        console.log("[MIDDLEWARE] ❌ No token, redirecting to login")
-        return NextResponse.redirect(new URL("/login", req.url))
+        console.log("[MIDDLEWARE] ❌ No token, redirecting to home page")
+        return NextResponse.redirect(new URL("/", req.url))
       }
 
       // Verify JWT token
       const decoded = verifyJWT(token, JWT_SECRET)
       if (!decoded) {
-        console.log("[MIDDLEWARE] ❌ Invalid token, redirecting to login")
-        return NextResponse.redirect(new URL("/login", req.url))
+        console.log("[MIDDLEWARE] ❌ Invalid token, redirecting to home page")
+        return NextResponse.redirect(new URL("/", req.url))
       }
 
       console.log("[MIDDLEWARE] ✅ Token valid for user:", decoded.userId)
@@ -73,6 +73,12 @@ export async function middleware(req: NextRequest) {
       if (decoded) {
         console.log("[MIDDLEWARE] ✅ Redirecting authenticated user to dashboard")
         return NextResponse.redirect(new URL("/dashboard", req.url))
+      } else {
+        // Token exists but is invalid, clear it and allow access to login
+        console.log("[MIDDLEWARE] ❌ Invalid token on login page, clearing cookie")
+        const response = NextResponse.next()
+        response.cookies.delete("auth-token")
+        return response
       }
     }
 

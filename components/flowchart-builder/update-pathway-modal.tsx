@@ -75,7 +75,7 @@ export function UpdatePathwayModal({ reactFlowData, pathwayId }: UpdatePathwayMo
         
         toast({
           title: "✅ Success!",
-          description: "Pathway updated successfully on Bland.ai",
+          description: "Pathway Deployed successfully",
           variant: "default",
         })
 
@@ -129,7 +129,7 @@ export function UpdatePathwayModal({ reactFlowData, pathwayId }: UpdatePathwayMo
       </DialogTrigger>
       <DialogContent className="max-w-4xl max-h-[90vh]">
         <DialogHeader>
-          <DialogTitle>Update Pathway on Bland.ai</DialogTitle>
+          <DialogTitle>Update Pathway</DialogTitle>
         </DialogHeader>
 
         <div className="space-y-6">
@@ -138,7 +138,7 @@ export function UpdatePathwayModal({ reactFlowData, pathwayId }: UpdatePathwayMo
             <div className="text-center py-8 space-y-4">
               <div className="text-6xl">✅</div>
               <h3 className="text-xl font-semibold text-green-700">Success!</h3>
-              <p className="text-green-600">Pathway updated successfully on Bland.ai</p>
+              <p className="text-green-600">Pathway Deployed successfully</p>
               <div className="bg-green-50 border border-green-200 rounded-lg p-4">
                 <p className="text-sm text-green-700">
                   <strong>Pathway ID:</strong> {manualPathwayId}
@@ -229,7 +229,7 @@ export function UpdatePathwayModal({ reactFlowData, pathwayId }: UpdatePathwayMo
                   ) : (
                     <Send className="w-4 h-4" />
                   )}
-                  {isLoading ? 'Updating...' : 'Send to Bland.ai'}
+                  {isLoading ? 'Updating...' : 'Deploy'}
                 </Button>
               </div>
             </form>
@@ -277,7 +277,7 @@ export function UpdatePathwayModal({ reactFlowData, pathwayId }: UpdatePathwayMo
                   ) : (
                     <>
                       <Send className="w-4 h-4 mr-2" />
-                      Confirm & Send to Bland.ai
+                      Confirm & Deploy
                     </>
                   )}
                 </Button>

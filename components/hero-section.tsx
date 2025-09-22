@@ -25,46 +25,32 @@ export function HeroSection() {
             <div className="inline-block px-3 py-1 mb-6 rounded-full bg-gradient-to-r from-blue-500/20 to-purple-600/20 text-blue-400 text-sm font-medium">
               No-Code Call Flow Builder
             </div>
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white leading-tight">
-              Build AI Call Flows Visually
+            <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white leading-tight flex items-center justify-center lg:justify-start gap-4">
+              <img
+                src="/ConvLogoG.png"
+                alt="Conversation.ai Logo"
+                className="h-12 md:h-16 lg:h-20 w-auto object-contain"
+              />
+              CONVERSATION
             </h1>
             <p className="mt-6 text-xl text-gray-300 max-w-2xl">
-              Create intelligent phone systems with our drag-and-drop flowchart builder. Design call routing, 
+              Create intelligent conversation flows with Conversation drag-and-drop flowchart builder. Design call routing, 
               lead qualification, and customer service flows without writing code.
             </p>
 
             <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-              <div className="flex-1 sm:max-w-xs">
-                <Input
-                  type="email"
-                  placeholder="Enter your email"
-                  className="bg-gray-800 border-gray-700 text-white h-12"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                />
-              </div>
-              <div className="flex gap-2">
+              <div className="flex gap-4">
                 <Link href="/signup">
                   <Button className="h-12 px-6 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white">
-                    Start Building <ArrowRight className="ml-2 h-4 w-4" />
+                    Sign Up <ArrowRight className="ml-2 h-4 w-4" />
                   </Button>
                 </Link>
-                <Link href="/dashboard/call-flows/editor">
-                  <Button variant="outline" className="h-12 px-6 border-gray-600 text-gray-300 hover:bg-gray-800 hover:text-white">
-                    Try Demo
+                <Link href="/login">
+                  <Button className="h-12 px-6 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white">
+                    Sign In
                   </Button>
                 </Link>
               </div>
-            </div>
-
-            <div className="mt-6 text-sm text-gray-400">
-              No credit card required. Start building flows in minutes.
-              <span className="ml-2">
-                Already have an account?{" "}
-                <Link href="/login" className="text-blue-400 hover:text-blue-300">
-                  Login
-                </Link>
-              </span>
             </div>
           </div>
 

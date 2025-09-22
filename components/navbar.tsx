@@ -36,10 +36,21 @@ export function Navbar() {
           <div className="flex items-center">
             <Link href="/" className="flex-shrink-0">
               <div className="flex items-center">
-                <div className="h-8 w-8 rounded-md bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
-                  <span className="text-white font-bold">B</span>
+                <img
+                  src="/ConvLogoG.png"
+                  alt="Conversation Logo"
+                  className="h-8 w-8 object-contain"
+                  onError={(e) => {
+                    // Fallback to styled letter if image fails to load
+                    const target = e.target as HTMLImageElement;
+                    target.style.display = 'none';
+                    target.nextElementSibling?.classList.remove('hidden');
+                  }}
+                />
+                <div className="hidden h-8 w-8 rounded-md bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
+                  <span className="text-white font-bold text-sm">C</span>
                 </div>
-                <span className="ml-2 text-xl font-bold text-white">Blink.AI</span>
+                <span className="ml-2 text-xl font-bold text-white">Conversation</span>
               </div>
             </Link>
           </div>

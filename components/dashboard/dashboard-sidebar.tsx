@@ -25,9 +25,8 @@ import { useAuth } from "@/contexts/auth-context"
 const navigation = [
   { name: "Dashboard", href: "/dashboard", icon: Home },
   { name: "My Pathway", href: "/dashboard/pathway", icon: FileText },
-  { name: "Analytics", href: "/dashboard/analytics", icon: BarChart3 },
+  { name: "Analytics", href: "/dashboard/calls", icon: BarChart3 },
   { name: "Voices", href: "/dashboard/voices", icon: Mic },
-  { name: "Call Database", href: "/dashboard/calls", icon: Users },
   { name: "Call History", href: "/dashboard/call-history", icon: History },
   { name: "Phone Numbers", href: "/dashboard/phone-numbers", icon: Phone },
   { name: "Billing", href: "/dashboard/billing", icon: CreditCard },
@@ -43,14 +42,15 @@ export function DashboardSidebar() {
 
   const handleLogout = async () => {
     try {
-      console.log("🚪 Starting logout process...")
+      console.log("🚪 [SIDEBAR] Starting logout process...")
       setIsDropdownOpen(false)
       await logout()
-      console.log("✅ Logout successful, redirecting...")
-      router.push("/login")
+      console.log("✅ [SIDEBAR] Logout successful")
+      // Don't manually redirect - let the auth context handle it
     } catch (error) {
-      console.error("❌ Logout error:", error)
-      router.push("/login")
+      console.error("❌ [SIDEBAR] Logout error:", error)
+      // Fallback redirect only on error
+      router.push("/")
     }
   }
 

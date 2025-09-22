@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { useAuth } from "@/contexts/auth-context"
+import { useRouter } from "next/navigation"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Phone, BarChart3, Settings, TrendingUp, Activity, Zap, RefreshCw } from "lucide-react"
@@ -12,6 +13,7 @@ import { Wallet } from "lucide-react"
 
 export default function DashboardPage() {
   const { user, loading } = useAuth()
+  const router = useRouter()
   const {
     calls,
     totalCalls,
@@ -122,15 +124,30 @@ export default function DashboardPage() {
     )
   }
 
-  if (!user) {
+  // Handle unauthenticated users
+  if (!loading && !user) {
+    // Redirect to home page if not authenticated
+    useEffect(() => {
+      router.push("/")
+    }, [router])
+
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center max-w-md mx-auto p-6">
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Please log in</h2>
-          <p className="text-gray-600 mb-6">You need to be authenticated to access the dashboard.</p>
-          <Button asChild size="lg">
-            <Link href="/login">Go to Login</Link>
-          </Button>
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Redirecting to home page...</p>
+        </div>
+      </div>
+    )
+  }
+
+  // Show loading state while auth is being determined
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading...</p>
         </div>
       </div>
     )
@@ -283,25 +300,47 @@ export default function DashboardPage() {
         </div>
 
         {/* Quick Actions Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 gap-6 mb-8">
           <Card className="bg-card shadow-sm border border-border hover:shadow-md transition-shadow">
             <CardHeader className="pb-4">
               <div className="flex items-center space-x-2">
-                <div className="h-8 w-8 bg-primary/10 rounded-lg flex items-center justify-center">
-                  <Zap className="h-4 w-4 text-primary" />
+                <div className="h-8 w-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                  <Zap className="h-4 w-4 text-blue-600" />
                 </div>
-                <CardTitle className="text-lg font-semibold text-foreground">Create New Flow</CardTitle>
+                <CardTitle className="text-lg font-semibold text-foreground">Try Demo</CardTitle>
               </div>
               <CardDescription className="text-muted-foreground">
-                Build a new call flow from scratch or use a template
+                Experience our AI voice technology with an interactive demo
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
-              <Button asChild className="w-full bg-primary hover:bg-primary/90">
-                <Link href="/dashboard/call-flows/new">Create Flow</Link>
+              <Button asChild className="w-full bg-blue-600 hover:bg-blue-700">
+                <Link href="/try-demo">Try Demo</Link>
               </Button>
               <Button variant="outline" asChild className="w-full border-border hover:bg-accent hover:text-accent-foreground">
-                <Link href="/dashboard/call-flows/generate">Generate with AI</Link>
+                <Link href="/try-demo">Interactive Experience</Link>
+              </Button>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-card shadow-sm border border-border hover:shadow-md transition-shadow">
+            <CardHeader className="pb-4">
+              <div className="flex items-center space-x-2">
+                <div className="h-8 w-8 bg-purple-100 rounded-lg flex items-center justify-center">
+                  <Activity className="h-4 w-4 text-purple-600" />
+                </div>
+                <CardTitle className="text-lg font-semibold text-foreground">Explore Voices</CardTitle>
+              </div>
+              <CardDescription className="text-muted-foreground">
+                Browse and manage AI voices for your call flows
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <Button asChild className="w-full bg-purple-600 hover:bg-purple-700">
+                <Link href="/dashboard/voices">Browse Voices</Link>
+              </Button>
+              <Button variant="outline" asChild className="w-full border-border hover:bg-accent hover:text-accent-foreground">
+                <Link href="/dashboard/voices">Voice Samples</Link>
               </Button>
             </CardContent>
           </Card>
@@ -334,13 +373,13 @@ export default function DashboardPage() {
                 <div className="h-8 w-8 bg-primary/10 rounded-lg flex items-center justify-center">
                   <BarChart3 className="h-4 w-4 text-primary" />
                 </div>
-                <CardTitle className="text-lg font-semibold text-foreground">Analytics</CardTitle>
+                <CardTitle className="text-lg font-semibold text-foreground">Analytics & Database</CardTitle>
               </div>
-              <CardDescription className="text-muted-foreground">View detailed analytics and call history</CardDescription>
+              <CardDescription className="text-muted-foreground">View detailed analytics, call history, and database</CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
               <Button asChild className="w-full bg-primary hover:bg-primary/90">
-                <Link href="/dashboard/analytics">View Analytics</Link>
+                <Link href="/dashboard/calls">View Analytics</Link>
               </Button>
               <Button variant="outline" asChild className="w-full border-border hover:bg-accent hover:text-accent-foreground">
                 <Link href="/dashboard/call-history">Call History</Link>

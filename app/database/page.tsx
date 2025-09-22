@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useState, useEffect } from "react"
@@ -13,6 +12,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { useAuth } from "@/contexts/auth"
 import { useRouter } from "next/navigation"
 import { Trash2, Edit, Plus, Download, Upload, Database, Users, Building, Route, Activity } from "lucide-react"
+import Link from "next/link"
 
 interface DatabaseStats {
   users: number
@@ -57,107 +57,42 @@ interface Pathway {
 export default function DatabaseManagement() {
   const { user, isAuthenticated } = useAuth()
   const router = useRouter()
-  
+
   const [stats, setStats] = useState<DatabaseStats | null>(null)
   const [users, setUsers] = useState<User[]>([])
   const [teams, setTeams] = useState<Team[]>([])
   const [pathways, setPathways] = useState<Pathway[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  
+
   const [selectedUser, setSelectedUser] = useState<User | null>(null)
   const [selectedTeam, setSelectedTeam] = useState<Team | null>(null)
   const [selectedPathway, setSelectedPathway] = useState<Pathway | null>(null)
-  
+
   const [editMode, setEditMode] = useState<'user' | 'team' | 'pathway' | null>(null)
   const [newRecord, setNewRecord] = useState<any>({})
 
-  // Check authentication
+  // Check authentication and redirect if necessary
   useEffect(() => {
     console.log('[DATABASE] Auth state check:', { isAuthenticated, user, userRole: user?.role })
-    
-    // Only redirect if we're certain about the authentication state
-    if (isAuthenticated === false) {
-      console.log('[DATABASE] User not authenticated, redirecting to login')
-      router.push('/login')
-      return
+
+    // Redirect to home page if not authenticated
+    if (!loading && isAuthenticated === false) {
+      router.push("/")
     }
-  }, [isAuthenticated, user, router])
+  }, [loading, isAuthenticated, router])
 
-  const fetchData = async () => {
-    try {
-      setLoading(true)
-      const response = await fetch('/api/database/manage')
-      const result = await response.json()
-      
-      if (result.success) {
-        setStats(result.data.stats)
-        setUsers(result.data.users || [])
-        setTeams(result.data.teams || [])
-        setPathways(result.data.pathways || [])
-        setError(null)
-      } else {
-        setError(result.message || 'Failed to fetch data')
-      }
-    } catch (err) {
-      setError('Network error occurred')
-      console.error('Fetch error:', err)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const fetchAllUsers = async () => {
-    try {
-      const response = await fetch('/api/database/manage?table=users')
-      const result = await response.json()
-      if (result.success) {
-        setUsers(result.data)
-      }
-    } catch (err) {
-      console.error('Error fetching users:', err)
-    }
-  }
-
-  const fetchAllTeams = async () => {
-    try {
-      const response = await fetch('/api/database/manage?table=teams')
-      const result = await response.json()
-      if (result.success) {
-        setTeams(result.data)
-      }
-    } catch (err) {
-      console.error('Error fetching teams:', err)
-    }
-  }
-
-  const fetchAllPathways = async () => {
-    try {
-      const response = await fetch('/api/database/manage?table=pathways')
-      const result = await response.json()
-      if (result.success) {
-        setPathways(result.data)
-      }
-    } catch (err) {
-      console.error('Error fetching pathways:', err)
-    }
-  }
-
-  useEffect(() => {
-    fetchData()
-  }, [])
-
-  // Show loading while authentication is being determined
-  if (isAuthenticated === null) {
+  // Show error if user is not authenticated
+  if (isAuthenticated === false) {
     return (
       <div className="container mx-auto p-6">
-        <h1 className="text-3xl font-bold mb-6">Database Management</h1>
-        <div className="text-center">Loading authentication...</div>
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Redirecting...</p>
+        </div>
       </div>
     )
   }
-
-  
 
   // Show error if user is authenticated but user object is null
   if (isAuthenticated === true && !user) {
