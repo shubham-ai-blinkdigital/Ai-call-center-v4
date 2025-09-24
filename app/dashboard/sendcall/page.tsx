@@ -18,7 +18,7 @@ import {
   FileText, 
   Users, 
   Building, 
-  Stadium, 
+  MapPin, 
   TrendingUp,
   Bookmark,
   ArrowUpRight,
@@ -132,7 +132,7 @@ export default function SendCallPage() {
     { id: "saved", name: "Saved Prompts", icon: Bookmark },
     { id: "telehealth", name: "Telehealth", icon: Users },
     { id: "small-business", name: "Small business", icon: Building },
-    { id: "stadium", name: "Stadium venues", icon: Stadium },
+    { id: "stadium", name: "Stadium venues", icon: MapPin },
     { id: "inbound-sales", name: "Inbound sales", icon: TrendingUp },
   ]
 
