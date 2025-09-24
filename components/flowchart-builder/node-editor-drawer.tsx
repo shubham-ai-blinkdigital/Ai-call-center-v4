@@ -8,7 +8,8 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
-import { Plus, Trash2 } from 'lucide-react'
+import { Plus, Trash2, Send } from 'lucide-react'
+import { Switch } from '@/components/ui/switch'
 
 interface NodeEditorDrawerProps {
   isOpen: boolean
@@ -132,6 +133,76 @@ export function NodeEditorDrawer({ isOpen, onClose, selectedNode, onUpdateNode }
           </div>
         )
 
+      case 'webhookNode':
+        return (
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="name">Node Name</Label>
+              <Input
+                id="name"
+                value={selectedNode.data.name || ''}
+                onChange={(e) => handleFieldChange('name', e.target.value)}
+                placeholder="Webhook Request"
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="text">Display Message</Label>
+              <Textarea
+                id="text"
+                value={selectedNode.data.text || ''}
+                onChange={(e) => handleFieldChange('text', e.target.value)}
+                placeholder="Please give me a moment as I check our system.."
+                rows={2}
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="method">HTTP Method</Label>
+              <Select
+                value={selectedNode.data.method || 'POST'}
+                onValueChange={(value) => handleFieldChange('method', value)}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="GET">GET</SelectItem>
+                  <SelectItem value="POST">POST</SelectItem>
+                  <SelectItem value="PUT">PUT</SelectItem>
+                  <SelectItem value="PATCH">PATCH</SelectItem>
+                  <SelectItem value="DELETE">DELETE</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <Label htmlFor="url">API URL</Label>
+              <Input
+                id="url"
+                value={selectedNode.data.url || ''}
+                onChange={(e) => handleFieldChange('url', e.target.value)}
+                placeholder="https://api.example.com/endpoint"
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="body">Request Body (JSON)</Label>
+              <Textarea
+                id="body"
+                value={selectedNode.data.body || ''}
+                onChange={(e) => handleFieldChange('body', e.target.value)}
+                placeholder='{\n  "key": "{{variable}}"\n}'
+                rows={4}
+              />
+            </div>
+
+            {renderExtractVars()}
+            {renderResponseData()}
+            {renderWebhookSettings()}
+          </div>
+        )
+
       case 'transferNode':
         return (
           <div className="space-y-4">
@@ -203,6 +274,153 @@ export function NodeEditorDrawer({ isOpen, onClose, selectedNode, onUpdateNode }
         )
     }
   }
+
+  const handleResponseDataAdd = () => {
+    const currentData = selectedNode.data.responseData || []
+    const newData = { data: '$.result', name: 'response_value', context: 'Response data description' }
+    handleFieldChange('responseData', [...currentData, newData])
+  }
+
+  const handleResponseDataUpdate = (index: number, field: string, value: string) => {
+    const currentData = [...(selectedNode.data.responseData || [])]
+    currentData[index][field] = value
+    handleFieldChange('responseData', currentData)
+  }
+
+  const handleResponseDataRemove = (index: number) => {
+    const currentData = [...(selectedNode.data.responseData || [])]
+    currentData.splice(index, 1)
+    handleFieldChange('responseData', currentData)
+  }
+
+  const renderResponseData = () => (
+    <div className="space-y-3">
+      <div className="flex items-center justify-between">
+        <Label>Response Data</Label>
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={handleResponseDataAdd}
+          className="h-8"
+        >
+          <Plus className="w-4 h-4 mr-1" />
+          Add Data
+        </Button>
+      </div>
+
+      {(selectedNode.data.responseData || []).map((responseData: any, index: number) => (
+        <div key={index} className="p-3 border rounded-lg space-y-2">
+          <div className="flex items-center justify-between">
+            <Badge variant="secondary">Data {index + 1}</Badge>
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => handleResponseDataRemove(index)}
+              className="h-6 w-6 p-0 text-red-500 hover:text-red-700"
+            >
+              <Trash2 className="w-3 h-3" />
+            </Button>
+          </div>
+
+          <div className="grid grid-cols-1 gap-2">
+            <div>
+              <Label className="text-xs">JSONPath</Label>
+              <Input
+                value={responseData.data || ''}
+                onChange={(e) => handleResponseDataUpdate(index, 'data', e.target.value)}
+                placeholder="$.result"
+                className="h-8"
+              />
+            </div>
+
+            <div>
+              <Label className="text-xs">Variable Name</Label>
+              <Input
+                value={responseData.name || ''}
+                onChange={(e) => handleResponseDataUpdate(index, 'name', e.target.value)}
+                placeholder="response_value"
+                className="h-8"
+              />
+            </div>
+
+            <div>
+              <Label className="text-xs">Context</Label>
+              <Input
+                value={responseData.context || ''}
+                onChange={(e) => handleResponseDataUpdate(index, 'context', e.target.value)}
+                placeholder="Description of the response data"
+                className="h-8"
+              />
+            </div>
+          </div>
+        </div>
+      ))}
+
+      {(selectedNode.data.responseData || []).length === 0 && (
+        <div className="text-sm text-gray-500 text-center py-4">
+          No response data configured. Click "Add Data" to start capturing API responses.
+        </div>
+      )}
+    </div>
+  )
+
+  const renderWebhookSettings = () => (
+    <div className="space-y-4 p-4 border rounded-lg bg-gray-50">
+      <Label className="text-sm font-medium">Advanced Settings</Label>
+      
+      <div className="space-y-3">
+        <div>
+          <Label className="text-xs">Authorization</Label>
+          <Input
+            value={selectedNode.data.authorization || ''}
+            onChange={(e) => handleFieldChange('authorization', e.target.value)}
+            placeholder="Bearer token or API key"
+            className="h-8"
+          />
+        </div>
+
+        <div className="grid grid-cols-2 gap-2">
+          <div>
+            <Label className="text-xs">Timeout (seconds)</Label>
+            <Input
+              type="number"
+              value={selectedNode.data.timeout || 10}
+              onChange={(e) => handleFieldChange('timeout', parseInt(e.target.value) || 10)}
+              className="h-8"
+            />
+          </div>
+
+          <div>
+            <Label className="text-xs">Retry Attempts</Label>
+            <Input
+              type="number"
+              value={selectedNode.data.retryAttempts || 0}
+              onChange={(e) => handleFieldChange('retryAttempts', parseInt(e.target.value) || 0)}
+              className="h-8"
+            />
+          </div>
+        </div>
+
+        <div className="flex items-center space-x-2">
+          <Switch
+            checked={selectedNode.data.rerouteServer || false}
+            onCheckedChange={(checked) => handleFieldChange('rerouteServer', checked)}
+          />
+          <Label className="text-xs">Reroute through server</Label>
+        </div>
+
+        <Button
+          size="sm"
+          variant="outline"
+          className="w-full h-8"
+          disabled={!selectedNode.data.url}
+        >
+          <Send className="w-3 h-3 mr-2" />
+          Test API Request
+        </Button>
+      </div>
+    </div>
+  )
 
   const renderExtractVars = () => (
     <div className="space-y-3">

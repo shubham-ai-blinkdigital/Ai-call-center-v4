@@ -22,6 +22,7 @@ import { QuestionNode } from './nodes/question-node'
 import { CustomerResponseNode } from './nodes/customer-response-node'
 import { EndCallNode } from './nodes/end-call-node'
 import { TransferNode } from './nodes/transfer-node'
+import { WebhookNode } from './nodes/webhook-node'
 import { NodeEditorDrawer } from './node-editor-drawer'
 import { CustomEdge } from './edges/custom-edge'
 import { EdgeEditorDrawer } from './edge-editor-drawer'
@@ -86,6 +87,7 @@ export function FlowchartCanvas({ phoneNumber, pathwayInfo }: FlowchartCanvasPro
     Default: (props: any) => <CustomerResponseNode {...props} onEdit={() => onEditNode(props)} onDelete={() => onDeleteNode(props.id)} />,
     questionNode: (props: any) => <QuestionNode {...props} onEdit={() => onEditNode(props)} onDelete={() => onDeleteNode(props.id)} />,
     customerResponseNode: (props: any) => <CustomerResponseNode {...props} onEdit={() => onEditNode(props)} onDelete={() => onDeleteNode(props.id)} />,
+    webhookNode: (props: any) => <WebhookNode {...props} onEdit={() => onEditNode(props)} onDelete={() => onDeleteNode(props.id)} />,
     endCallNode: (props: any) => <EndCallNode {...props} onEdit={() => onEditNode(props)} onDelete={() => onDeleteNode(props.id)} />,
     'End Call': (props: any) => <EndCallNode {...props} onEdit={() => onEditNode(props)} onDelete={() => onDeleteNode(props.id)} />,
     transferNode: (props: any) => <TransferNode {...props} onEdit={() => onEditNode(props)} onDelete={() => onDeleteNode(props.id)} />,
@@ -255,6 +257,21 @@ export function FlowchartCanvas({ phoneNumber, pathwayInfo }: FlowchartCanvasPro
         return {
           name: 'Customer Response',
           text: 'Waiting for customer response...',
+        }
+      case 'webhookNode':
+        return {
+          name: 'Webhook Request',
+          text: 'Please give me a moment as I check our system..',
+          url: '',
+          method: 'POST',
+          body: '',
+          extractVars: [],
+          responseData: [],
+          headers: [],
+          authorization: '',
+          timeout: 10,
+          retryAttempts: 0,
+          rerouteServer: false,
         }
       case 'transferNode':
         return {

@@ -1,7 +1,7 @@
 'use client'
 
 import React from 'react'
-import { MessageCircle, HelpCircle, MessageSquare, PhoneOff, PhoneForwarded } from 'lucide-react'
+import { MessageCircle, HelpCircle, MessageSquare, PhoneOff, PhoneForwarded, Globe } from 'lucide-react'
 
 const nodeTypes = [
   {
@@ -24,6 +24,13 @@ const nodeTypes = [
     icon: MessageSquare,
     color: 'bg-yellow-100 text-yellow-800 border-yellow-300',
     description: 'Handle response'
+  },
+  {
+    type: 'webhookNode',
+    label: 'Webhook',
+    icon: Globe,
+    color: 'bg-orange-100 text-orange-800 border-orange-300',
+    description: 'API integration'
   },
   {
     type: 'transferNode',
