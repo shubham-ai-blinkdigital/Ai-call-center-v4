@@ -503,12 +503,12 @@ export function NodeEditorDrawer({ isOpen, onClose, selectedNode, onUpdateNode }
 
   return (
     <Sheet open={isOpen} onOpenChange={onClose}>
-      <SheetContent side="right" className="w-96 sm:w-[400px]">
-        <SheetHeader>
+      <SheetContent side="right" className="w-96 sm:w-[400px] flex flex-col">
+        <SheetHeader className="flex-shrink-0">
           <SheetTitle>Edit Node Properties</SheetTitle>
         </SheetHeader>
 
-        <div className="mt-6 space-y-4">
+        <div className="flex-1 overflow-y-auto mt-6 space-y-4 pr-2">
           <div className="flex items-center space-x-2">
             <Badge variant="outline">{selectedNode.type}</Badge>
             <span className="text-sm text-gray-500">ID: {selectedNode.id}</span>
