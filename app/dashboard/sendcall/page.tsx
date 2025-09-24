@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -39,12 +39,17 @@ interface Pathway {
   id: string
   name: string
   description: string
+  pathway_id?: string; // Added for potential use in SelectItem
+  phone?: string; // Added for potential use in SelectItem
+  pathway_name?: string; // Added for potential use in SelectItem
 }
 
 interface Voice {
   voice_id: string
   name: string
   preview_url?: string
+  id: string; // Added for key
+  description?: string; // Added for display
 }
 
 interface CallData {
@@ -287,21 +292,31 @@ const result = await response.json();
 console.log('Call result:', result);`
   }
 
-  if (loadingData) {
+  // Mock country codes and placeholder for logic
+  const countryCodes = [
+    { flag: "🇺🇸", name: "United States", code: "+1" },
+    { flag: "🇮🇳", name: "India", code: "+91" },
+    { flag: "🇬🇧", name: "United Kingdom", code: "+44" },
+    { flag: "🇩🇪", name: "Germany", code: "+49" },
+  ]
+
+  const [isMounted, setIsMounted] = useState(false)
+  const [selectedCountry, setSelectedCountry] = useState(countryCodes[0])
+  const [countryDropdownOpen, setCountryDropdownOpen] = useState(false)
+  const [voiceDropdownOpen, setVoiceDropdownOpen] = useState(false)
+  const [pathwayDropdownOpen, setPathwayDropdownOpen] = useState(false)
+
+  useEffect(() => {
+    setIsMounted(true)
+  }, [])
+
+  if (!isMounted || loadingData) {
     return (
-      <div className="p-6 space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold">Send Call</h1>
-            <p className="text-muted-foreground">Loading configuration...</p>
-          </div>
-        </div>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Loading...</CardTitle>
-            </CardHeader>
-          </Card>
+      <div className="p-6">
+        <div className="animate-pulse space-y-4">
+          <div className="h-8 bg-gray-300 rounded w-1/4"></div>
+          <div className="h-4 bg-gray-300 rounded w-1/2"></div>
+          <div className="h-64 bg-gray-300 rounded"></div>
         </div>
       </div>
     )
@@ -379,11 +394,29 @@ console.log('Call result:', result);`
                         <SelectTrigger className="w-24">
                           <SelectValue />
                         </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="+1">🇺🇸 +1</SelectItem>
-                          <SelectItem value="+91">🇮🇳 +91</SelectItem>
-                          <SelectItem value="+44">🇬🇧 +44</SelectItem>
-                          <SelectItem value="+49">🇩🇪 +49</SelectItem>
+                        <SelectContent 
+                          className="z-50"
+                          position="popper"
+                          sideOffset={4}
+                          avoidCollisions={true}
+                        >
+                          {countryCodes.map((country) => (
+                            <SelectItem 
+                              key={country.code}
+                              value={country.code}
+                              onSelect={(value) => {
+                                setSelectedCountryCode(value);
+                                if (phoneNumberInput) {
+                                  updateCallData('phone_number', value + phoneNumberInput);
+                                }
+                              }}
+                            >
+                              <div className="flex items-center gap-2">
+                                <span className="text-lg">{country.flag}</span>
+                                <span className="text-sm">{country.code}</span>
+                              </div>
+                            </SelectItem>
+                          ))}
                         </SelectContent>
                       </Select>
                       <Input
@@ -492,7 +525,7 @@ console.log('Call result:', result);`
                           >
                             {pathways.map((pathway) => (
                               <SelectItem 
-                                key={pathway.pathway_id || pathway.id} 
+                                key={pathway.id} 
                                 value={pathway.pathway_id || pathway.id}
                                 onSelect={(value) => {
                                   updateCallData('pathway_id', value)
@@ -500,8 +533,8 @@ console.log('Call result:', result);`
                               >
                                 <div className="flex flex-col pointer-events-none">
                                   <span className="font-medium">{pathway.name}</span>
-                                  {pathway.phone_number && (
-                                    <span className="text-xs text-muted-foreground">Phone: {pathway.phone_number}</span>
+                                  {pathway.phone && (
+                                    <span className="text-xs text-muted-foreground">Phone: {pathway.phone}</span>
                                   )}
                                 </div>
                               </SelectItem>
