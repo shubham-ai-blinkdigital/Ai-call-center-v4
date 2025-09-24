@@ -378,11 +378,11 @@ console.log('Call result:', result);`
                   {/* Voice Selection */}
                   <div className="space-y-2">
                     <Label htmlFor="voice">Voice</Label>
-                    <Select value={callData.voice} onValueChange={(value) => updateCallData('voice', value)}>
-                      <SelectTrigger>
+                    <Select value={callData.voice || ""} onValueChange={(value) => updateCallData('voice', value)}>
+                      <SelectTrigger className="w-full">
                         <SelectValue placeholder="Select a voice" />
                       </SelectTrigger>
-                      <SelectContent>
+                      <SelectContent className="max-h-[200px] overflow-y-auto">
                         {voices.map((voice) => (
                           <SelectItem key={voice.voice_id} value={voice.voice_id}>
                             <div className="flex items-center gap-2">
