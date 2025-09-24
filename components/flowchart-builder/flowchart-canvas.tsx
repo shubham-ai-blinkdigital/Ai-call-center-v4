@@ -155,6 +155,14 @@ export function FlowchartCanvas({ phoneNumber, pathwayInfo }: FlowchartCanvasPro
     event.dataTransfer.dropEffect = 'move'
   }, [])
 
+  const onNodeClick = useCallback((event: React.MouseEvent, node: Node) => {
+    event.stopPropagation()
+    setSelectedNode(node)
+    setIsEditorOpen(true)
+    setSelectedEdge(null)
+    setIsEdgeEditorOpen(false)
+  }, [])
+
   const onPaneClick = useCallback(() => {
     setSelectedNode(null)
     setIsEditorOpen(false)
@@ -327,6 +335,7 @@ export function FlowchartCanvas({ phoneNumber, pathwayInfo }: FlowchartCanvasPro
           onDrop={onDrop}
           onDragOver={onDragOver}
           onPaneClick={onPaneClick}
+          onNodeClick={onNodeClick}
           onEdgeClick={onEdgeClick}
           nodeTypes={nodeTypes}
           edgeTypes={edgeTypes}

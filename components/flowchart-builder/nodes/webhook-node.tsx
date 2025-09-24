@@ -29,7 +29,7 @@ interface WebhookNodeProps {
 export function WebhookNode({ data, selected, onEdit, onDelete }: WebhookNodeProps) {
   return (
     <div className={`
-      relative bg-white border-2 rounded-lg shadow-lg min-w-[200px] max-w-[250px]
+      group relative bg-white border-2 rounded-lg shadow-lg min-w-[200px] max-w-[250px]
       ${selected ? 'border-orange-500 ring-2 ring-orange-200' : 'border-orange-300'}
       hover:shadow-xl transition-all duration-200
     `}>
