@@ -126,6 +126,10 @@ export default function SendCallPage() {
     background_track: "none"
   })
 
+  // Separate state for country code and phone number
+  const [selectedCountryCode, setSelectedCountryCode] = useState("+1")
+  const [phoneNumberInput, setPhoneNumberInput] = useState("")
+
   // Sample prompts for quick selection
   const savedPrompts = [
     { id: "saved", name: "Saved Prompts", icon: Bookmark },
@@ -225,6 +229,8 @@ export default function SendCallPage() {
           task: "",
           first_sentence: ""
         }))
+        setPhoneNumberInput("")
+        setSelectedCountryCode("+1")
       } else {
         toast.error(data.error || 'Failed to send call')
       }
@@ -255,6 +261,12 @@ export default function SendCallPage() {
       Object.entries(callData).filter(([_, v]) => v !== undefined && v !== "" && v !== null)
     )
 
+    // Show the properly formatted phone number in preview
+    const previewData = {
+      ...cleanData,
+      phone_number: phoneNumberInput ? `${selectedCountryCode}${phoneNumberInput}` : cleanData.phone_number
+    }
+
     return `// Headers
 const headers = {
   'Authorization': 'Bearer ${process.env.BLAND_AI_API_KEY || 'YOUR_BLAND_AI_API_KEY'}',
@@ -262,7 +274,7 @@ const headers = {
 };
 
 // Data
-const data = ${JSON.stringify(cleanData, null, 2)};
+const data = ${JSON.stringify(previewData, null, 2)};
 
 // API request
 const response = await fetch('https://api.bland.ai/v1/calls', {
@@ -353,7 +365,17 @@ console.log('Call result:', result);`
                   <div className="space-y-2">
                     <Label htmlFor="phone">Phone Number *</Label>
                     <div className="flex">
-                      <Select defaultValue="+1">
+                      <Select 
+                        value={selectedCountryCode} 
+                        onValueChange={(value) => {
+                          setSelectedCountryCode(value)
+                          // Update the full phone number when country code changes
+                          if (phoneNumberInput) {
+                            const fullNumber = value + phoneNumberInput
+                            updateCallData('phone_number', fullNumber)
+                          }
+                        }}
+                      >
                         <SelectTrigger className="w-24">
                           <SelectValue />
                         </SelectTrigger>
@@ -367,11 +389,23 @@ console.log('Call result:', result);`
                       <Input
                         id="phone"
                         placeholder="1234567890"
-                        value={callData.phone_number}
-                        onChange={(e) => updateCallData('phone_number', e.target.value)}
+                        value={phoneNumberInput}
+                        onChange={(e) => {
+                          const inputValue = e.target.value.replace(/\D/g, '') // Remove non-digits
+                          setPhoneNumberInput(inputValue)
+                          // Combine country code with phone number
+                          const fullNumber = selectedCountryCode + inputValue
+                          updateCallData('phone_number', fullNumber)
+                        }}
                         className="flex-1"
                       />
                     </div>
+                    {/* Show the full number that will be sent */}
+                    {phoneNumberInput && (
+                      <p className="text-xs text-muted-foreground">
+                        Full number: {selectedCountryCode}{phoneNumberInput}
+                      </p>
+                    )}
                   </div>
 
                   {/* Voice Selection */}
