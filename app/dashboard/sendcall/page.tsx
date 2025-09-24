@@ -377,18 +377,34 @@ console.log('Call result:', result);`
                   {/* Voice Selection */}
                   <div className="space-y-2">
                     <Label htmlFor="voice">Voice</Label>
-                    <Select value={callData.voice || ""} onValueChange={(value) => updateCallData('voice', value)}>
-                      <SelectTrigger className="w-full">
+                    <Select 
+                      value={callData.voice || ""} 
+                      onValueChange={(value) => {
+                        updateCallData('voice', value)
+                      }}
+                    >
+                      <SelectTrigger className="w-full" id="voice">
                         <SelectValue placeholder="Select a voice" />
                       </SelectTrigger>
-                      <SelectContent className="max-h-[200px] overflow-y-auto">
+                      <SelectContent 
+                        className="max-h-[200px] overflow-y-auto z-50" 
+                        position="popper"
+                        sideOffset={4}
+                        avoidCollisions={true}
+                      >
                         {voices.map((voice) => (
-                          <SelectItem key={voice.voice_id} value={voice.voice_id}>
-                            <div className="flex items-center gap-2">
-                              <div className="w-6 h-6 rounded-full bg-orange-500 flex items-center justify-center text-xs text-white">
+                          <SelectItem 
+                            key={voice.voice_id} 
+                            value={voice.voice_id}
+                            onSelect={(value) => {
+                              updateCallData('voice', value)
+                            }}
+                          >
+                            <div className="flex items-center gap-2 pointer-events-none">
+                              <div className="w-6 h-6 rounded-full bg-orange-500 flex items-center justify-center text-xs text-white flex-shrink-0">
                                 {voice.name.charAt(0)}
                               </div>
-                              {voice.name}
+                              <span>{voice.name}</span>
                             </div>
                           </SelectItem>
                         ))}
@@ -427,14 +443,28 @@ console.log('Call result:', result);`
                     {!callData.task ? (
                       <div className="space-y-2">
                         <Label>Select Pathway</Label>
-                        <Select value={callData.pathway_id || ""} onValueChange={(value) => updateCallData('pathway_id', value)}>
+                        <Select 
+                          value={callData.pathway_id || ""} 
+                          onValueChange={(value) => updateCallData('pathway_id', value)}
+                        >
                           <SelectTrigger>
                             <SelectValue placeholder="Choose a pathway" />
                           </SelectTrigger>
-                          <SelectContent>
+                          <SelectContent 
+                            className="max-h-[200px] overflow-y-auto z-50" 
+                            position="popper"
+                            sideOffset={4}
+                            avoidCollisions={true}
+                          >
                             {pathways.map((pathway) => (
-                              <SelectItem key={pathway.pathway_id || pathway.id} value={pathway.pathway_id || pathway.id}>
-                                <div className="flex flex-col">
+                              <SelectItem 
+                                key={pathway.pathway_id || pathway.id} 
+                                value={pathway.pathway_id || pathway.id}
+                                onSelect={(value) => {
+                                  updateCallData('pathway_id', value)
+                                }}
+                              >
+                                <div className="flex flex-col pointer-events-none">
                                   <span className="font-medium">{pathway.name}</span>
                                   {pathway.phone_number && (
                                     <span className="text-xs text-muted-foreground">Phone: {pathway.phone_number}</span>
