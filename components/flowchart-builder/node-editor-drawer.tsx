@@ -186,20 +186,10 @@ export function NodeEditorDrawer({ isOpen, onClose, selectedNode, onUpdateNode }
               />
             </div>
 
-            <div>
-              <Label htmlFor="body">Request Body (JSON)</Label>
-              <Textarea
-                id="body"
-                value={selectedNode.data.body || ''}
-                onChange={(e) => handleFieldChange('body', e.target.value)}
-                placeholder='{\n  "key": "{{variable}}"\n}'
-                rows={4}
-              />
-            </div>
+            {renderWebhookSettings()}
 
             {renderExtractVars()}
             {renderResponseData()}
-            {renderWebhookSettings()}
           </div>
         )
 
@@ -364,63 +354,73 @@ export function NodeEditorDrawer({ isOpen, onClose, selectedNode, onUpdateNode }
     </div>
   )
 
-  const renderWebhookSettings = () => (
-    <div className="space-y-4 p-4 border rounded-lg bg-gray-50">
-      <Label className="text-sm font-medium">Advanced Settings</Label>
-      
-      <div className="space-y-3">
-        <div>
-          <Label className="text-xs">Authorization</Label>
-          <Input
-            value={selectedNode.data.authorization || ''}
-            onChange={(e) => handleFieldChange('authorization', e.target.value)}
-            placeholder="Bearer token or API key"
-            className="h-8"
-          />
+  const renderWebhookSettings = () => {
+    const [showSettings, setShowSettings] = React.useState(false);
+
+    return (
+      <div className="space-y-4 p-4 border rounded-lg bg-gray-50">
+        <div className="flex items-center justify-between">
+          <Label className="text-sm font-medium">Advanced Settings</Label>
+          <Switch checked={showSettings} onCheckedChange={setShowSettings} />
         </div>
 
-        <div className="grid grid-cols-2 gap-2">
-          <div>
-            <Label className="text-xs">Timeout (seconds)</Label>
-            <Input
-              type="number"
-              value={selectedNode.data.timeout || 10}
-              onChange={(e) => handleFieldChange('timeout', parseInt(e.target.value) || 10)}
-              className="h-8"
-            />
+        {showSettings && (
+          <div className="space-y-3">
+            <div>
+              <Label className="text-xs">Authorization</Label>
+              <Input
+                value={selectedNode.data.authorization || ''}
+                onChange={(e) => handleFieldChange('authorization', e.target.value)}
+                placeholder="Bearer token or API key"
+                className="h-8"
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <Label className="text-xs">Timeout (seconds)</Label>
+                <Input
+                  type="number"
+                  value={selectedNode.data.timeout || 10}
+                  onChange={(e) => handleFieldChange('timeout', parseInt(e.target.value) || 10)}
+                  className="h-8"
+                />
+              </div>
+
+              <div>
+                <Label className="text-xs">Retry Attempts</Label>
+                <Input
+                  type="number"
+                  value={selectedNode.data.retryAttempts || 0}
+                  onChange={(e) => handleFieldChange('retryAttempts', parseInt(e.target.value) || 0)}
+                  className="h-8"
+                />
+              </div>
+            </div>
+
+            <div className="flex items-center space-x-2">
+              <Switch
+                checked={selectedNode.data.rerouteServer || false}
+                onCheckedChange={(checked) => handleFieldChange('rerouteServer', checked)}
+              />
+              <Label className="text-xs">Reroute through server</Label>
+            </div>
+
+            <Button
+              size="sm"
+              variant="outline"
+              className="w-full h-8"
+              disabled={!selectedNode.data.url}
+            >
+              <Send className="w-3 h-3 mr-2" />
+              Test API Request
+            </Button>
           </div>
-
-          <div>
-            <Label className="text-xs">Retry Attempts</Label>
-            <Input
-              type="number"
-              value={selectedNode.data.retryAttempts || 0}
-              onChange={(e) => handleFieldChange('retryAttempts', parseInt(e.target.value) || 0)}
-              className="h-8"
-            />
-          </div>
-        </div>
-
-        <div className="flex items-center space-x-2">
-          <Switch
-            checked={selectedNode.data.rerouteServer || false}
-            onCheckedChange={(checked) => handleFieldChange('rerouteServer', checked)}
-          />
-          <Label className="text-xs">Reroute through server</Label>
-        </div>
-
-        <Button
-          size="sm"
-          variant="outline"
-          className="w-full h-8"
-          disabled={!selectedNode.data.url}
-        >
-          <Send className="w-3 h-3 mr-2" />
-          Test API Request
-        </Button>
+        )}
       </div>
-    </div>
-  )
+    )
+  }
+
 
   const renderExtractVars = () => (
     <div className="space-y-3">
