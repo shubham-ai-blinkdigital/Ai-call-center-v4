@@ -1,4 +1,3 @@
-
 import { NextRequest, NextResponse } from "next/server"
 import { validateAuthToken } from "@/lib/auth-utils"
 

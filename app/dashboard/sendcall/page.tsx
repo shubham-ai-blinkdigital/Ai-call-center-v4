@@ -258,7 +258,7 @@ export default function SendCallPage() {
 
     return `// Headers
 const headers = {
-  'Authorization': 'Bearer YOUR_API_KEY',
+  'Authorization': 'Bearer ${process.env.BLAND_AI_API_KEY || 'YOUR_BLAND_AI_API_KEY'}',
   'Content-Type': 'application/json'
 };
 
@@ -401,11 +401,12 @@ console.log('Call result:', result);`
                   <div className="space-y-4">
                     <div className="flex items-center gap-4">
                       <Button
-                        variant={callData.pathway_id ? "outline" : "default"}
+                        variant={callData.task ? "default" : "outline"}
                         className="flex-1"
                         onClick={() => {
-                          updateCallData('pathway_id', undefined)
+                          updateCallData('pathway_id', "")
                           updateCallData('pathway_version', undefined)
+                          updateCallData('task', callData.task || "")
                         }}
                       >
                         <FileText className="h-4 w-4 mr-2" />
@@ -414,24 +415,32 @@ console.log('Call result:', result);`
                       <Button
                         variant={callData.pathway_id ? "default" : "outline"}
                         className="flex-1"
-                        onClick={() => updateCallData('task', "")}
+                        onClick={() => {
+                          updateCallData('task', "")
+                          updateCallData('pathway_id', callData.pathway_id || "")
+                        }}
                       >
                         <Users className="h-4 w-4 mr-2" />
                         Pathway
                       </Button>
                     </div>
 
-                    {callData.pathway_id ? (
+                    {!callData.task ? (
                       <div className="space-y-2">
                         <Label>Select Pathway</Label>
-                        <Select value={callData.pathway_id} onValueChange={(value) => updateCallData('pathway_id', value)}>
+                        <Select value={callData.pathway_id || ""} onValueChange={(value) => updateCallData('pathway_id', value)}>
                           <SelectTrigger>
                             <SelectValue placeholder="Choose a pathway" />
                           </SelectTrigger>
                           <SelectContent>
                             {pathways.map((pathway) => (
-                              <SelectItem key={pathway.id} value={pathway.id}>
-                                {pathway.name}
+                              <SelectItem key={pathway.pathway_id || pathway.id} value={pathway.pathway_id || pathway.id}>
+                                <div className="flex flex-col">
+                                  <span className="font-medium">{pathway.name}</span>
+                                  {pathway.phone_number && (
+                                    <span className="text-xs text-muted-foreground">Phone: {pathway.phone_number}</span>
+                                  )}
+                                </div>
                               </SelectItem>
                             ))}
                           </SelectContent>
