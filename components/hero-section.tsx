@@ -31,7 +31,9 @@ export function HeroSection() {
                 alt="Conversation.ai Logo"
                 className="h-12 md:h-16 lg:h-20 w-auto object-contain"
               />
-              CONVERSATION
+              <span className="bg-gradient-to-r from-purple-500 via-pink-600 to-blue-500 bg-clip-text text-transparent">
+                Conversation
+              </span>
             </h1>
             <p className="mt-6 text-xl text-gray-300 max-w-2xl">
               Create intelligent conversation flows with Conversation drag-and-drop flowchart builder. Design call routing, 

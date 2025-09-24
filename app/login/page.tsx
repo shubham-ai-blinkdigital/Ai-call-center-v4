@@ -67,10 +67,7 @@ export default function LoginPage() {
           <div className="text-center">
             <h1 className="text-5xl font-bold mb-2">
               <span className="bg-gradient-to-r from-purple-500 via-pink-600 to-blue-500 bg-clip-text text-transparent">
-                hu$tle
-              </span>
-              <span className="bg-gradient-to-r from-gray-300 to-gray-400 bg-clip-text text-transparent">
-                .conversation
+                Conversation
               </span>
             </h1>
           </div>
