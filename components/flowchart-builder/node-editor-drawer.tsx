@@ -376,6 +376,96 @@ export function NodeEditorDrawer({ isOpen, onClose, selectedNode, onUpdateNode }
     const [showAuthorization, setShowAuthorization] = React.useState(false);
     const [showHeaders, setShowHeaders] = React.useState(false);
     const [showBody, setShowBody] = React.useState(false);
+    const [isTestingAPI, setIsTestingAPI] = React.useState(false);
+    const [testResult, setTestResult] = React.useState<any>(null);
+
+    const handleTestAPI = async () => {
+      if (!selectedNode.data.url) {
+        alert('Please enter an API URL first');
+        return;
+      }
+
+      setIsTestingAPI(true);
+      setTestResult(null);
+
+      try {
+        // Prepare headers
+        const headers: any = {
+          'Content-Type': selectedNode.data.contentType || 'application/json'
+        };
+
+        // Add custom headers
+        if (selectedNode.data.headers && selectedNode.data.headers.length > 0) {
+          selectedNode.data.headers.forEach((header: any) => {
+            if (header.key && header.value) {
+              headers[header.key] = header.value;
+            }
+          });
+        }
+
+        // Add authorization header
+        if (selectedNode.data.authorization && selectedNode.data.authType) {
+          switch (selectedNode.data.authType) {
+            case 'bearer':
+              headers['Authorization'] = `Bearer ${selectedNode.data.authorization}`;
+              break;
+            case 'apikey':
+              headers['X-API-Key'] = selectedNode.data.authorization;
+              break;
+            case 'basic':
+              headers['Authorization'] = `Basic ${btoa(selectedNode.data.authorization)}`;
+              break;
+          }
+        }
+
+        // Prepare request options
+        const requestOptions: RequestInit = {
+          method: selectedNode.data.method || 'GET',
+          headers,
+          ...(selectedNode.data.timeout && { 
+            signal: AbortSignal.timeout((selectedNode.data.timeout || 10) * 1000) 
+          })
+        };
+
+        // Add body for POST/PUT/PATCH requests
+        if (['POST', 'PUT', 'PATCH'].includes(selectedNode.data.method) && selectedNode.data.body) {
+          requestOptions.body = selectedNode.data.body;
+        }
+
+        console.log('🧪 Testing API:', selectedNode.data.url);
+        console.log('🧪 Request options:', requestOptions);
+
+        const response = await fetch(selectedNode.data.url, requestOptions);
+        
+        let responseData: any;
+        const contentType = response.headers.get('content-type');
+        
+        if (contentType && contentType.includes('application/json')) {
+          responseData = await response.json();
+        } else {
+          responseData = await response.text();
+        }
+
+        setTestResult({
+          success: true,
+          status: response.status,
+          statusText: response.statusText,
+          headers: Object.fromEntries(response.headers.entries()),
+          data: responseData,
+          timestamp: new Date().toISOString()
+        });
+
+      } catch (error: any) {
+        console.error('❌ API Test failed:', error);
+        setTestResult({
+          success: false,
+          error: error.message || 'Unknown error occurred',
+          timestamp: new Date().toISOString()
+        });
+      } finally {
+        setIsTestingAPI(false);
+      }
+    };
 
     return (
       <div className="space-y-4">
@@ -557,11 +647,61 @@ export function NodeEditorDrawer({ isOpen, onClose, selectedNode, onUpdateNode }
             size="sm"
             variant="outline"
             className="w-full h-8"
-            disabled={!selectedNode.data.url}
+            disabled={!selectedNode.data.url || isTestingAPI}
+            onClick={handleTestAPI}
           >
             <Send className="w-3 h-3 mr-2" />
-            Test API Request
+            {isTestingAPI ? 'Testing...' : 'Test API Request'}
           </Button>
+
+          {/* Test Result Display */}
+          {testResult && (
+            <div className="mt-3 p-3 border rounded-lg bg-gray-50">
+              <div className="flex items-center justify-between mb-2">
+                <Label className="text-sm font-medium">
+                  {testResult.success ? '✅ Test Result' : '❌ Test Failed'}
+                </Label>
+                <Badge variant={testResult.success ? "default" : "destructive"} className="text-xs">
+                  {testResult.success ? `${testResult.status} ${testResult.statusText}` : 'Error'}
+                </Badge>
+              </div>
+              
+              {testResult.success ? (
+                <div className="space-y-2">
+                  <div>
+                    <Label className="text-xs text-gray-600">Response Data:</Label>
+                    <div className="mt-1 p-2 bg-white border rounded text-xs font-mono max-h-32 overflow-y-auto">
+                      {typeof testResult.data === 'string' 
+                        ? testResult.data 
+                        : JSON.stringify(testResult.data, null, 2)
+                      }
+                    </div>
+                  </div>
+                  {Object.keys(testResult.headers).length > 0 && (
+                    <div>
+                      <Label className="text-xs text-gray-600">Response Headers:</Label>
+                      <div className="mt-1 p-2 bg-white border rounded text-xs font-mono max-h-20 overflow-y-auto">
+                        {Object.entries(testResult.headers).slice(0, 5).map(([key, value]) => (
+                          <div key={key}>{key}: {String(value)}</div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div>
+                  <Label className="text-xs text-gray-600">Error:</Label>
+                  <div className="mt-1 p-2 bg-red-50 border border-red-200 rounded text-xs text-red-700">
+                    {testResult.error}
+                  </div>
+                </div>
+              )}
+              
+              <div className="mt-2 text-xs text-gray-500">
+                Tested at: {new Date(testResult.timestamp).toLocaleString()}
+              </div>
+            </div>
+          )}
         </div>
       </div>
     )
