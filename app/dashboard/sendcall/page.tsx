@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useState, useEffect } from "react"
@@ -151,7 +150,7 @@ export default function SendCallPage() {
 
       try {
         setLoadingData(true)
-        
+
         // Fetch pathways
         const pathwaysResponse = await fetch('/api/pathways', {
           credentials: 'include'
@@ -244,7 +243,7 @@ export default function SendCallPage() {
       stadium: "You are a stadium customer service representative helping with tickets, events, and venue information.",
       "inbound-sales": "You are a sales representative helping potential customers learn about our products and services.",
     }
-    
+
     if (prompts[promptType as keyof typeof prompts]) {
       updateCallData('task', prompts[promptType as keyof typeof prompts])
     }
@@ -552,7 +551,7 @@ console.log('Call result:', result);`
                       </Select>
                     </div>
                   </div>
-                  
+
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label>Temperature (0-1)</Label>
