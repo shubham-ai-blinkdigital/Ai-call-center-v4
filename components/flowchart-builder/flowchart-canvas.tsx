@@ -277,6 +277,8 @@ export function FlowchartCanvas({ phoneNumber, pathwayInfo }: FlowchartCanvasPro
           responseData: [],
           headers: [],
           authorization: '',
+          authType: 'none',
+          contentType: 'application/json',
           timeout: 10,
           retryAttempts: 0,
           rerouteServer: false,

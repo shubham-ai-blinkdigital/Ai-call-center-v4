@@ -354,69 +354,215 @@ export function NodeEditorDrawer({ isOpen, onClose, selectedNode, onUpdateNode }
     </div>
   )
 
+  const handleHeaderAdd = () => {
+    const currentHeaders = selectedNode.data.headers || []
+    const newHeader = { key: '', value: '' }
+    handleFieldChange('headers', [...currentHeaders, newHeader])
+  }
+
+  const handleHeaderUpdate = (index: number, field: string, value: string) => {
+    const currentHeaders = [...(selectedNode.data.headers || [])]
+    currentHeaders[index][field] = value
+    handleFieldChange('headers', currentHeaders)
+  }
+
+  const handleHeaderRemove = (index: number) => {
+    const currentHeaders = [...(selectedNode.data.headers || [])]
+    currentHeaders.splice(index, 1)
+    handleFieldChange('headers', currentHeaders)
+  }
+
   const renderWebhookSettings = () => {
-    const [showSettings, setShowSettings] = React.useState(false);
+    const [showAuthorization, setShowAuthorization] = React.useState(false);
+    const [showHeaders, setShowHeaders] = React.useState(false);
+    const [showBody, setShowBody] = React.useState(false);
 
     return (
-      <div className="space-y-4 p-4 border rounded-lg bg-gray-50">
-        <div className="flex items-center justify-between">
-          <Label className="text-sm font-medium">Advanced Settings</Label>
-          <Switch checked={showSettings} onCheckedChange={setShowSettings} />
+      <div className="space-y-4">
+        {/* Authorization Section */}
+        <div className="p-4 border rounded-lg bg-gray-50">
+          <div className="flex items-center justify-between mb-3">
+            <Label className="text-sm font-medium">Authorization</Label>
+            <Switch checked={showAuthorization} onCheckedChange={setShowAuthorization} />
+          </div>
+
+          {showAuthorization && (
+            <div className="space-y-3">
+              <div>
+                <Label className="text-xs">Type</Label>
+                <Select
+                  value={selectedNode.data.authType || 'none'}
+                  onValueChange={(value) => handleFieldChange('authType', value)}
+                >
+                  <SelectTrigger className="h-8">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">None</SelectItem>
+                    <SelectItem value="bearer">Bearer Token</SelectItem>
+                    <SelectItem value="apikey">API Key</SelectItem>
+                    <SelectItem value="basic">Basic Auth</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <Label className="text-xs">Token/Key</Label>
+                <Input
+                  value={selectedNode.data.authorization || ''}
+                  onChange={(e) => handleFieldChange('authorization', e.target.value)}
+                  placeholder="Enter token or API key"
+                  className="h-8"
+                />
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="mt-1 h-6 text-xs"
+                >
+                  Encode
+                </Button>
+              </div>
+            </div>
+          )}
         </div>
 
-        {showSettings && (
-          <div className="space-y-3">
+        {/* Headers Section */}
+        <div className="p-4 border rounded-lg bg-gray-50">
+          <div className="flex items-center justify-between mb-3">
+            <Label className="text-sm font-medium">Headers</Label>
+            <Switch checked={showHeaders} onCheckedChange={setShowHeaders} />
+          </div>
+
+          {showHeaders && (
+            <div className="space-y-3">
+              <div className="flex justify-end">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={handleHeaderAdd}
+                  className="h-8"
+                >
+                  <Plus className="w-3 h-3 mr-1" />
+                  Add Header
+                </Button>
+              </div>
+
+              {(selectedNode.data.headers || []).map((header: any, index: number) => (
+                <div key={index} className="flex items-center space-x-2">
+                  <Input
+                    value={header.key || ''}
+                    onChange={(e) => handleHeaderUpdate(index, 'key', e.target.value)}
+                    placeholder="Key"
+                    className="h-8"
+                  />
+                  <Input
+                    value={header.value || ''}
+                    onChange={(e) => handleHeaderUpdate(index, 'value', e.target.value)}
+                    placeholder="Value"
+                    className="h-8"
+                  />
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => handleHeaderRemove(index)}
+                    className="h-8 w-8 p-0 text-red-500 hover:text-red-700"
+                  >
+                    ✕
+                  </Button>
+                </div>
+              ))}
+
+              {(selectedNode.data.headers || []).length === 0 && (
+                <div className="text-sm text-gray-500 text-center py-4">
+                  No headers configured. Click "Add Header" to start.
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* Body Section */}
+        <div className="p-4 border rounded-lg bg-gray-50">
+          <div className="flex items-center justify-between mb-3">
+            <Label className="text-sm font-medium">Body</Label>
+            <Switch checked={showBody} onCheckedChange={setShowBody} />
+          </div>
+
+          {showBody && (
+            <div className="space-y-3">
+              <div>
+                <Label className="text-xs">Content Type</Label>
+                <Select
+                  value={selectedNode.data.contentType || 'application/json'}
+                  onValueChange={(value) => handleFieldChange('contentType', value)}
+                >
+                  <SelectTrigger className="h-8">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="application/json">JSON</SelectItem>
+                    <SelectItem value="application/x-www-form-urlencoded">Form URL Encoded</SelectItem>
+                    <SelectItem value="text/plain">Text</SelectItem>
+                    <SelectItem value="application/xml">XML</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <Label className="text-xs">Request Body</Label>
+                <Textarea
+                  value={selectedNode.data.body || ''}
+                  onChange={(e) => handleFieldChange('body', e.target.value)}
+                  placeholder='{ "key": "value" }'
+                  className="h-24 font-mono text-sm"
+                />
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Other Settings */}
+        <div className="space-y-3">
+          <div className="grid grid-cols-2 gap-2">
             <div>
-              <Label className="text-xs">Authorization</Label>
+              <Label className="text-xs">Timeout (seconds)</Label>
               <Input
-                value={selectedNode.data.authorization || ''}
-                onChange={(e) => handleFieldChange('authorization', e.target.value)}
-                placeholder="Bearer token or API key"
+                type="number"
+                value={selectedNode.data.timeout || 10}
+                onChange={(e) => handleFieldChange('timeout', parseInt(e.target.value) || 10)}
                 className="h-8"
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-2">
-              <div>
-                <Label className="text-xs">Timeout (seconds)</Label>
-                <Input
-                  type="number"
-                  value={selectedNode.data.timeout || 10}
-                  onChange={(e) => handleFieldChange('timeout', parseInt(e.target.value) || 10)}
-                  className="h-8"
-                />
-              </div>
-
-              <div>
-                <Label className="text-xs">Retry Attempts</Label>
-                <Input
-                  type="number"
-                  value={selectedNode.data.retryAttempts || 0}
-                  onChange={(e) => handleFieldChange('retryAttempts', parseInt(e.target.value) || 0)}
-                  className="h-8"
-                />
-              </div>
-            </div>
-
-            <div className="flex items-center space-x-2">
-              <Switch
-                checked={selectedNode.data.rerouteServer || false}
-                onCheckedChange={(checked) => handleFieldChange('rerouteServer', checked)}
+            <div>
+              <Label className="text-xs">Retry Attempts</Label>
+              <Input
+                type="number"
+                value={selectedNode.data.retryAttempts || 0}
+                onChange={(e) => handleFieldChange('retryAttempts', parseInt(e.target.value) || 0)}
+                className="h-8"
               />
-              <Label className="text-xs">Reroute through server</Label>
             </div>
-
-            <Button
-              size="sm"
-              variant="outline"
-              className="w-full h-8"
-              disabled={!selectedNode.data.url}
-            >
-              <Send className="w-3 h-3 mr-2" />
-              Test API Request
-            </Button>
           </div>
-        )}
+
+          <div className="flex items-center space-x-2">
+            <Switch
+              checked={selectedNode.data.rerouteServer || false}
+              onCheckedChange={(checked) => handleFieldChange('rerouteServer', checked)}
+            />
+            <Label className="text-xs">Reroute through server</Label>
+          </div>
+
+          <Button
+            size="sm"
+            variant="outline"
+            className="w-full h-8"
+            disabled={!selectedNode.data.url}
+          >
+            <Send className="w-3 h-3 mr-2" />
+            Test API Request
+          </Button>
+        </div>
       </div>
     )
   }
