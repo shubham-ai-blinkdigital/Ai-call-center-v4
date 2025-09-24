@@ -26,6 +26,7 @@ const navigation = [
   { name: "Dashboard", href: "/dashboard", icon: Home },
   { name: "My Pathway", href: "/dashboard/pathway", icon: FileText },
   { name: "Analytics", href: "/dashboard/calls", icon: BarChart3 },
+  { name: "Send Call", href: "/dashboard/sendcall", icon: Phone },
   { name: "Voices", href: "/dashboard/voices", icon: Mic },
   { name: "Call History", href: "/dashboard/call-history", icon: History },
   { name: "Phone Numbers", href: "/dashboard/phone-numbers", icon: Phone },

@@ -33,12 +33,61 @@ export interface ReactFlowData {
 export function convertReactFlowToBland(reactFlowData: ReactFlowData): BlandFlowData {
   console.log('🔄 Converting ReactFlow data to Bland.ai format...')
   
-  // Clean nodes - remove UI-specific properties
-  const cleanNodes: BlandNode[] = reactFlowData.nodes.map(node => ({
-    id: node.id,
-    type: node.type || 'Default',
-    data: node.data
-  }))
+  // Clean nodes - remove UI-specific properties and handle webhook nodes specially
+  const cleanNodes: BlandNode[] = reactFlowData.nodes.map(node => {
+    let cleanData = { ...node.data }
+    
+    // Special handling for webhook nodes - generate responsePathways from edges
+    if (node.type === 'webhookNode') {
+      const connectedEdges = reactFlowData.edges.filter(edge => edge.source === node.id)
+      const responsePathways: any[] = []
+      
+      // Generate conditional pathways based on connected edges
+      connectedEdges.forEach(edge => {
+        const targetNode = reactFlowData.nodes.find(n => n.id === edge.target)
+        if (targetNode && edge.data?.label) {
+          // Create pathway based on edge label
+          const [variable, operator, value] = edge.data.label.split(' ')
+          if (variable && operator && value) {
+            responsePathways.push([
+              variable.trim(),
+              operator.trim(),
+              value.trim(),
+              {
+                id: targetNode.id,
+                name: targetNode.data.name || 'Next Node'
+              }
+            ])
+          }
+        }
+      })
+      
+      cleanData = {
+        ...cleanData,
+        responsePathways,
+        // Remove UI-only fields that shouldn't go to Bland.ai
+        authorization: undefined,
+        timeout: undefined,
+        retryAttempts: undefined,
+        rerouteServer: undefined
+      }
+      
+      // Ensure webhook-specific structure for Bland.ai
+      if (node.type === 'webhookNode') {
+        return {
+          id: node.id,
+          type: 'Webhook',
+          data: cleanData
+        }
+      }
+    }
+    
+    return {
+      id: node.id,
+      type: node.type || 'Default',
+      data: cleanData
+    }
+  })
 
   // Clean edges - remove UI-specific properties and color, but keep type: "custom"
   const cleanEdges: BlandEdge[] = reactFlowData.edges.map(edge => ({
