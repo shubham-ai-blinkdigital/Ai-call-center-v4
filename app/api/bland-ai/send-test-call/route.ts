@@ -2,15 +2,15 @@ import { NextResponse } from "next/server"
 
 export async function POST(request: Request) {
   try {
-    const { phoneNumber, pathwayId } = await request.json()
+    const { phoneNumber, pathwayId, task, voiceId } = await request.json()
 
     // Validate inputs
     if (!phoneNumber) {
       return NextResponse.json({ error: "Phone number is required" }, { status: 400 })
     }
 
-    if (!pathwayId) {
-      return NextResponse.json({ error: "Pathway ID is required" }, { status: 400 })
+    if (!pathwayId && !task) {
+      return NextResponse.json({ error: "Either pathway ID or task is required" }, { status: 400 })
     }
 
     // Format phone number to E.164 format if needed
@@ -23,6 +23,34 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "API key not configured" }, { status: 500 })
     }
 
+    // Prepare call data
+    const callData: any = {
+      phone_number: formattedPhoneNumber,
+      wait_for_greeting: false,
+      record: true,
+      answered_by_enabled: true,
+      noise_cancellation: false,
+      interruption_threshold: 100,
+      block_interruptions: false,
+      max_duration: 12,
+      model: "base",
+      language: "en",
+      background_track: "none",
+      voicemail_action: "hangup"
+    }
+
+    // Add pathway or task
+    if (pathwayId) {
+      callData.pathway_id = pathwayId
+    } else if (task) {
+      callData.task = task
+    }
+
+    // Add voice if specified
+    if (voiceId) {
+      callData.voice_id = voiceId
+    }
+
     // Call the Bland.ai API to initiate the call
     const response = await fetch("https://api.bland.ai/v1/calls", {
       method: "POST",
@@ -30,14 +58,7 @@ export async function POST(request: Request) {
         Authorization: `Bearer ${apiKey}`,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({
-        phone_number: formattedPhoneNumber,
-        pathway_id: pathwayId,
-        task: "Test call from pathway editor",
-        wait_for_greeting: true,
-        record: true,
-        voice_id: "default", // Can be customized if needed
-      }),
+      body: JSON.stringify(callData),
     })
 
     if (!response.ok) {
