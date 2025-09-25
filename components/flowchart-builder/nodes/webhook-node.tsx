@@ -3,8 +3,7 @@
 
 import React from 'react'
 import { Handle, Position } from 'reactflow'
-import { Globe, Edit, Trash2 } from 'lucide-react'
-import { Button } from '@/components/ui/button'
+import { Globe } from 'lucide-react'
 
 interface WebhookNodeProps {
   data: {
@@ -22,11 +21,9 @@ interface WebhookNodeProps {
     rerouteServer?: boolean
   }
   selected?: boolean
-  onEdit?: () => void
-  onDelete?: () => void
 }
 
-export function WebhookNode({ data, selected, onEdit, onDelete }: WebhookNodeProps) {
+export function WebhookNode({ data, selected }: WebhookNodeProps) {
   return (
     <div className={`
       group relative bg-white border-2 rounded-lg shadow-lg w-[250px] h-[120px] overflow-hidden
@@ -69,23 +66,7 @@ export function WebhookNode({ data, selected, onEdit, onDelete }: WebhookNodePro
         </div>
       </div>
 
-      {/* Action Buttons */}
-      <div className="absolute top-2 right-2 flex space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
-        <Button
-          size="sm"
-          variant="ghost"
-          onClick={onEdit}
-          className="h-6 w-6 p-0 bg-white shadow-sm hover:bg-orange-50"
-        >
-          <Edit className="w-3 h-3" />
-        </Button>
-        <button
-          onClick={onDelete}
-          className="h-7 w-7 p-1.5 bg-red-500 rounded-full shadow-lg border border-red-600 hover:bg-red-600 hover:scale-110 transition-all duration-200 z-30"
-        >
-          <Trash2 className="w-3 h-3 text-white" />
-        </button>
-      </div>
+      
 
       {/* Bottom Handle */}
       <Handle

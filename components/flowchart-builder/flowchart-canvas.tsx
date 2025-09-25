@@ -26,6 +26,7 @@ import { WebhookNode } from './nodes/webhook-node'
 import { NodeEditorDrawer } from './node-editor-drawer'
 import { CustomEdge } from './edges/custom-edge'
 import { EdgeEditorDrawer } from './edge-editor-drawer'
+import { NodeToolbar } from './node-toolbar'
 
 import { Button } from '../ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '../ui/dialog'
@@ -60,11 +61,35 @@ export function FlowchartCanvas({ phoneNumber, pathwayInfo }: FlowchartCanvasPro
   const [isJsonPreviewOpen, setIsJsonPreviewOpen] = useState(false)
   const [isConvertedJsonOpen, setIsConvertedJsonOpen] = useState(false)
   const [isLoadingFlowchart, setIsLoadingFlowchart] = useState(false)
+  const [toolbarNode, setToolbarNode] = useState<Node | null>(null)
+  const [toolbarPosition, setToolbarPosition] = useState({ x: 0, y: 0 })
 
   const onEditNode = useCallback((node: Node) => {
     setSelectedNode(node)
     setIsEditorOpen(true)
   }, [])
+
+  const onDuplicateNode = useCallback((nodeId: string) => {
+    const nodeToDuplicate = nodes.find(node => node.id === nodeId)
+    if (!nodeToDuplicate) return
+
+    const newNode: Node = {
+      ...nodeToDuplicate,
+      id: `${nodeToDuplicate.type}_${Date.now()}`,
+      position: {
+        x: nodeToDuplicate.position.x + 50,
+        y: nodeToDuplicate.position.y + 50,
+      },
+      selected: false,
+      data: {
+        ...nodeToDuplicate.data,
+        name: nodeToDuplicate.data.name ? `${nodeToDuplicate.data.name} (Copy)` : 'Copy',
+      }
+    }
+
+    setNodes((nds) => [...nds, newNode])
+    setToolbarNode(null) // Hide toolbar after duplication
+  }, [nodes, setNodes])
 
   const onDeleteNode = useCallback((nodeId: string) => {
     // Remove the node
@@ -83,15 +108,15 @@ export function FlowchartCanvas({ phoneNumber, pathwayInfo }: FlowchartCanvasPro
   }, [setNodes, setEdges, selectedNode])
 
   const nodeTypes = useMemo(() => ({
-    greetingNode: (props: any) => <GreetingNode {...props} onEdit={() => onEditNode(props)} onDelete={() => onDeleteNode(props.id)} />,
-    questionNode: (props: any) => <QuestionNode {...props} onEdit={() => onEditNode(props)} onDelete={() => onDeleteNode(props.id)} />,
-    customerResponseNode: (props: any) => <CustomerResponseNode {...props} onEdit={() => onEditNode(props)} onDelete={() => onDeleteNode(props.id)} />,
-    webhookNode: (props: any) => <WebhookNode {...props} onEdit={() => onEditNode(props)} onDelete={() => onDeleteNode(props.id)} />,
-    endCallNode: (props: any) => <EndCallNode {...props} onEdit={() => onEditNode(props)} onDelete={() => onDeleteNode(props.id)} />,
-    transferNode: (props: any) => <TransferNode {...props} onEdit={() => onEditNode(props)} onDelete={() => onDeleteNode(props.id)} />,
-    Default: (props: any) => <CustomerResponseNode {...props} onEdit={() => onEditNode(props)} onDelete={() => onDeleteNode(props.id)} />,
-    'End Call': (props: any) => <EndCallNode {...props} onEdit={() => onEditNode(props)} onDelete={() => onDeleteNode(props.id)} />,
-  }), [onEditNode, onDeleteNode])
+    greetingNode: (props: any) => <GreetingNode {...props} />,
+    questionNode: (props: any) => <QuestionNode {...props} />,
+    customerResponseNode: (props: any) => <CustomerResponseNode {...props} />,
+    webhookNode: (props: any) => <WebhookNode {...props} />,
+    endCallNode: (props: any) => <EndCallNode {...props} />,
+    transferNode: (props: any) => <TransferNode {...props} />,
+    Default: (props: any) => <CustomerResponseNode {...props} />,
+    'End Call': (props: any) => <EndCallNode {...props} />,
+  }), [])
 
   // Load saved flowchart data when component mounts
   useEffect(() => {
@@ -157,8 +182,15 @@ export function FlowchartCanvas({ phoneNumber, pathwayInfo }: FlowchartCanvasPro
 
   const onNodeClick = useCallback((event: React.MouseEvent, node: Node) => {
     event.stopPropagation()
-    setSelectedNode(node)
-    setIsEditorOpen(true)
+    
+    // Set the toolbar node and position
+    setToolbarNode(node)
+    setToolbarPosition({
+      x: node.position.x,
+      y: node.position.y
+    })
+    
+    // Clear edge selection
     setSelectedEdge(null)
     setIsEdgeEditorOpen(false)
   }, [])
@@ -168,6 +200,7 @@ export function FlowchartCanvas({ phoneNumber, pathwayInfo }: FlowchartCanvasPro
     setIsEditorOpen(false)
     setSelectedEdge(null)
     setIsEdgeEditorOpen(false)
+    setToolbarNode(null) // Hide toolbar when clicking on canvas
   }, [])
 
   const onEdgeClick = useCallback((event: React.MouseEvent, edge: Edge) => {
@@ -347,6 +380,25 @@ export function FlowchartCanvas({ phoneNumber, pathwayInfo }: FlowchartCanvasPro
           <MiniMap />
           <Background variant="dots" gap={12} size={1} />
         </ReactFlow>
+
+        {/* Node Toolbar */}
+        {toolbarNode && (
+          <NodeToolbar
+            nodeId={toolbarNode.id}
+            position={toolbarPosition}
+            onEdit={() => {
+              onEditNode(toolbarNode)
+              setToolbarNode(null)
+            }}
+            onDelete={() => {
+              if (window.confirm('Are you sure you want to delete this node?')) {
+                onDeleteNode(toolbarNode.id)
+                setToolbarNode(null)
+              }
+            }}
+            onDuplicate={() => onDuplicateNode(toolbarNode.id)}
+          />
+        )}
       </div>
 
       <NodeEditorDrawer
