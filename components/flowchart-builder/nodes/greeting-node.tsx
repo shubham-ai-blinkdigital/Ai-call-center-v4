@@ -22,7 +22,7 @@ export function GreetingNode({ data, selected, onEdit, onDelete }: { data: any; 
   }
 
   return (
-    <div className={`px-4 py-2 shadow-md rounded-md bg-green-100 border-2 min-w-[200px] transition-all duration-200 relative group ${
+    <div className={`px-4 py-3 shadow-md rounded-md bg-green-100 border-2 w-[250px] h-[120px] transition-all duration-200 relative group overflow-hidden ${
       selected ? 'border-green-500 shadow-lg scale-105' : 'border-green-300 hover:border-green-400'
     }`}>
       {/* Pencil Icon - appears on hover */}
@@ -47,7 +47,7 @@ export function GreetingNode({ data, selected, onEdit, onDelete }: { data: any; 
           {data.name || 'Greeting'}
         </div>
       </div>
-      <div className="text-sm text-green-700 mt-1">
+      <div className="text-sm text-green-700 mt-2 leading-tight overflow-hidden" style={{ display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical' }} title={data.text || 'Welcome message'}>
         {data.text || 'Welcome message'}
       </div>
       <Handle type="source" position={Position.Bottom} className="w-3 h-3" />

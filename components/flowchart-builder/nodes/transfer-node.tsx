@@ -23,7 +23,7 @@ export function TransferNode({ data, selected, onEdit, onDelete }: { data: any; 
   }
 
   return (
-    <div className={`px-4 py-2 shadow-md rounded-md bg-purple-100 border-2 min-w-[200px] transition-all duration-200 relative group ${
+    <div className={`px-4 py-3 shadow-md rounded-md bg-purple-100 border-2 w-[250px] h-[120px] transition-all duration-200 relative group overflow-hidden ${
       selected ? 'border-purple-500 shadow-lg scale-105' : 'border-purple-300 hover:border-purple-400'
     }`}>
       {/* Pencil Icon - appears on hover */}
@@ -48,7 +48,7 @@ export function TransferNode({ data, selected, onEdit, onDelete }: { data: any; 
           {data.name || 'Transfer Call'}
         </div>
       </div>
-      <div className="text-sm text-purple-700 mt-1">
+      <div className="text-sm text-purple-700 mt-2 leading-tight overflow-hidden" style={{ display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical' }} title={data.transferNumber || '+1234567890'}>
         {data.transferNumber || '+1234567890'}
       </div>
       <Handle type="target" position={Position.Top} className="w-3 h-3" />

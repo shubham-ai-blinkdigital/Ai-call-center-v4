@@ -23,7 +23,7 @@ export function CustomerResponseNode({ data, selected, onEdit, onDelete }: { dat
   }
 
   return (
-    <div className={`px-4 py-2 shadow-md rounded-md bg-yellow-100 border-2 min-w-[200px] transition-all duration-200 relative group ${
+    <div className={`px-4 py-3 shadow-md rounded-md bg-yellow-100 border-2 w-[250px] h-[120px] transition-all duration-200 relative group overflow-hidden ${
       selected ? 'border-yellow-500 shadow-lg scale-105' : 'border-yellow-300 hover:border-yellow-400'
     }`}>
       {/* Pencil Icon - appears on hover */}
@@ -48,7 +48,7 @@ export function CustomerResponseNode({ data, selected, onEdit, onDelete }: { dat
           {data.name || 'Customer Response'}
         </div>
       </div>
-      <div className="text-sm text-yellow-700 mt-1">
+      <div className="text-sm text-yellow-700 mt-2 leading-tight overflow-hidden" style={{ display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical' }} title={data.text || 'Handle customer input'}>
         {data.text || 'Handle customer input'}
       </div>
       <Handle

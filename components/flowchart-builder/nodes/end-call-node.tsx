@@ -22,7 +22,7 @@ export function EndCallNode({ data, selected, onEdit, onDelete }: { data: any; s
   }
 
   return (
-    <div className={`px-4 py-2 shadow-md rounded-md bg-red-100 border-2 min-w-[200px] transition-all duration-200 relative group ${
+    <div className={`px-4 py-3 shadow-md rounded-md bg-red-100 border-2 w-[250px] h-[120px] transition-all duration-200 relative group overflow-hidden ${
       selected ? 'border-red-500 shadow-lg scale-105' : 'border-red-300 hover:border-red-400'
     }`}>
       {/* Pencil Icon - appears on hover */}
@@ -47,7 +47,7 @@ export function EndCallNode({ data, selected, onEdit, onDelete }: { data: any; s
           {data.name || 'End Call'}
         </div>
       </div>
-      <div className="text-sm text-red-700 mt-1">
+      <div className="text-sm text-red-700 mt-2 leading-tight overflow-hidden" style={{ display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical' }} title={data.prompt || data.text || 'End conversation'}>
         {data.prompt || data.text || 'End conversation'}
       </div>
       <Handle type="target" position={Position.Top} className="w-3 h-3" />
