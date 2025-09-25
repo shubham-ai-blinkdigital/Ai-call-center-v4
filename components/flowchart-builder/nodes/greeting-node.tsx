@@ -36,7 +36,7 @@ export function GreetingNode({ data, selected, onEdit, onDelete }: { data: any; 
       {/* Delete Icon - appears on hover */}
       <button
         onClick={handleDelete}
-        className="absolute -top-1 -right-8 p-1 bg-red-500 rounded-full shadow-md border border-gray-200 opacity-0 group-hover:opacity-100 transition-opacity duration-200 hover:bg-red-600 z-10"
+        className="absolute -top-1 -right-7 p-1 bg-red-500 rounded-full shadow-md border border-gray-200 opacity-0 group-hover:opacity-100 transition-opacity duration-200 hover:bg-red-600 z-20"
       >
         <Trash2 className="w-3 h-3 text-white" />
       </button>

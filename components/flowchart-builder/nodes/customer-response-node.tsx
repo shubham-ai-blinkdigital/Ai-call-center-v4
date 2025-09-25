@@ -37,9 +37,9 @@ export function CustomerResponseNode({ data, selected, onEdit, onDelete }: { dat
       {/* Trash Icon - appears on hover */}
       <button
         onClick={handleDelete}
-        className="absolute -top-1 -right-9 p-1 bg-white rounded-full shadow-md border border-gray-200 opacity-0 group-hover:opacity-100 transition-opacity duration-200 hover:bg-gray-50 z-10"
+        className="absolute -top-1 -right-7 p-1 bg-red-500 rounded-full shadow-md border border-gray-200 opacity-0 group-hover:opacity-100 transition-opacity duration-200 hover:bg-red-600 z-20"
       >
-        <Trash2 className="w-3 h-3 text-red-600" />
+        <Trash2 className="w-3 h-3 text-white" />
       </button>
 
       <div className="flex items-center space-x-2">

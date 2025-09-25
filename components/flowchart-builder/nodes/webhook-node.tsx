@@ -83,7 +83,7 @@ export function WebhookNode({ data, selected, onEdit, onDelete }: WebhookNodePro
           size="sm"
           variant="ghost"
           onClick={onDelete}
-          className="h-6 w-6 p-0 bg-white shadow-sm hover:bg-red-50 text-red-500"
+          className="h-6 w-6 p-0 bg-white shadow-sm hover:bg-red-50 text-red-500 z-20"
         >
           <Trash2 className="w-3 h-3" />
         </Button>
