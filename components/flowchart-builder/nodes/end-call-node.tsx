@@ -36,9 +36,9 @@ export function EndCallNode({ data, selected, onEdit, onDelete }: { data: any; s
       {/* Trash Icon - appears on hover */}
       <button
         onClick={handleDelete}
-        className="absolute -top-2 -right-8 p-1.5 bg-red-500 rounded-full shadow-lg border border-red-600 opacity-0 group-hover:opacity-100 transition-all duration-200 hover:bg-red-600 hover:scale-110 z-30"
+        className="absolute -top-1 left-1 p-1 bg-white rounded-full shadow-md border border-gray-200 opacity-0 group-hover:opacity-100 transition-opacity duration-200 hover:bg-gray-50 z-10"
       >
-        <Trash2 className="w-3 h-3 text-white" />
+        <Trash2 className="w-3 h-3 text-red-600" />
       </button>
 
       <div className="flex items-center space-x-2">
