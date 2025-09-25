@@ -84,13 +84,13 @@ export function FlowchartCanvas({ phoneNumber, pathwayInfo }: FlowchartCanvasPro
 
   const nodeTypes = useMemo(() => ({
     greetingNode: (props: any) => <GreetingNode {...props} onEdit={() => onEditNode(props)} onDelete={() => onDeleteNode(props.id)} />,
-    Default: (props: any) => <CustomerResponseNode {...props} onEdit={() => onEditNode(props)} onDelete={() => onDeleteNode(props.id)} />,
     questionNode: (props: any) => <QuestionNode {...props} onEdit={() => onEditNode(props)} onDelete={() => onDeleteNode(props.id)} />,
     customerResponseNode: (props: any) => <CustomerResponseNode {...props} onEdit={() => onEditNode(props)} onDelete={() => onDeleteNode(props.id)} />,
     webhookNode: (props: any) => <WebhookNode {...props} onEdit={() => onEditNode(props)} onDelete={() => onDeleteNode(props.id)} />,
     endCallNode: (props: any) => <EndCallNode {...props} onEdit={() => onEditNode(props)} onDelete={() => onDeleteNode(props.id)} />,
-    'End Call': (props: any) => <EndCallNode {...props} onEdit={() => onEditNode(props)} onDelete={() => onDeleteNode(props.id)} />,
     transferNode: (props: any) => <TransferNode {...props} onEdit={() => onEditNode(props)} onDelete={() => onDeleteNode(props.id)} />,
+    Default: (props: any) => <CustomerResponseNode {...props} onEdit={() => onEditNode(props)} onDelete={() => onDeleteNode(props.id)} />,
+    'End Call': (props: any) => <EndCallNode {...props} onEdit={() => onEditNode(props)} onDelete={() => onDeleteNode(props.id)} />,
   }), [onEditNode, onDeleteNode])
 
   // Load saved flowchart data when component mounts
@@ -236,8 +236,7 @@ export function FlowchartCanvas({ phoneNumber, pathwayInfo }: FlowchartCanvasPro
 
       const newNode: Node = {
         id: type === 'greetingNode' ? '1' : `${type}_${Date.now()}`,
-        type: (type === 'greetingNode' || type === 'questionNode' || type === 'customerResponseNode') ? 'Default' : 
-              type === 'endCallNode' ? 'End Call' : type,
+        type: type === 'endCallNode' ? 'End Call' : type,
         position,
         data: getDefaultNodeData(type),
         selected: false,

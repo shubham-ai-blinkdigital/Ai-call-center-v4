@@ -79,14 +79,12 @@ export function WebhookNode({ data, selected, onEdit, onDelete }: WebhookNodePro
         >
           <Edit className="w-3 h-3" />
         </Button>
-        <Button
-          size="sm"
-          variant="ghost"
+        <button
           onClick={onDelete}
-          className="h-6 w-6 p-0 bg-white shadow-sm hover:bg-red-50 text-red-500"
+          className="h-7 w-7 p-1.5 bg-red-500 rounded-full shadow-lg border border-red-600 hover:bg-red-600 hover:scale-110 transition-all duration-200 z-30"
         >
-          <Trash2 className="w-3 h-3" />
-        </Button>
+          <Trash2 className="w-3 h-3 text-white" />
+        </button>
       </div>
 
       {/* Bottom Handle */}
