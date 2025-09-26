@@ -274,7 +274,7 @@ export default function VoicesPage() {
                 <Card className="bg-white shadow-sm">
                   <CardContent className="py-12">
                     <div className="text-center">
-                      <Mic className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                      <div className="text-6xl mx-auto mb-4">🗣️</div>
                       <h3 className="text-lg font-medium text-gray-900 mb-2">
                         No voices available
                       </h3>
@@ -291,7 +291,7 @@ export default function VoicesPage() {
                       <CardHeader className="pb-4">
                         <div className="flex items-center justify-between">
                           <CardTitle className="text-lg font-semibold capitalize flex items-center">
-                            <Mic className="h-4 w-4 mr-2 text-blue-600" />
+                            <span className="mr-2 text-blue-600">🗣️</span>
                             {voice.name}
                           </CardTitle>
                           <div className="flex items-center space-x-2">
@@ -349,32 +349,24 @@ export default function VoicesPage() {
                         )}
                       </CardHeader>
                       <CardContent>
-                        <div className="space-y-3">
+                        {voice.tags && voice.tags.length > 0 && (
                           <div>
-                            <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">Voice ID</span>
-                            <p className="text-sm font-mono text-gray-800 bg-gray-50 px-2 py-1 rounded mt-1">
-                              {voice.id}
-                            </p>
-                          </div>
-                          {voice.tags && voice.tags.length > 0 && (
-                            <div>
-                              <span className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2 block">
-                                Tags
-                              </span>
-                              <div className="flex flex-wrap gap-2">
-                                {voice.tags.map((tag, index) => (
-                                  <Badge
-                                    key={index}
-                                    variant="outline"
-                                    className={`text-xs ${getTagColor(tag)}`}
-                                  >
-                                    {tag}
-                                  </Badge>
-                                ))}
-                              </div>
+                            <span className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2 block">
+                              Tags
+                            </span>
+                            <div className="flex flex-wrap gap-2">
+                              {voice.tags.map((tag, index) => (
+                                <Badge
+                                  key={index}
+                                  variant="outline"
+                                  className={`text-xs ${getTagColor(tag)}`}
+                                >
+                                  {tag}
+                                </Badge>
+                              ))}
                             </div>
-                          )}
-                        </div>
+                          </div>
+                        )}
                       </CardContent>
                     </Card>
                   ))}
