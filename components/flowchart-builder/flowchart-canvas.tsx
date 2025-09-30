@@ -36,9 +36,6 @@ import { convertReactFlowToBland, convertBlandToReactFlow } from '../../services
 import { UpdatePathwayModal } from './update-pathway-modal'
 import { SavePathwayModal } from './save-pathway-modal'
 
-const initialNodes: Node[] = []
-const initialEdges: Edge[] = []
-
 // Custom edge types
 const edgeTypes = {
   custom: CustomEdge,
@@ -47,9 +44,16 @@ const edgeTypes = {
 interface FlowchartCanvasProps {
   phoneNumber?: string | null
   pathwayInfo?: any
+  initialNodes?: Node[]
+  initialEdges?: Edge[]
 }
 
-export function FlowchartCanvas({ phoneNumber, pathwayInfo }: FlowchartCanvasProps = {}) {
+export function FlowchartCanvas({ 
+  phoneNumber, 
+  pathwayInfo, 
+  initialNodes = [], 
+  initialEdges = [] 
+}: FlowchartCanvasProps = {}) {
   const reactFlowWrapper = useRef<HTMLDivElement>(null)
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes)
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges)
@@ -118,8 +122,17 @@ export function FlowchartCanvas({ phoneNumber, pathwayInfo }: FlowchartCanvasPro
     'End Call': (props: any) => <EndCallNode {...props} />,
   }), [])
 
-  // Load saved flowchart data when component mounts
+  // Load saved flowchart data when component mounts OR set initial data
   useEffect(() => {
+    // If initial data is provided, use it immediately
+    if (initialNodes.length > 0 || initialEdges.length > 0) {
+      console.log('[FLOWCHART-CANVAS] Setting initial data:', { nodes: initialNodes.length, edges: initialEdges.length })
+      setNodes(initialNodes)
+      setEdges(initialEdges)
+      return
+    }
+
+    // Otherwise load saved flowchart data
     const loadSavedFlowchart = async () => {
       if (!pathwayInfo?.pathway_id) return
 
@@ -158,7 +171,7 @@ export function FlowchartCanvas({ phoneNumber, pathwayInfo }: FlowchartCanvasPro
     }
 
     loadSavedFlowchart()
-  }, [pathwayInfo?.pathway_id, setNodes, setEdges])
+  }, [pathwayInfo?.pathway_id, initialNodes, initialEdges, setNodes, setEdges])
 
   const onConnect = useCallback(
     (params: Connection) => {

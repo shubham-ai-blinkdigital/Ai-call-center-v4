@@ -1,80 +1,76 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { createMedicareQualificationFlow } from "@/utils/medicare-qualification-template"
+import { convertApiToReactFlow, enhanceFlowchartLayout, ensureNodeConnections, validateApiData } from "@/utils/api-to-flowchart-converter"
 
 export async function POST(req: NextRequest) {
   try {
-    const { prompt, model = "openai/gpt-4o-mini", debug = false } = await req.json()
+    const { prompt } = await req.json()
 
     if (!prompt) {
-      return NextResponse.json({ error: "Prompt is required" }, { status: 400 })
+      return NextResponse.json(
+        { error: "Prompt is required" },
+        { status: 400 }
+      )
     }
 
-    console.log(`Generating pathway with prompt: ${prompt}`)
+    console.log("🤖 Generating pathway with prompt:", prompt)
 
-    // Check if this is a Medicare qualification prompt
-    const isMedicarePrompt =
-      prompt.toLowerCase().includes("medicare") &&
-      (prompt.toLowerCase().includes("qualify") || prompt.toLowerCase().includes("qualification"))
-
-    if (isMedicarePrompt) {
-      console.log("Using Medicare qualification template")
-      // Use the Medicare qualification template
-      const medicareFlow = createMedicareQualificationFlow()
-
-      // If debug mode is enabled, include debug info
-      if (debug) {
-        return NextResponse.json({
-          ...medicareFlow,
-          _debug: {
-            source: "medicare-template",
-            prompt,
-          },
-        })
-      }
-
-      return NextResponse.json(medicareFlow)
-    }
-
-    // For all other prompts, use the OpenRouter API
-    // Fix: Use the correct URL with origin for the API route
-    const url = new URL("/api/generate-pathway-openrouter", req.nextUrl.origin).toString()
-    console.log("Calling OpenRouter API route at:", url)
-
-    const response = await fetch(url, {
-      method: "POST",
+    // Call the OpenRouter API
+    const response = await fetch(`${req.nextUrl.origin}/api/generate-pathway-openrouter`, {
+      method: 'POST',
       headers: {
-        "Content-Type": "application/json",
+        'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        prompt,
-        model,
-        debug,
-      }),
+      body: JSON.stringify({ prompt })
     })
 
     if (!response.ok) {
       const errorData = await response.json()
-      console.error("Error from OpenRouter API route:", errorData)
+      console.error("❌ OpenRouter API error:", errorData)
       return NextResponse.json(
-        {
-          error: "Failed to generate pathway with OpenRouter",
-          details: errorData,
+        { 
+          error: "Failed to generate pathway",
+          details: errorData 
         },
-        { status: response.status },
+        { status: response.status }
       )
     }
 
-    const data = await response.json()
-    return NextResponse.json(data)
+    const rawApiData = await response.json()
+    console.log("✅ Raw API data received from OpenRouter")
+
+    // Validate the API data structure
+    if (!validateApiData(rawApiData)) {
+      console.error("❌ Invalid API data structure:", rawApiData)
+      return NextResponse.json(
+        { 
+          error: "Invalid pathway data structure from AI",
+          details: "The AI generated an invalid flowchart structure"
+        },
+        { status: 500 }
+      )
+    }
+
+    // Convert API data to ReactFlow format
+    let reactFlowData = convertApiToReactFlow(rawApiData)
+
+    // Enhance the layout for better visual presentation
+    reactFlowData = enhanceFlowchartLayout(reactFlowData)
+
+    // Ensure proper node connections
+    reactFlowData = ensureNodeConnections(reactFlowData)
+
+    console.log("✅ Pathway generated and converted successfully")
+
+    return NextResponse.json(reactFlowData)
+
   } catch (error) {
-    console.error("Error generating pathway:", error)
+    console.error("❌ Error in generate-pathway:", error)
     return NextResponse.json(
-      {
-        error: "Failed to generate pathway",
-        message: error instanceof Error ? error.message : "Unknown error",
-        stack: process.env.NODE_ENV === "development" ? error.stack : undefined,
+      { 
+        error: "Internal server error",
+        message: error instanceof Error ? error.message : String(error)
       },
-      { status: 500 },
+      { status: 500 }
     )
   }
 }
