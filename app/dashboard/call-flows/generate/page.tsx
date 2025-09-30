@@ -202,92 +202,89 @@ export default function GenerateCallFlowPage() {
 
         <div className="flex-1 flex overflow-hidden">
           {/* Collapsible Input Panel */}
-          <div className={`
-            ${isPanelCollapsed ? 'w-0' : 'w-80 lg:w-96'} 
-            transition-all duration-300 ease-in-out
-            border-r bg-white shadow-lg overflow-hidden
-            flex flex-col
-          `}>
-            {/* Panel Header with Collapse Button */}
-            <div className="flex items-center justify-between p-4 border-b bg-gray-50">
-              <h3 className="font-semibold text-sm">AI Flow Generator</h3>
-              <Button 
-                variant="ghost" 
-                size="icon"
-                onClick={() => setIsPanelCollapsed(!isPanelCollapsed)}
-                className="h-6 w-6"
-              >
-                <ChevronLeft className="h-4 w-4" />
-              </Button>
-            </div>
-
-            {/* Panel Content */}
-            <div className="flex-1 p-4 overflow-y-auto space-y-4">
-              <div>
-                <Label htmlFor="prompt" className="text-sm font-medium">Call Flow Description</Label>
-                <Textarea
-                  id="prompt"
-                  value={prompt}
-                  onChange={(e) => setPrompt(e.target.value)}
-                  placeholder="Example: Create a Medicare insurance qualification call flow that screens for eligibility, asks about current coverage, handles objections, and transfers qualified leads to a specialist..."
-                  rows={6}
-                  className="mt-2 resize-none"
-                />
+          {!isPanelCollapsed && (
+            <div className="w-80 lg:w-96 transition-all duration-300 ease-in-out border-r bg-white shadow-lg overflow-hidden flex flex-col">
+              {/* Panel Header with Collapse Button */}
+              <div className="flex items-center justify-between p-4 border-b bg-gray-50">
+                <h3 className="font-semibold text-sm">AI Flow Generator</h3>
+                <Button 
+                  variant="ghost" 
+                  size="icon"
+                  onClick={() => setIsPanelCollapsed(!isPanelCollapsed)}
+                  className="h-6 w-6"
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                </Button>
               </div>
 
-              {error && (
-                <Alert variant="destructive">
-                  <AlertDescription>{error}</AlertDescription>
-                </Alert>
-              )}
+              {/* Panel Content */}
+              <div className="flex-1 p-4 overflow-y-auto space-y-4">
+                <div>
+                  <Label htmlFor="prompt" className="text-sm font-medium">Call Flow Description</Label>
+                  <Textarea
+                    id="prompt"
+                    value={prompt}
+                    onChange={(e) => setPrompt(e.target.value)}
+                    placeholder="Example: Create a Medicare insurance qualification call flow that screens for eligibility, asks about current coverage, handles objections, and transfers qualified leads to a specialist..."
+                    rows={6}
+                    className="mt-2 resize-none"
+                  />
+                </div>
 
-              <Button 
-                onClick={handleGenerate}
-                disabled={isGenerating || !prompt.trim()}
-                className="w-full"
-                size="lg"
-              >
-                {isGenerating ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Generating Flow...
-                  </>
-                ) : (
-                  <>
-                    <Wand2 className="mr-2 h-4 w-4" />
-                    Generate Call Flow
-                  </>
+                {error && (
+                  <Alert variant="destructive">
+                    <AlertDescription>{error}</AlertDescription>
+                  </Alert>
                 )}
-              </Button>
 
-              {/* Example Prompts */}
-              <div className="space-y-2">
-                <Label className="text-sm font-medium">Example Prompts:</Label>
-                <div className="space-y-1">
-                  {examplePrompts.map((example, index) => (
-                    <Button
-                      key={index}
-                      variant="ghost"
-                      size="sm"
-                      className="w-full text-left h-auto p-2 text-xs text-gray-600 hover:text-gray-900 hover:bg-gray-100 whitespace-normal leading-relaxed"
-                      onClick={() => setPrompt(example)}
-                    >
-                      {example}
-                    </Button>
-                  ))}
+                <Button 
+                  onClick={handleGenerate}
+                  disabled={isGenerating || !prompt.trim()}
+                  className="w-full"
+                  size="lg"
+                >
+                  {isGenerating ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Generating Flow...
+                    </>
+                  ) : (
+                    <>
+                      <Wand2 className="mr-2 h-4 w-4" />
+                      Generate Call Flow
+                    </>
+                  )}
+                </Button>
+
+                {/* Example Prompts */}
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium">Example Prompts:</Label>
+                  <div className="space-y-1">
+                    {examplePrompts.map((example, index) => (
+                      <Button
+                        key={index}
+                        variant="ghost"
+                        size="sm"
+                        className="w-full text-left h-auto p-2 text-xs text-gray-600 hover:text-gray-900 hover:bg-gray-100 whitespace-normal leading-relaxed"
+                        onClick={() => setPrompt(example)}
+                      >
+                        {example}
+                      </Button>
+                    ))}
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
+          )}
 
-          {/* Collapsed Panel Trigger */}
+          {/* Floating Panel Toggle for Collapsed State */}
           {isPanelCollapsed && (
-            <div className="w-8 bg-white border-r flex items-center justify-center shadow-lg">
+            <div className="absolute top-4 left-4 z-20">
               <Button 
-                variant="ghost" 
+                variant="outline" 
                 size="icon"
                 onClick={() => setIsPanelCollapsed(false)}
-                className="h-8 w-8 rounded-l-none"
+                className="bg-white shadow-lg border-gray-200 hover:bg-gray-50"
               >
                 <ChevronRight className="h-4 w-4" />
               </Button>
@@ -295,7 +292,7 @@ export default function GenerateCallFlowPage() {
           )}
 
           {/* Full Screen Canvas */}
-          <div className="flex-1 relative bg-gray-50">
+          <div className="flex-1 relative bg-gray-50 w-full">
             {!generatedFlowchart && !isGenerating && (
               <div className="absolute inset-0 flex items-center justify-center">
                 <div className="text-center max-w-md">
