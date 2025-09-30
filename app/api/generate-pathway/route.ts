@@ -24,7 +24,7 @@ export async function POST(req: NextRequest) {
         'X-Title': 'Call Flow Generator'
       },
       body: JSON.stringify({
-        model: 'meta-llama/llama-3.1-8b-instruct:free',
+        model: 'openai/gpt-3.5-turbo',
         messages: [
           {
             role: 'system',
@@ -131,10 +131,10 @@ Create a logical flow with proper connections between nodes. Include realistic c
 
   } catch (error) {
     console.error("❌ Error in generate-pathway:", error)
-    
+
     // Fallback to mock data if API fails
     console.log("🔄 Falling back to mock data generation...")
-    
+
     const mockApiData = {
       nodes: [
         {
