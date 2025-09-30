@@ -12,7 +12,6 @@ import { Loader2, Wand2, ArrowLeft, Save, Download, ChevronLeft, ChevronRight, P
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
 import { FlowchartCanvas } from '@/components/flowchart-builder/flowchart-canvas'
-import { FullScreenContainer } from '@/components/layout/full-screen-container'
 import { convertReactFlowToBland } from '@/services/reactflow-converter'
 import type { Node, Edge } from 'reactflow'
 
@@ -148,17 +147,17 @@ export default function GenerateCallFlowPage() {
   ]
 
   return (
-    <FullScreenContainer>
-      <div className="h-full flex flex-col bg-gray-50">
+    <div className="fixed inset-0 z-50 bg-background">
+      <div className="h-full flex flex-col">
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b bg-white shadow-sm z-10">
+        <div className="flex items-center justify-between p-4 border-b bg-card shadow-sm z-10">
           <div className="flex items-center gap-3">
             <Button variant="ghost" size="icon" onClick={() => router.push("/dashboard/call-flows")}>
               <ArrowLeft className="h-5 w-5" />
             </Button>
             <div>
               <h1 className="text-2xl font-bold">Generate Call Flow with AI</h1>
-              <p className="text-sm text-gray-600">Describe your call flow and let AI create it for you</p>
+              <p className="text-sm text-muted-foreground">Describe your call flow and let AI create it for you</p>
             </div>
           </div>
 
@@ -203,9 +202,9 @@ export default function GenerateCallFlowPage() {
         <div className="flex-1 flex overflow-hidden">
           {/* Collapsible Input Panel */}
           {!isPanelCollapsed && (
-            <div className="w-80 lg:w-96 transition-all duration-300 ease-in-out border-r bg-white shadow-lg overflow-hidden flex flex-col">
+            <div className="w-80 lg:w-96 transition-all duration-300 ease-in-out border-r bg-card shadow-lg overflow-hidden flex flex-col">
               {/* Panel Header with Collapse Button */}
-              <div className="flex items-center justify-between p-4 border-b bg-gray-50">
+              <div className="flex items-center justify-between p-4 border-b bg-muted/50">
                 <h3 className="font-semibold text-sm">AI Flow Generator</h3>
                 <Button 
                   variant="ghost" 
@@ -265,7 +264,7 @@ export default function GenerateCallFlowPage() {
                         key={index}
                         variant="ghost"
                         size="sm"
-                        className="w-full text-left h-auto p-2 text-xs text-gray-600 hover:text-gray-900 hover:bg-gray-100 whitespace-normal leading-relaxed"
+                        className="w-full text-left h-auto p-2 text-xs text-muted-foreground hover:text-foreground hover:bg-muted whitespace-normal leading-relaxed"
                         onClick={() => setPrompt(example)}
                       >
                         {example}
@@ -284,7 +283,7 @@ export default function GenerateCallFlowPage() {
                 variant="outline" 
                 size="icon"
                 onClick={() => setIsPanelCollapsed(false)}
-                className="bg-white shadow-lg border-gray-200 hover:bg-gray-50"
+                className="bg-card shadow-lg border-border hover:bg-muted"
               >
                 <ChevronRight className="h-4 w-4" />
               </Button>
@@ -292,13 +291,13 @@ export default function GenerateCallFlowPage() {
           )}
 
           {/* Full Screen Canvas */}
-          <div className="flex-1 relative bg-gray-50 w-full">
+          <div className="flex-1 relative bg-background w-full">
             {!generatedFlowchart && !isGenerating && (
               <div className="absolute inset-0 flex items-center justify-center">
                 <div className="text-center max-w-md">
-                  <Wand2 className="h-16 w-16 text-gray-400 mx-auto mb-6" />
-                  <h3 className="text-xl font-semibold text-gray-600 mb-3">Ready to Generate</h3>
-                  <p className="text-gray-500 leading-relaxed">
+                  <Wand2 className="h-16 w-16 text-muted-foreground mx-auto mb-6" />
+                  <h3 className="text-xl font-semibold text-foreground mb-3">Ready to Generate</h3>
+                  <p className="text-muted-foreground leading-relaxed">
                     Enter a description in the panel {isPanelCollapsed ? '(click the arrow to open)' : ''} and click "Generate Call Flow" to see your AI-powered flowchart
                   </p>
                   {isPanelCollapsed && (
@@ -316,11 +315,11 @@ export default function GenerateCallFlowPage() {
             )}
 
             {isGenerating && (
-              <div className="absolute inset-0 flex items-center justify-center bg-white bg-opacity-90">
+              <div className="absolute inset-0 flex items-center justify-center bg-background/90">
                 <div className="text-center">
-                  <Loader2 className="h-16 w-16 text-blue-600 mx-auto mb-6 animate-spin" />
-                  <h3 className="text-xl font-semibold text-gray-600 mb-3">Generating Your Call Flow</h3>
-                  <p className="text-gray-500">AI is creating your custom flowchart...</p>
+                  <Loader2 className="h-16 w-16 text-primary mx-auto mb-6 animate-spin" />
+                  <h3 className="text-xl font-semibold text-foreground mb-3">Generating Your Call Flow</h3>
+                  <p className="text-muted-foreground">AI is creating your custom flowchart...</p>
                 </div>
               </div>
             )}
@@ -336,6 +335,6 @@ export default function GenerateCallFlowPage() {
           </div>
         </div>
       </div>
-    </FullScreenContainer>
+    </div>
   )
 }
