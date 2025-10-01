@@ -451,7 +451,16 @@ console.log('Call result:', result);`
                       }}
                     >
                       <SelectTrigger className="w-full" id="voice">
-                        <SelectValue placeholder="Select a voice" />
+                        <SelectValue placeholder="Select a voice">
+                          {callData.voice && voices.find(v => v.voice_id === callData.voice) && (
+                            <div className="flex items-center gap-2">
+                              <div className="w-6 h-6 rounded-full bg-orange-500 flex items-center justify-center text-xs text-white flex-shrink-0">
+                                {voices.find(v => v.voice_id === callData.voice)?.name.charAt(0)}
+                              </div>
+                              <span>{voices.find(v => v.voice_id === callData.voice)?.name}</span>
+                            </div>
+                          )}
+                        </SelectValue>
                       </SelectTrigger>
                       <SelectContent 
                         className="max-h-[200px] overflow-y-auto z-50" 
@@ -463,11 +472,8 @@ console.log('Call result:', result);`
                           <SelectItem 
                             key={voice.voice_id} 
                             value={voice.voice_id}
-                            onSelect={(value) => {
-                              updateCallData('voice', value)
-                            }}
                           >
-                            <div className="flex items-center gap-2 pointer-events-none">
+                            <div className="flex items-center gap-2">
                               <div className="w-6 h-6 rounded-full bg-orange-500 flex items-center justify-center text-xs text-white flex-shrink-0">
                                 {voice.name.charAt(0)}
                               </div>
