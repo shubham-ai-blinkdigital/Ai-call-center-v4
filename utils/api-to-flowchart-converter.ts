@@ -1,4 +1,3 @@
-
 export interface ApiNode {
   id: string
   type: string
@@ -39,14 +38,14 @@ export interface FlowchartData {
 
 export function convertApiResponseToFlowchart(apiResponse: ApiResponse): FlowchartData {
   console.log('🔄 Converting API response to flowchart format...')
-  
+
   // Convert nodes with positioning
   const nodes = apiResponse.nodes.map((node, index) => ({
     id: node.id,
     type: node.type,
-    position: { 
-      x: 250 + (index % 3) * 300, 
-      y: 100 + Math.floor(index / 3) * 150 
+    position: {
+      x: 250 + (index % 3) * 300,
+      y: 100 + Math.floor(index / 3) * 150
     },
     data: node.data
   }))
@@ -108,12 +107,12 @@ export interface ReactFlowData {
  */
 export function convertApiToReactFlow(apiData: ApiFlowData): ReactFlowData {
   console.log('🔄 Converting API data to ReactFlow format...')
-  
+
   // Convert nodes with proper ReactFlow structure
   const reactFlowNodes: Node[] = apiData.nodes.map((node, index) => {
     // Determine proper node type based on API response
     let nodeType = mapApiNodeTypeToReactFlow(node.type)
-    
+
     // Ensure proper positioning if not provided
     const position = node.position || {
       x: 250 + (index % 3) * 300, // Spread nodes horizontally
@@ -169,21 +168,20 @@ export function convertApiToReactFlow(apiData: ApiFlowData): ReactFlowData {
 function mapApiNodeTypeToReactFlow(apiType: string): string {
   const typeMap: { [key: string]: string } = {
     'greeting': 'greetingNode',
-    'Greeting': 'greetingNode',
+    'greetingNode': 'greetingNode',
     'question': 'questionNode',
-    'Question': 'questionNode',
+    'questionNode': 'questionNode',
     'response': 'customerResponseNode',
-    'Response': 'customerResponseNode',
+    'AI Response': 'customerResponseNode',
     'customer-response': 'customerResponseNode',
-    'Customer Response': 'customerResponseNode',
+    'customerResponseNode': 'customerResponseNode',
     'webhook': 'webhookNode',
-    'Webhook': 'webhookNode',
+    'webhookNode': 'webhookNode',
     'transfer': 'transferNode',
-    'Transfer': 'transferNode',
+    'transferNode': 'transferNode',
     'end-call': 'endCallNode',
-    'End Call': 'endCallNode',
-    'end': 'endCallNode',
-    'End': 'endCallNode'
+    'endCallNode': 'endCallNode',
+    'End Call': 'endCallNode'
   }
 
   return typeMap[apiType] || 'customerResponseNode'
@@ -239,12 +237,12 @@ export function validateApiData(data: any): data is ApiFlowData {
  */
 export function enhanceFlowchartLayout(data: ReactFlowData): ReactFlowData {
   console.log('🎨 Enhancing flowchart layout...')
-  
+
   const enhancedNodes = data.nodes.map((node, index) => {
     // Create a more intelligent positioning system
     const row = Math.floor(index / 3)
     const col = index % 3
-    
+
     return {
       ...node,
       position: {
@@ -265,7 +263,7 @@ export function enhanceFlowchartLayout(data: ReactFlowData): ReactFlowData {
  */
 export function ensureNodeConnections(data: ReactFlowData): ReactFlowData {
   console.log('🔗 Ensuring proper node connections...')
-  
+
   const { nodes, edges } = data
   const existingConnections = new Set(edges.map(edge => `${edge.source}-${edge.target}`))
   const newEdges = [...edges]
@@ -282,7 +280,7 @@ export function ensureNodeConnections(data: ReactFlowData): ReactFlowData {
     if (previousNodeIndex >= 0) {
       const previousNode = nodes[previousNodeIndex]
       const connectionKey = `${previousNode.id}-${node.id}`
-      
+
       if (!existingConnections.has(connectionKey)) {
         newEdges.push({
           id: `auto_edge_${previousNode.id}_${node.id}`,

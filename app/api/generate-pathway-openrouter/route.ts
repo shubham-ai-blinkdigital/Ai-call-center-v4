@@ -53,16 +53,18 @@ NODE TYPES AND BEST PRACTICES:
 
 CRITICAL RULE: DO NOT create intermediate response nodes that just say "Waiting for customer response" or similar. Question nodes should connect directly to the next logical node in the conversation flow.
 
-EXAMPLE 1 - COMPREHENSIVE MEDICARE INSURANCE QUALIFICATION FLOW:
+EXAMPLE 1 - COMPREHENSIVE MEDICARE INSURANCE QUALIFICATION FLOW WITH BRANCHING:
 {
   "nodes": [
     {
-      "id": "initial_greeting",
-      "type": "greeting",
+      "id": "initial_greeting", 
+      "type": "greetingNode",
       "data": {
-        "text": "Hello! Thank you for calling about Medicare insurance. How can I help you today?"
+        "name": "Greeting",
+        "text": "Hello! Thank you for calling about Medicare insurance. How can I help you today?",
+        "isStart": true
       },
-      "position": { "x": 250, "y": 0 }
+      "position": { "x": 400, "y": 0 }
     },
     {
       "id": "introduction_medicare",
@@ -74,11 +76,23 @@ EXAMPLE 1 - COMPREHENSIVE MEDICARE INSURANCE QUALIFICATION FLOW:
     },
     {
       "id": "age_verification",
-      "type": "question",
+      "type": "questionNode", 
       "data": {
+        "name": "Age Verification",
         "text": "To get started, can you verify your age for me? Are you 65 or older, or do you receive Social Security Disability benefits?"
       },
-      "position": { "x": 250, "y": 200 }
+      "position": { "x": 400, "y": 100 }
+    },
+    {
+      "id": "age_response",
+      "type": "customerResponseNode",
+      "data": {
+        "name": "Age Response",
+        "text": "Waiting for customer age response",
+        "options": ["65 or older", "Under 65", "Receive disability"],
+        "variableName": "age_status"
+      },
+      "position": { "x": 400, "y": 200 }
     },
     {
       "id": "citizenship_status",
@@ -163,10 +177,11 @@ EXAMPLE 1 - COMPREHENSIVE MEDICARE INSURANCE QUALIFICATION FLOW:
     }
   ],
   "edges": [
-    { "id": "edge_greeting_intro", "source": "initial_greeting", "target": "introduction_medicare" },
-    { "id": "edge_intro_age", "source": "introduction_medicare", "target": "age_verification" },
-    { "id": "edge_age_citizenship_yes", "source": "age_verification", "target": "citizenship_status", "label": "65+ or disabled" },
-    { "id": "edge_age_younger", "source": "age_verification", "target": "younger_than_65", "label": "Under 65" },
+    { "id": "edge_greeting_age", "source": "initial_greeting", "target": "age_verification" },
+    { "id": "edge_age_response", "source": "age_verification", "target": "age_response" },
+    { "id": "edge_qualified_citizenship", "source": "age_response", "target": "citizenship_status", "label": "65 or older" },
+    { "id": "edge_disability_citizenship", "source": "age_response", "target": "citizenship_status", "label": "Receive disability" },
+    { "id": "edge_young_ineligible", "source": "age_response", "target": "younger_than_65", "label": "Under 65" },
     { "id": "edge_citizenship_disability", "source": "citizenship_status", "target": "social_security_disability", "label": "Yes" },
     { "id": "edge_citizenship_ineligible", "source": "citizenship_status", "target": "ineligible_lead_notification", "label": "No" },
     { "id": "edge_disability_insurance", "source": "social_security_disability", "target": "current_insurance_status" },
@@ -272,15 +287,15 @@ EXAMPLE 2 - HEALTHCARE APPOINTMENT SCHEDULING FLOW:
 
 CRITICAL IMPLEMENTATION RULES:
 1. Always start with a "greeting" node that includes company name and call purpose
-2. Question nodes should connect DIRECTLY to the next logical node (another question, response, transfer, or end-call)
-3. DO NOT create intermediate "customer-response" or "AI Response" nodes that just wait for input
-4. Use "response" nodes ONLY when you need to provide information or acknowledge before a major transition
-5. Each question should have a clear purpose and expected outcome
-6. Include natural objection handling paths (not interested, bad timing, etc.)
-7. Position nodes logically with greeting at top (y: 0) and end nodes at bottom
-8. Use realistic, professional language appropriate for the industry
-9. Include specific details that make the conversation feel authentic
-10. Always provide clear next steps or resolution paths
+2. Create BRANCHING LOGIC with multiple paths based on customer responses
+3. Use proper conditional edges with labels like "Yes", "No", "Qualified", "Not Qualified", "65+", "Under 65"
+4. Each qualification question should have at least 2 different outcome paths
+5. Include specific age-based branching (65+ vs Under 65 for Medicare)
+6. Create separate paths for eligible vs ineligible prospects
+7. Use "customer-response" nodes ONLY for Yes/No questions that need branching
+8. Position nodes hierarchically with branching flow, not linearly
+9. Include multiple end-call scenarios based on qualification results
+10. Always provide clear conditional logic in edge labels
 
 MEDICARE QUALIFICATION SPECIFIC RULES:
 11. Include comprehensive age verification (65+ or disability status)

@@ -119,7 +119,7 @@ Create a logical flow with proper connections between nodes. Include realistic c
     // Convert API data to ReactFlow format
     let reactFlowData = convertApiToReactFlow(rawApiData)
 
-    // Enhance the layout for better visual presentation
+    // Enhanced positioning with hierarchical layout and proper branching
     reactFlowData = enhanceFlowchartLayout(reactFlowData)
 
     // Ensure proper node connections
@@ -222,7 +222,7 @@ Create a logical flow with proper connections between nodes. Include realistic c
     // Convert mock data to ReactFlow format
     let reactFlowData = convertApiToReactFlow(mockApiData)
 
-    // Enhance the layout for better visual presentation
+    // Enhanced positioning with hierarchical layout and proper branching
     reactFlowData = enhanceFlowchartLayout(reactFlowData)
 
     // Ensure proper node connections
