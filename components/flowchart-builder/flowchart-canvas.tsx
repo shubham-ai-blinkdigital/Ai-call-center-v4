@@ -124,6 +124,9 @@ export function FlowchartCanvas({
 
   // Load saved flowchart data when component mounts OR set initial data
   useEffect(() => {
+    // Prevent multiple simultaneous loads
+    if (isLoadingFlowchart) return
+
     // If initial data is provided, use it immediately
     if (initialNodes.length > 0 || initialEdges.length > 0) {
       console.log('[FLOWCHART-CANVAS] Setting initial data:', { nodes: initialNodes.length, edges: initialEdges.length })
@@ -171,7 +174,7 @@ export function FlowchartCanvas({
     }
 
     loadSavedFlowchart()
-  }, [pathwayInfo?.pathway_id, initialNodes, initialEdges, setNodes, setEdges])
+  }, [pathwayInfo?.pathway_id]) // Removed unstable dependencies
 
   const onConnect = useCallback(
     (params: Connection) => {
