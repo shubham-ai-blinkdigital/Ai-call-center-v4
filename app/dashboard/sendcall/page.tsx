@@ -415,12 +415,6 @@ console.log('Call result:', result);`
                             <SelectItem 
                               key={country.code}
                               value={country.code}
-                              onSelect={(value) => {
-                                setSelectedCountryCode(value);
-                                if (phoneNumberInput) {
-                                  updateCallData('phone_number', value + phoneNumberInput);
-                                }
-                              }}
                             >
                               <div className="flex items-center gap-2">
                                 <span className="text-lg">{country.flag}</span>
@@ -463,18 +457,7 @@ console.log('Call result:', result);`
                       }}
                     >
                       <SelectTrigger className="w-full" id="voice">
-                        <SelectValue placeholder="Select a voice">
-                          {callData.voice && voices.find(v => v.voice_id === callData.voice) ? (
-                            <div className="flex items-center gap-2">
-                              <div className="w-6 h-6 rounded-full bg-orange-500 flex items-center justify-center text-xs text-white flex-shrink-0">
-                                {voices.find(v => v.voice_id === callData.voice)?.name.charAt(0)}
-                              </div>
-                              <span>{voices.find(v => v.voice_id === callData.voice)?.name}</span>
-                            </div>
-                          ) : (
-                            "Select a voice"
-                          )}
-                        </SelectValue>
+                        <SelectValue placeholder="Select a voice" />
                       </SelectTrigger>
                       <SelectContent 
                         className="max-h-[200px] overflow-y-auto z-50" 
@@ -498,9 +481,13 @@ console.log('Call result:', result);`
                       </SelectContent>
                     </Select>
                     {/* Show selected voice info */}
-                    {callData.voice && (
-                      <div className="text-xs text-muted-foreground">
-                        Voice ID: {callData.voice}
+                    {callData.voice && voices.find(v => v.voice_id === callData.voice) && (
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <div className="w-5 h-5 rounded-full bg-orange-500 flex items-center justify-center text-xs text-white flex-shrink-0">
+                          {voices.find(v => v.voice_id === callData.voice)?.name.charAt(0)}
+                        </div>
+                        <span className="font-medium">{voices.find(v => v.voice_id === callData.voice)?.name}</span>
+                        <span className="text-xs">({callData.voice})</span>
                       </div>
                     )}
                   </div>
