@@ -27,10 +27,22 @@ CONVERSATION DESIGN PRINCIPLES:
 CONVERSATION STRUCTURE FRAMEWORK:
 - Introduction (1-2 nodes): Establish rapport, company identity, and call purpose
 - Discovery (2-3 nodes): Understand customer situation, needs, and pain points
-- Qualification (3-5 nodes): Determine fit through specific, relevant questions
+- Qualification (5-8 nodes): Comprehensive screening with multiple criteria and branching
 - Value Proposition (2-3 nodes): Present solutions tailored to their situation
 - Objection Handling (2-4 nodes): Address concerns with specific, empathetic responses
-- Closing (1-2 nodes): Clear next steps, scheduling, or transfer to specialist
+- Closing (2-4 nodes): Multiple endpoints based on qualification results
+
+ADVANCED QUALIFICATION REQUIREMENTS:
+For Medicare/Insurance flows, include comprehensive screening for:
+- Age verification (65+ or disability status)
+- Citizenship/residency status
+- Current Medicare/Medicaid enrollment
+- Social Security Disability status
+- Current insurance coverage analysis
+- Eligibility determination with clear branching
+- Multiple qualification paths (eligible vs ineligible)
+- Detailed information collection for qualified leads
+- Professional handling of ineligible prospects
 
 NODE TYPES AND BEST PRACTICES:
 - greeting: Warm introduction with company name, agent name, and clear purpose
@@ -41,84 +53,130 @@ NODE TYPES AND BEST PRACTICES:
 
 CRITICAL RULE: DO NOT create intermediate response nodes that just say "Waiting for customer response" or similar. Question nodes should connect directly to the next logical node in the conversation flow.
 
-EXAMPLE 1 - MEDICARE INSURANCE QUALIFICATION FLOW:
+EXAMPLE 1 - COMPREHENSIVE MEDICARE INSURANCE QUALIFICATION FLOW:
 {
   "nodes": [
     {
-      "id": "greeting_1",
+      "id": "initial_greeting",
       "type": "greeting",
       "data": {
-        "text": "Hello! This is Sarah from HealthGuard Insurance. I'm calling because you recently showed interest in learning about Medicare Supplement plans. I have just a few minutes - is this a good time to chat about your Medicare coverage?"
+        "text": "Hello! Thank you for calling about Medicare insurance. How can I help you today?"
       },
       "position": { "x": 250, "y": 0 }
     },
     {
-      "id": "discovery_1",
-      "type": "question",
+      "id": "introduction_medicare",
+      "type": "response",
       "data": {
-        "text": "Perfect! I'd love to help you understand your Medicare options better. First, could you tell me - are you currently on Medicare Part A and B, or are you approaching your 65th birthday?"
+        "text": "Background medicare is a complex topic, especially for those who are new to it. I'm here to help you understand your options and see if you qualify for additional benefits."
       },
       "position": { "x": 250, "y": 100 }
     },
     {
-      "id": "qualification_1",
+      "id": "age_verification",
       "type": "question",
       "data": {
-        "text": "Great! Now, do you currently have any supplemental insurance to help cover the gaps that Medicare doesn't pay for - things like deductibles, copays, or coinsurance?"
+        "text": "To get started, can you verify your age for me? Are you 65 or older, or do you receive Social Security Disability benefits?"
       },
       "position": { "x": 250, "y": 200 }
     },
     {
-      "id": "value_prop_1",
-      "type": "response",
+      "id": "citizenship_status",
+      "type": "question",
       "data": {
-        "text": "I understand. Many people don't realize that Medicare only covers about 80% of your medical costs. A Medicare Supplement plan can help cover those remaining costs, potentially saving you thousands of dollars. Would you like me to explain how this works?"
+        "text": "Great! Now I need to verify your citizenship status. Are you a U.S. citizen or legal permanent resident?"
       },
       "position": { "x": 250, "y": 300 }
     },
     {
-      "id": "interest_check",
+      "id": "social_security_disability",
       "type": "question",
       "data": {
-        "text": "Based on what you've told me, I believe our Plan G supplement could save you significant money on your out-of-pocket costs. Would you like me to connect you with one of our Medicare specialists who can show you the exact savings for your zip code?"
+        "text": "Do you currently receive Social Security Disability benefits, or have you in the past?"
       },
-      "position": { "x": 250, "y": 400 }
+      "position": { "x": 150, "y": 400 }
     },
     {
-      "id": "transfer_qualified",
-      "type": "transfer",
+      "id": "current_insurance_status",
+      "type": "question",
       "data": {
-        "text": "Excellent! I'm going to connect you with one of our Medicare specialists who can walk you through the specific plans available in your area and help you find the best coverage for your needs. Please hold for just a moment."
+        "text": "What is your current insurance situation? Do you have Medicare Part A and B, or any other health insurance?"
       },
-      "position": { "x": 150, "y": 500 }
+      "position": { "x": 250, "y": 500 }
     },
     {
-      "id": "reschedule_call",
+      "id": "eligibility_determination",
       "type": "response",
       "data": {
-        "text": "I completely understand. When would be a better time for me to call you back? I can call tomorrow morning, afternoon, or would another day work better?"
-      },
-      "position": { "x": 350, "y": 100 }
-    },
-    {
-      "id": "end_call_polite",
-      "type": "end-call",
-      "data": {
-        "text": "Thank you for your time today. I'll make sure to call you back at the time we discussed. Have a wonderful day!"
+        "text": "Based on your responses, let me determine your eligibility for Medicare benefits and additional coverage options."
       },
       "position": { "x": 250, "y": 600 }
+    },
+    {
+      "id": "eligible_lead_info",
+      "type": "question",
+      "data": {
+        "text": "Excellent! You appear to be eligible for Medicare benefits. Can I get your full name and zip code so I can provide you with specific plan options in your area?"
+      },
+      "position": { "x": 150, "y": 700 }
+    },
+    {
+      "id": "transfer_to_agent",
+      "type": "transfer",
+      "data": {
+        "text": "Perfect! I'm going to transfer you to one of our licensed Medicare specialists who can walk you through your specific options and help you enroll. Please hold for just a moment.",
+        "transferNumber": "+18445940353"
+      },
+      "position": { "x": 150, "y": 800 }
+    },
+    {
+      "id": "ineligible_lead_notification",
+      "type": "response",
+      "data": {
+        "text": "I understand your situation. While you may not be eligible for Medicare at this time, there may be other insurance options available. Let me see if I can help you find alternative coverage."
+      },
+      "position": { "x": 350, "y": 700 }
+    },
+    {
+      "id": "younger_than_65",
+      "type": "question",
+      "data": {
+        "text": "Since you're under 65, you may still have options through the Health Insurance Marketplace. Would you like me to transfer you to someone who can help with those plans?"
+      },
+      "position": { "x": 450, "y": 300 }
+    },
+    {
+      "id": "end_call_ineligible",
+      "type": "end-call",
+      "data": {
+        "text": "Thank you for your time today. We'll keep your information on file and reach out when you become eligible for Medicare. Have a great day!"
+      },
+      "position": { "x": 350, "y": 800 }
+    },
+    {
+      "id": "end_call_transfer",
+      "type": "end-call",
+      "data": {
+        "text": "You should be connected with a specialist momentarily. Thank you for calling, and have a wonderful day!"
+      },
+      "position": { "x": 150, "y": 900 }
     }
   ],
   "edges": [
-    { "id": "edge_1_2", "source": "greeting_1", "target": "discovery_1" },
-    { "id": "edge_1_reschedule", "source": "greeting_1", "target": "reschedule_call" },
-    { "id": "edge_2_3", "source": "discovery_1", "target": "qualification_1" },
-    { "id": "edge_3_4", "source": "qualification_1", "target": "value_prop_1" },
-    { "id": "edge_4_5", "source": "value_prop_1", "target": "interest_check" },
-    { "id": "edge_5_transfer", "source": "interest_check", "target": "transfer_qualified" },
-    { "id": "edge_5_end", "source": "interest_check", "target": "end_call_polite" },
-    { "id": "edge_reschedule_end", "source": "reschedule_call", "target": "end_call_polite" },
-    { "id": "edge_transfer_end", "source": "transfer_qualified", "target": "end_call_polite" }
+    { "id": "edge_greeting_intro", "source": "initial_greeting", "target": "introduction_medicare" },
+    { "id": "edge_intro_age", "source": "introduction_medicare", "target": "age_verification" },
+    { "id": "edge_age_citizenship_yes", "source": "age_verification", "target": "citizenship_status", "label": "65+ or disabled" },
+    { "id": "edge_age_younger", "source": "age_verification", "target": "younger_than_65", "label": "Under 65" },
+    { "id": "edge_citizenship_disability", "source": "citizenship_status", "target": "social_security_disability", "label": "Yes" },
+    { "id": "edge_citizenship_ineligible", "source": "citizenship_status", "target": "ineligible_lead_notification", "label": "No" },
+    { "id": "edge_disability_insurance", "source": "social_security_disability", "target": "current_insurance_status" },
+    { "id": "edge_insurance_eligibility", "source": "current_insurance_status", "target": "eligibility_determination" },
+    { "id": "edge_eligibility_eligible", "source": "eligibility_determination", "target": "eligible_lead_info", "label": "Eligible" },
+    { "id": "edge_eligibility_ineligible", "source": "eligibility_determination", "target": "ineligible_lead_notification", "label": "Not eligible" },
+    { "id": "edge_eligible_transfer", "source": "eligible_lead_info", "target": "transfer_to_agent" },
+    { "id": "edge_transfer_end", "source": "transfer_to_agent", "target": "end_call_transfer" },
+    { "id": "edge_ineligible_end", "source": "ineligible_lead_notification", "target": "end_call_ineligible" },
+    { "id": "edge_younger_end", "source": "younger_than_65", "target": "end_call_ineligible" }
   ]
 }
 
@@ -223,6 +281,18 @@ CRITICAL IMPLEMENTATION RULES:
 8. Use realistic, professional language appropriate for the industry
 9. Include specific details that make the conversation feel authentic
 10. Always provide clear next steps or resolution paths
+
+MEDICARE QUALIFICATION SPECIFIC RULES:
+11. Include comprehensive age verification (65+ or disability status)
+12. Verify citizenship/legal residency status
+13. Check Social Security Disability status
+14. Assess current Medicare/insurance coverage
+15. Create multiple branching paths for different qualification scenarios
+16. Include separate endpoints for eligible vs ineligible prospects
+17. Collect detailed information from qualified leads before transfer
+18. Handle ineligible prospects professionally with alternative options
+19. Create at least 8-12 nodes for comprehensive Medicare qualification
+20. Include conditional branching based on age, citizenship, and disability status
 
 RESPONSE FORMAT:
 Return ONLY a valid JSON object with "nodes" and "edges" arrays. No markdown formatting, no explanations, no code blocks.
