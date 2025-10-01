@@ -447,20 +447,12 @@ console.log('Call result:', result);`
                     <Select 
                       value={callData.voice || ""} 
                       onValueChange={(value) => {
+                        console.log("Voice selected:", value)
                         updateCallData('voice', value)
                       }}
                     >
                       <SelectTrigger className="w-full" id="voice">
-                        <SelectValue placeholder="Select a voice">
-                          {callData.voice && voices.find(v => v.voice_id === callData.voice) && (
-                            <div className="flex items-center gap-2">
-                              <div className="w-6 h-6 rounded-full bg-orange-500 flex items-center justify-center text-xs text-white flex-shrink-0">
-                                {voices.find(v => v.voice_id === callData.voice)?.name.charAt(0)}
-                              </div>
-                              <span>{voices.find(v => v.voice_id === callData.voice)?.name}</span>
-                            </div>
-                          )}
-                        </SelectValue>
+                        <SelectValue placeholder="Select a voice" />
                       </SelectTrigger>
                       <SelectContent 
                         className="max-h-[200px] overflow-y-auto z-50" 
@@ -483,6 +475,17 @@ console.log('Call result:', result);`
                         ))}
                       </SelectContent>
                     </Select>
+                    {/* Show selected voice below the select */}
+                    {callData.voice && voices.find(v => v.voice_id === callData.voice) && (
+                      <div className="flex items-center gap-2 p-2 bg-muted rounded-md">
+                        <div className="w-6 h-6 rounded-full bg-orange-500 flex items-center justify-center text-xs text-white flex-shrink-0">
+                          {voices.find(v => v.voice_id === callData.voice)?.name.charAt(0)}
+                        </div>
+                        <span className="text-sm font-medium">
+                          Selected: {voices.find(v => v.voice_id === callData.voice)?.name}
+                        </span>
+                      </div>
+                    )}
                   </div>
 
                   {/* Prompt or Pathway Selection */}
