@@ -176,10 +176,12 @@ export default function SendCallPage() {
         if (voicesResponse.ok) {
           const voicesData = await voicesResponse.json()
           setVoices(voicesData.voices || [])
-          // Set default voice to first available or "June"
-          if (voicesData.voices?.length > 0) {
-            const juneVoice = voicesData.voices.find((v: Voice) => v.name === "June")
-            const defaultVoice = juneVoice?.voice_id || voicesData.voices[0].voice_id
+          // Set default voice to first available or "ravi" (Indian voice)
+          if (voicesData.voices?.length > 0 && !callData.voice) {
+            const raviVoice = voicesData.voices.find((v: Voice) => v.name === "ravi")
+            const indianVoice = voicesData.voices.find((v: Voice) => v.name.toLowerCase().includes("indian"))
+            const defaultVoice = raviVoice?.voice_id || indianVoice?.voice_id || voicesData.voices[0].voice_id
+            console.log("Setting default voice:", defaultVoice, "from voice:", raviVoice?.name || indianVoice?.name || voicesData.voices[0].name)
             updateCallData('voice', defaultVoice)
           }
         }
@@ -206,6 +208,12 @@ export default function SendCallPage() {
       return
     }
 
+    // Validate voice selection
+    if (!callData.voice) {
+      toast.error('Please select a voice')
+      return
+    }
+
     setIsLoading(true)
 
     try {
@@ -213,6 +221,9 @@ export default function SendCallPage() {
       const cleanCallData = Object.fromEntries(
         Object.entries(callData).filter(([_, v]) => v !== undefined && v !== "" && v !== null)
       )
+
+      console.log("Final call data before sending:", cleanCallData)
+      console.log("Voice ID being sent:", cleanCallData.voice)
 
       const response = await fetch('/api/bland-ai/send-test-call', {
         method: 'POST',
@@ -452,7 +463,18 @@ console.log('Call result:', result);`
                       }}
                     >
                       <SelectTrigger className="w-full" id="voice">
-                        <SelectValue placeholder="Select a voice" />
+                        <SelectValue placeholder="Select a voice">
+                          {callData.voice && voices.find(v => v.voice_id === callData.voice) ? (
+                            <div className="flex items-center gap-2">
+                              <div className="w-6 h-6 rounded-full bg-orange-500 flex items-center justify-center text-xs text-white flex-shrink-0">
+                                {voices.find(v => v.voice_id === callData.voice)?.name.charAt(0)}
+                              </div>
+                              <span>{voices.find(v => v.voice_id === callData.voice)?.name}</span>
+                            </div>
+                          ) : (
+                            "Select a voice"
+                          )}
+                        </SelectValue>
                       </SelectTrigger>
                       <SelectContent 
                         className="max-h-[200px] overflow-y-auto z-50" 
@@ -475,15 +497,10 @@ console.log('Call result:', result);`
                         ))}
                       </SelectContent>
                     </Select>
-                    {/* Show selected voice below the select */}
-                    {callData.voice && voices.find(v => v.voice_id === callData.voice) && (
-                      <div className="flex items-center gap-2 p-2 bg-muted rounded-md">
-                        <div className="w-6 h-6 rounded-full bg-orange-500 flex items-center justify-center text-xs text-white flex-shrink-0">
-                          {voices.find(v => v.voice_id === callData.voice)?.name.charAt(0)}
-                        </div>
-                        <span className="text-sm font-medium">
-                          Selected: {voices.find(v => v.voice_id === callData.voice)?.name}
-                        </span>
+                    {/* Show selected voice info */}
+                    {callData.voice && (
+                      <div className="text-xs text-muted-foreground">
+                        Voice ID: {callData.voice}
                       </div>
                     )}
                   </div>
