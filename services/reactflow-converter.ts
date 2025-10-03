@@ -120,26 +120,44 @@ export function convertReactFlowToBland(reactFlowData: ReactFlowData): BlandFlow
         rerouteServer: undefined
       }
       
-      // Ensure webhook-specific structure for Bland.ai
-      if (node.type === 'webhookNode') {
-        return {
-          id: node.id,
-          type: 'Webhook',
-          data: cleanData
+      return {
+        id: node.id,
+        type: 'Webhook',
+        data: cleanData
+      }
+    }
+    
+    // Special handling for End Call nodes
+    if (node.type === 'endCallNode') {
+      return {
+        id: node.id,
+        type: 'End Call',
+        data: {
+          prompt: cleanData.prompt || cleanData.text || 'Thank you for calling. Goodbye!',
+          name: cleanData.name || 'End Call'
         }
       }
     }
     
+    // Special handling for Transfer nodes
+    if (node.type === 'transferNode') {
+      return {
+        id: node.id,
+        type: 'Transfer',
+        data: {
+          transferNumber: cleanData.transferNumber || cleanData.transfer_phone_number,
+          name: cleanData.name || 'Transfer Call',
+          text: cleanData.text || 'Transferring call...'
+        }
+      }
+    }
+    
+    // Default nodes (greeting, question, customer response)
     // Map ReactFlow node types to Bland.ai node types
     const typeMapping: { [key: string]: string } = {
       'greetingNode': 'Default',
       'questionNode': 'Default',
       'customerResponseNode': 'Default',
-      'webhookNode': 'Webhook',
-      'facebookPixelNode': 'Webhook', // Map to Webhook since we convert it above
-      'transferNode': 'Transfer',
-      'endCallNode': 'End Call',
-      'End Call': 'End Call',
       'Default': 'Default'
     }
     
