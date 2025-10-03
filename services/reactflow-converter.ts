@@ -37,6 +37,54 @@ export function convertReactFlowToBland(reactFlowData: ReactFlowData): BlandFlow
   const cleanNodes: BlandNode[] = reactFlowData.nodes.map(node => {
     let cleanData = { ...node.data }
     
+    // Special handling for Facebook Pixel nodes - convert to Webhook with preset config
+    if (node.type === 'facebookPixelNode') {
+      const pixelId = cleanData.pixelId || ''
+      const accessToken = cleanData.accessToken || ''
+      const eventName = cleanData.eventName || 'Lead'
+      
+      // Build Facebook Conversions API URL
+      const url = `https://graph.facebook.com/v13.0/${pixelId}/events?access_token=${accessToken}`
+      
+      // Build Facebook CAPI payload
+      const body = JSON.stringify({
+        data: [
+          {
+            event_name: eventName,
+            event_time: Math.floor(Date.now() / 1000),
+            action_source: 'phone_call',
+            event_id: '{{call.call_id}}',
+            user_data: {
+              ph: '{{call.from}}',
+              em: '{{email}}'
+            },
+            custom_data: {
+              call_duration: '{{call.call_length}}',
+              call_status: '{{call.status}}'
+            }
+          }
+        ]
+      })
+      
+      return {
+        id: node.id,
+        type: 'Webhook',
+        data: {
+          name: cleanData.name || 'Facebook Pixel Event',
+          text: cleanData.text || 'Tracking conversion event...',
+          url: url,
+          method: 'POST',
+          headers: [
+            {
+              key: 'Content-Type',
+              value: 'application/json'
+            }
+          ],
+          body: body
+        }
+      }
+    }
+    
     // Special handling for webhook nodes - generate responsePathways from edges
     if (node.type === 'webhookNode') {
       const connectedEdges = reactFlowData.edges.filter(edge => edge.source === node.id)
@@ -82,9 +130,24 @@ export function convertReactFlowToBland(reactFlowData: ReactFlowData): BlandFlow
       }
     }
     
+    // Map ReactFlow node types to Bland.ai node types
+    const typeMapping: { [key: string]: string } = {
+      'greetingNode': 'Default',
+      'questionNode': 'Default',
+      'customerResponseNode': 'Default',
+      'webhookNode': 'Webhook',
+      'facebookPixelNode': 'Webhook', // Map to Webhook since we convert it above
+      'transferNode': 'Transfer',
+      'endCallNode': 'End Call',
+      'End Call': 'End Call',
+      'Default': 'Default'
+    }
+    
+    const blandNodeType = typeMapping[node.type] || 'Default'
+    
     return {
       id: node.id,
-      type: node.type || 'Default',
+      type: blandNodeType,
       data: cleanData
     }
   })
@@ -116,6 +179,9 @@ export function convertReactFlowToBland(reactFlowData: ReactFlowData): BlandFlow
     originalEdges: reactFlowData.edges.length,
     cleanEdges: cleanEdges.length
   })
+  
+  // Log each node type for debugging
+  console.log('📋 Converted node types:', cleanNodes.map(n => ({ id: n.id, type: n.type, hasData: !!n.data })))
 
   return result
 }
