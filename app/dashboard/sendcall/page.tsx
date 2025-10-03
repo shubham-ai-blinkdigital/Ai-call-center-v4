@@ -342,12 +342,6 @@ console.log('Call result:', result);`
           <p className="text-muted-foreground">Configure and send calls using the complete API</p>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="outline" asChild>
-            <a href="https://docs.bland.ai" target="_blank" className="flex items-center gap-2">
-              Read Docs
-              <ArrowUpRight className="h-4 w-4" />
-            </a>
-          </Button>
           <Button variant="outline" onClick={() => {
             Object.keys(openSections).forEach(section => {
               setOpenSections(prev => ({ ...prev, [section]: false }))
@@ -1014,26 +1008,7 @@ console.log('Call result:', result);`
             </CardContent>
           </Card>
 
-          {/* API Documentation Link */}
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <FileText className="h-5 w-5 text-blue-500" />
-                <div>
-                  <h4 className="font-medium">Need Help?</h4>
-                  <p className="text-sm text-muted-foreground">
-                    Check the Bland.ai API documentation for detailed parameter descriptions.
-                  </p>
-                  <Button variant="link" className="p-0 h-auto mt-1" asChild>
-                    <a href="https://docs.bland.ai/api-reference/calls" target="_blank">
-                      View API Reference
-                      <ArrowUpRight className="h-3 w-3 ml-1" />
-                    </a>
-                  </Button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          
         </div>
       </div>
     </div>
