@@ -45,11 +45,12 @@ interface Pathway {
 }
 
 interface Voice {
-  voice_id: string
+  id: string
   name: string
   preview_url?: string
-  id: string; // Added for key
-  description?: string; // Added for display
+  description?: string
+  public?: boolean
+  tags?: string[]
 }
 
 interface CallData {
@@ -180,7 +181,7 @@ export default function SendCallPage() {
           if (voicesData.voices?.length > 0 && !callData.voice) {
             const raviVoice = voicesData.voices.find((v: Voice) => v.name === "ravi")
             const indianVoice = voicesData.voices.find((v: Voice) => v.name.toLowerCase().includes("indian"))
-            const defaultVoice = raviVoice?.voice_id || indianVoice?.voice_id || voicesData.voices[0].voice_id
+            const defaultVoice = raviVoice?.id || indianVoice?.id || voicesData.voices[0].id
             console.log("Setting default voice:", defaultVoice, "from voice:", raviVoice?.name || indianVoice?.name || voicesData.voices[0].name)
             updateCallData('voice', defaultVoice)
           }
@@ -451,7 +452,18 @@ console.log('Call result:', result);`
                       }}
                     >
                       <SelectTrigger className="w-full" id="voice">
-                        <SelectValue placeholder="Select a voice" />
+                        <SelectValue placeholder="Select a voice">
+                          {callData.voice && voices.find(v => v.id === callData.voice) ? (
+                            <div className="flex items-center gap-2">
+                              <div className="w-6 h-6 rounded-full bg-orange-500 flex items-center justify-center text-xs text-white flex-shrink-0">
+                                {voices.find(v => v.id === callData.voice)?.name.charAt(0)}
+                              </div>
+                              <span>{voices.find(v => v.id === callData.voice)?.name}</span>
+                            </div>
+                          ) : (
+                            "Select a voice"
+                          )}
+                        </SelectValue>
                       </SelectTrigger>
                       <SelectContent 
                         className="max-h-[200px] overflow-y-auto z-50" 
@@ -461,8 +473,8 @@ console.log('Call result:', result);`
                       >
                         {voices.map((voice) => (
                           <SelectItem 
-                            key={voice.voice_id} 
-                            value={voice.voice_id}
+                            key={voice.id} 
+                            value={voice.id}
                           >
                             <div className="flex items-center gap-2">
                               <div className="w-6 h-6 rounded-full bg-orange-500 flex items-center justify-center text-xs text-white flex-shrink-0">
@@ -475,12 +487,12 @@ console.log('Call result:', result);`
                       </SelectContent>
                     </Select>
                     {/* Show selected voice info */}
-                    {callData.voice && voices.find(v => v.voice_id === callData.voice) && (
+                    {callData.voice && voices.find(v => v.id === callData.voice) && (
                       <div className="flex items-center gap-2 text-sm text-muted-foreground">
                         <div className="w-5 h-5 rounded-full bg-orange-500 flex items-center justify-center text-xs text-white flex-shrink-0">
-                          {voices.find(v => v.voice_id === callData.voice)?.name.charAt(0)}
+                          {voices.find(v => v.id === callData.voice)?.name.charAt(0)}
                         </div>
-                        <span className="font-medium">{voices.find(v => v.voice_id === callData.voice)?.name}</span>
+                        <span className="font-medium">{voices.find(v => v.id === callData.voice)?.name}</span>
                         <span className="text-xs">({callData.voice})</span>
                       </div>
                     )}
