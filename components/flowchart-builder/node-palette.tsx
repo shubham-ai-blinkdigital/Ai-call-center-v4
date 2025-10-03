@@ -1,7 +1,7 @@
 'use client'
 
 import React from 'react'
-import { MessageCircle, HelpCircle, MessageSquare, PhoneOff, PhoneForwarded, Globe, Facebook } from 'lucide-react'
+import { MessageCircle, HelpCircle, MessageSquare, PhoneOff, PhoneForwarded, Globe } from 'lucide-react'
 
 const nodeTypes = [
   {
@@ -31,13 +31,6 @@ const nodeTypes = [
     icon: Globe,
     color: 'bg-orange-100 text-orange-800 border-orange-300',
     description: 'API integration'
-  },
-  {
-    type: 'facebookPixelNode',
-    label: 'Facebook Pixel',
-    icon: Facebook,
-    color: 'bg-blue-100 text-blue-800 border-blue-300',
-    description: 'Track FB conversions'
   },
   {
     type: 'transferNode',
