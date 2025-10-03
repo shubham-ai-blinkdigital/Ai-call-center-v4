@@ -23,6 +23,7 @@ import { CustomerResponseNode } from './nodes/customer-response-node'
 import { EndCallNode } from './nodes/end-call-node'
 import { TransferNode } from './nodes/transfer-node'
 import { WebhookNode } from './nodes/webhook-node'
+import { FacebookPixelNode } from './nodes/facebook-pixel-node' // Import FacebookPixelNode
 import { NodeEditorDrawer } from './node-editor-drawer'
 import { CustomEdge } from './edges/custom-edge'
 import { EdgeEditorDrawer } from './edge-editor-drawer'
@@ -48,11 +49,11 @@ interface FlowchartCanvasProps {
   initialEdges?: Edge[]
 }
 
-export function FlowchartCanvas({ 
-  phoneNumber, 
-  pathwayInfo, 
-  initialNodes = [], 
-  initialEdges = [] 
+export function FlowchartCanvas({
+  phoneNumber,
+  pathwayInfo,
+  initialNodes = [],
+  initialEdges = []
 }: FlowchartCanvasProps = {}) {
   const reactFlowWrapper = useRef<HTMLDivElement>(null)
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes)
@@ -103,7 +104,7 @@ export function FlowchartCanvas({
     setEdges((eds) => eds.filter((edge) => edge.source !== nodeId && edge.target !== nodeId))
 
     // Close any open editors if this node was selected
-    setSelectedNode((prevSelected) => 
+    setSelectedNode((prevSelected) =>
       prevSelected?.id === nodeId ? null : prevSelected
     )
     if (selectedNode?.id === nodeId) {
@@ -116,8 +117,9 @@ export function FlowchartCanvas({
     questionNode: (props: any) => <QuestionNode {...props} />,
     customerResponseNode: (props: any) => <CustomerResponseNode {...props} />,
     webhookNode: (props: any) => <WebhookNode {...props} />,
-    endCallNode: (props: any) => <EndCallNode {...props} />,
+    facebookPixelNode: (props: any) => <FacebookPixelNode {...props} />, // Add FacebookPixelNode
     transferNode: (props: any) => <TransferNode {...props} />,
+    endCallNode: (props: any) => <EndCallNode {...props} />,
     Default: (props: any) => <CustomerResponseNode {...props} />,
     'End Call': (props: any) => <EndCallNode {...props} />,
   }), [])
@@ -198,14 +200,14 @@ export function FlowchartCanvas({
 
   const onNodeClick = useCallback((event: React.MouseEvent, node: Node) => {
     event.stopPropagation()
-    
+
     // Set the toolbar node and position
     setToolbarNode(node)
     setToolbarPosition({
       x: node.position.x,
       y: node.position.y
     })
-    
+
     // Clear edge selection
     setSelectedEdge(null)
     setIsEdgeEditorOpen(false)
@@ -342,6 +344,15 @@ export function FlowchartCanvas({
           name: 'End Call',
           prompt: 'Say goodbye to the user',
         }
+      case 'facebookPixelNode': // Default data for Facebook Pixel Node
+        return {
+          name: 'Facebook Pixel Event',
+          pixelId: '',
+          accessToken: '',
+          eventName: 'Lead',
+          actionSource: 'phone_call', // Default to phone_call
+          eventData: {}, // For custom_data and other fields
+        }
       default:
         return { name: 'Unknown Node' }
     }
@@ -368,7 +379,7 @@ export function FlowchartCanvas({
         )}
         {/* Floating Buttons */}
         <div className="absolute top-4 right-4 z-10 flex gap-2">
-          <SavePathwayModal 
+          <SavePathwayModal
               reactFlowData={{ nodes, edges }}
               pathwayId={pathwayInfo?.pathway_id}
             />

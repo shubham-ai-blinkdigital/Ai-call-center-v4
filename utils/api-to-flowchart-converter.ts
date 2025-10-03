@@ -177,6 +177,9 @@ function mapApiNodeTypeToReactFlow(apiType: string): string {
     'customerResponseNode': 'customerResponseNode',
     'webhook': 'webhookNode',
     'webhookNode': 'webhookNode',
+    'facebookPixel': 'facebookPixelNode',
+    'facebookPixelNode': 'facebookPixelNode',
+    'facebook-pixel': 'facebookPixelNode',
     'transfer': 'transferNode',
     'transferNode': 'transferNode',
     'end-call': 'endCallNode',
@@ -196,6 +199,7 @@ function getDefaultNodeName(nodeType: string): string {
     'questionNode': 'Question',
     'customerResponseNode': 'Customer Response',
     'webhookNode': 'Webhook Request',
+    'facebookPixelNode': 'Facebook Pixel Event',
     'transferNode': 'Transfer Call',
     'endCallNode': 'End Call'
   }
@@ -212,6 +216,7 @@ function getDefaultNodeText(nodeType: string): string {
     'questionNode': 'What would you like to know?',
     'customerResponseNode': 'Waiting for customer response...',
     'webhookNode': 'Please give me a moment as I check our system..',
+    'facebookPixelNode': 'Tracking conversion event...',
     'transferNode': 'Transferring the call now. Please hold..',
     'endCallNode': 'Thank you for your time. Have a great day!'
   }
