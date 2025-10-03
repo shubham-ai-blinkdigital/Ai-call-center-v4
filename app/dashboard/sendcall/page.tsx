@@ -339,7 +339,7 @@ console.log('Call result:', result);`
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">Send Call</h1>
-          <p className="text-muted-foreground">Configure and send calls using the complete Bland.ai API</p>
+          <p className="text-muted-foreground">Configure and send calls using the complete API</p>
         </div>
         <div className="flex items-center gap-2">
           <Button variant="outline" asChild>
