@@ -25,6 +25,7 @@ interface SavePathwayModalProps {
 export function SavePathwayModal({ reactFlowData, pathwayId }: SavePathwayModalProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+  const [isSuccess, setIsSuccess] = useState(false)
   const [showPreview, setShowPreview] = useState(false)
   const router = useRouter()
   const pathname = usePathname()
@@ -74,12 +75,21 @@ export function SavePathwayModal({ reactFlowData, pathwayId }: SavePathwayModalP
         throw new Error(result.error || 'Failed to save pathway')
       }
 
-      toast.success("Pathway saved successfully!", {
-        description: "Your flowchart changes have been saved.",
+      // Set success state
+      setIsSuccess(true)
+
+      // Show success toast notification
+      toast.success("✅ Pathway Saved Successfully!", {
+        description: "Your flowchart changes have been saved to the database.",
         duration: 3000,
       })
-      setIsOpen(false)
-      router.refresh()
+      
+      // Close modal after showing success state
+      setTimeout(() => {
+        setIsSuccess(false)
+        setIsOpen(false)
+        router.refresh()
+      }, 1500)
 
     } catch (error) {
       console.error('Error saving pathway:', error)
@@ -91,6 +101,7 @@ export function SavePathwayModal({ reactFlowData, pathwayId }: SavePathwayModalP
 
   const resetForm = () => {
     setShowPreview(false)
+    setIsSuccess(false)
   }
 
   return (
@@ -117,18 +128,30 @@ export function SavePathwayModal({ reactFlowData, pathwayId }: SavePathwayModalP
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Show confirmation for pathway update */}
           <div className="space-y-4">
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-              <div className="flex items-center space-x-2">
-                <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                <span className="text-sm font-medium text-blue-900">Updating Pathway</span>
+            {isSuccess ? (
+              <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                <div className="flex items-center space-x-2">
+                  <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                  <span className="text-sm font-medium text-green-900">✅ Pathway Saved!</span>
+                </div>
+                <p className="text-sm text-green-700 mt-2">
+                  Your flowchart has been successfully saved to the database.
+                </p>
               </div>
-              <p className="text-sm text-blue-700 mt-2">
-                This will save your current flowchart changes for phone number <code className="bg-blue-100 px-1 py-0.5 rounded text-xs">+{phoneNumber}</code>
-              </p>
-              <p className="text-xs text-blue-600 mt-1">
-                Only the flowchart data will be updated
-              </p>
-            </div>
+            ) : (
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <div className="flex items-center space-x-2">
+                  <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                  <span className="text-sm font-medium text-blue-900">Updating Pathway</span>
+                </div>
+                <p className="text-sm text-blue-700 mt-2">
+                  This will save your current flowchart changes for phone number <code className="bg-blue-100 px-1 py-0.5 rounded text-xs">+{phoneNumber}</code>
+                </p>
+                <p className="text-xs text-blue-600 mt-1">
+                  Only the flowchart data will be updated
+                </p>
+              </div>
+            )}
           </div>
 
           <div className="space-y-4">
@@ -164,13 +187,13 @@ export function SavePathwayModal({ reactFlowData, pathwayId }: SavePathwayModalP
               type="button"
               variant="outline"
               onClick={() => setIsOpen(false)}
-              disabled={isLoading}
+              disabled={isLoading || isSuccess}
             >
               Cancel
             </Button>
             <Button 
               type="submit" 
-              disabled={isLoading || !pathwayId}
+              disabled={isLoading || isSuccess || !pathwayId}
               className="bg-blue-600 hover:bg-blue-700"
             >
               {isLoading ? (
