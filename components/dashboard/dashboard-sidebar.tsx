@@ -82,7 +82,7 @@ export function DashboardSidebar() {
   }
 
   return (
-    <aside className="group fixed left-0 top-0 z-40 h-screen w-16 hover:w-60 bg-background border-r border-border transition-all duration-300 ease-in-out overflow-hidden">
+    <aside className="group fixed left-0 top-0 z-40 h-screen w-60 bg-background border-r border-border transition-all duration-300 ease-in-out overflow-hidden">
       {/* Header */}
       <div className="flex h-16 items-center border-b border-border px-4">
         <Link href="/dashboard" className="flex items-center min-w-0 cursor-pointer">
@@ -102,7 +102,7 @@ export function DashboardSidebar() {
               <span className="text-white font-bold text-sm">C</span>
             </div>
           </div>
-          <div className="ml-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300 delay-100 overflow-hidden whitespace-nowrap">
+          <div className="ml-3 overflow-hidden whitespace-nowrap">
             <span className="text-xl font-bold text-foreground">Conversation</span>
           </div>
         </Link>
@@ -136,7 +136,7 @@ export function DashboardSidebar() {
                     )}
                   />
                 </div>
-                <div className="ml-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300 delay-100 overflow-hidden whitespace-nowrap">
+                <div className="ml-3 overflow-hidden whitespace-nowrap">
                   <span>{link.name}</span>
                 </div>
               </Link>
@@ -162,7 +162,7 @@ export function DashboardSidebar() {
                 {user?.name?.charAt(0)?.toUpperCase() || user?.email?.charAt(0)?.toUpperCase() || "U"}
               </AvatarFallback>
             </Avatar>
-            <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 delay-100 overflow-hidden whitespace-nowrap min-w-0 flex-1 text-left">
+            <div className="overflow-hidden whitespace-nowrap min-w-0 flex-1 text-left">
               <p className="text-sm font-medium text-foreground truncate">
                 {user?.name || user?.email?.split("@")[0] || "User"}
               </p>
@@ -170,7 +170,7 @@ export function DashboardSidebar() {
             </div>
             <ChevronUp
               className={cn(
-                "h-4 w-4 text-muted-foreground transition-transform duration-200 opacity-0 group-hover:opacity-100 flex-shrink-0",
+                "h-4 w-4 text-muted-foreground transition-transform duration-200 flex-shrink-0",
                 isDropdownOpen ? "rotate-180" : "",
               )}
             />
