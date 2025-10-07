@@ -33,9 +33,17 @@ export interface ReactFlowData {
 export function convertReactFlowToBland(reactFlowData: ReactFlowData): BlandFlowData {
   console.log('🔄 Converting ReactFlow data to Bland.ai format...')
   
-  // Clean nodes - remove UI-specific properties and handle webhook nodes specially
+  // Clean nodes - preserve position but remove other UI-specific properties
   const cleanNodes: BlandNode[] = reactFlowData.nodes.map(node => {
     let cleanData = { ...node.data }
+    
+    // Preserve position for proper layout restoration
+    const nodeWithPosition: any = {
+      id: node.id,
+      type: '',
+      data: cleanData,
+      position: node.position // Preserve position data
+    }
     
     // Special handling for Facebook Pixel nodes - convert to Webhook with preset config
     if (node.type === 'facebookPixelNode') {
@@ -120,36 +128,30 @@ export function convertReactFlowToBland(reactFlowData: ReactFlowData): BlandFlow
         rerouteServer: undefined
       }
       
-      return {
-        id: node.id,
-        type: 'Webhook',
-        data: cleanData
-      }
+      nodeWithPosition.type = 'Webhook'
+      nodeWithPosition.data = cleanData
+      return nodeWithPosition
     }
     
     // Special handling for End Call nodes
     if (node.type === 'endCallNode') {
-      return {
-        id: node.id,
-        type: 'End Call',
-        data: {
-          prompt: cleanData.prompt || cleanData.text || 'Thank you for calling. Goodbye!',
-          name: cleanData.name || 'End Call'
-        }
+      nodeWithPosition.type = 'End Call'
+      nodeWithPosition.data = {
+        prompt: cleanData.prompt || cleanData.text || 'Thank you for calling. Goodbye!',
+        name: cleanData.name || 'End Call'
       }
+      return nodeWithPosition
     }
     
     // Special handling for Transfer nodes
     if (node.type === 'transferNode') {
-      return {
-        id: node.id,
-        type: 'Transfer',
-        data: {
-          transferNumber: cleanData.transferNumber || cleanData.transfer_phone_number,
-          name: cleanData.name || 'Transfer Call',
-          text: cleanData.text || 'Transferring call...'
-        }
+      nodeWithPosition.type = 'Transfer'
+      nodeWithPosition.data = {
+        transferNumber: cleanData.transferNumber || cleanData.transfer_phone_number,
+        name: cleanData.name || 'Transfer Call',
+        text: cleanData.text || 'Transferring call...'
       }
+      return nodeWithPosition
     }
     
     // Default nodes (greeting, question, customer response)
@@ -161,13 +163,9 @@ export function convertReactFlowToBland(reactFlowData: ReactFlowData): BlandFlow
       'Default': 'Default'
     }
     
-    const blandNodeType = typeMapping[node.type] || 'Default'
-    
-    return {
-      id: node.id,
-      type: blandNodeType,
-      data: cleanData
-    }
+    nodeWithPosition.type = typeMapping[node.type] || 'Default'
+    nodeWithPosition.data = cleanData
+    return nodeWithPosition
   })
 
   // Clean edges - remove UI-specific properties and color, but keep type: "custom"
@@ -212,13 +210,19 @@ export function convertBlandToReactFlow(blandData: BlandFlowData): ReactFlowData
   console.log('🔄 Converting Bland.ai data to ReactFlow format...')
   
   // Add UI properties to nodes
-  const reactFlowNodes: Node[] = blandData.nodes.map((node, index) => ({
-    id: node.id,
-    type: node.type,
-    position: { x: 250 + (index * 50), y: index * 100 }, // Default positioning
-    data: node.data,
-    selected: false
-  }))
+  const reactFlowNodes: Node[] = blandData.nodes.map((node, index) => {
+    // Check if node already has position data saved (from previous saves)
+    const savedPosition = (node as any).position
+    
+    return {
+      id: node.id,
+      type: node.type,
+      // Use saved position if available, otherwise use default positioning
+      position: savedPosition || { x: 250 + (index * 50), y: index * 100 },
+      data: node.data,
+      selected: false
+    }
+  })
 
   // Add UI properties to edges
   const reactFlowEdges: Edge[] = blandData.edges.map(edge => ({
