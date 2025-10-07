@@ -303,7 +303,7 @@ export default function CallsPage() {
       <div className="p-6 space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold">Call Database</h1>
+            <h1 className="text-3xl font-bold">Analytics</h1>
             <p className="text-muted-foreground">View and manage your synced call data from the database</p>
           </div>
         </div>
@@ -329,7 +329,7 @@ export default function CallsPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Call Database</h1>
+          <h1 className="text-3xl font-bold">Analytics</h1>
           <p className="text-muted-foreground">View and manage your synced call data from the database</p>
         </div>
         <div className="flex items-center gap-2">
