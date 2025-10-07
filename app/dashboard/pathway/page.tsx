@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useRouter } from "next/navigation"
@@ -41,12 +42,8 @@ export default function PathwayListingPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  // Assuming isInitialized and authLoading are available from useAuth or a similar context
-  // If not, these would need to be defined or passed appropriately.
-  // For now, let's assume they are available and correctly manage the auth state.
-  const isInitialized = true; // Placeholder, replace with actual initialization status if available
-  const authLoading = false; // Placeholder, replace with actual auth loading status if available
-
+  const isInitialized = true
+  const authLoading = false
 
   useEffect(() => {
     const fetchUserPathways = async () => {
@@ -61,7 +58,6 @@ export default function PathwayListingPage() {
       setError(null)
 
       try {
-        // Use the authenticated user's actual ID, not the test ID
         const response = await fetch(`/api/pathways?creator_id=${user.id}`, {
           credentials: 'include',
           cache: 'no-cache'
@@ -109,7 +105,6 @@ export default function PathwayListingPage() {
 
         console.log("🔍 [PATHWAY-PAGE] Fetching data for user:", user.email)
 
-        // Fetch phone numbers first - this contains the pathway associations
         const phoneResponse = await fetch('/api/user/phone-numbers', {
           credentials: 'include'
         })
@@ -126,19 +121,13 @@ export default function PathwayListingPage() {
 
         console.log("✅ [PATHWAY-PAGE] Phone numbers loaded:", phoneNumbers)
 
-        // Clean phone number formatting (remove extra + signs)
         const cleanedPhoneNumbers = phoneNumbers.map((phone: PhoneNumber) => ({
           ...phone,
-          number: phone.number.replace(/^\+\+/, '+') // Remove double plus signs
+          number: phone.number.replace(/^\+\+/, '+')
         }))
 
         setPhoneNumbers(cleanedPhoneNumbers)
 
-        // Fetch pathways using the new API (no creator_id needed, uses authenticated user)
-        // This part seems to be replaced by the first useEffect hook which fetches pathways directly.
-        // If phone numbers also need to fetch their pathway info in a different way, this needs adjustment.
-        // Based on the previous change, it looks like pathway data is now fetched separately and linked.
-        // For now, we keep this as is, assuming phone numbers might still contain association data.
         const pathwaysResponse = await fetch('/api/pathways', {
           credentials: 'include'
         })
@@ -166,7 +155,6 @@ export default function PathwayListingPage() {
   }, [user])
 
   const handleManagePathway = (phoneNumber: string) => {
-    // Clean the phone number before navigation
     const cleanNumber = phoneNumber.replace(/^\+\+/, '+').replace(/\D/g, "")
     router.push(`/dashboard/pathway/${cleanNumber}`)
   }
@@ -178,17 +166,17 @@ export default function PathwayListingPage() {
 
   if (loading) {
     return (
-      <div className="space-y-6">
+      <div className="p-6 space-y-6">
         <div className="flex justify-between items-center">
           <div>
-            <h1 className="text-3xl font-bold">My Pathways</h1>
-            <p className="text-gray-600">Manage call flow pathways for your phone numbers</p>
+            <h1 className="text-3xl font-bold tracking-tight">My Pathways</h1>
+            <p className="text-muted-foreground mt-1">Manage call flow pathways for your phone numbers</p>
           </div>
         </div>
         <div className="flex items-center justify-center h-64">
           <div className="text-center">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-            <p>Loading your pathways...</p>
+            <p className="text-muted-foreground">Loading your pathways...</p>
           </div>
         </div>
       </div>
@@ -196,7 +184,7 @@ export default function PathwayListingPage() {
   }
 
   return (
-    <div className="container mx-auto py-8 px-6 space-y-6">
+    <div className="p-6 space-y-6">
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">My Pathways</h1>
@@ -228,7 +216,7 @@ export default function PathwayListingPage() {
       )}
 
       {!error && phoneNumbers.length === 0 ? (
-        <Card className="border-0 shadow-sm">
+        <Card className="shadow-sm">
           <CardContent className="flex flex-col items-center justify-center py-16">
             <Phone className="h-12 w-12 text-muted-foreground mb-4" />
             <h3 className="text-lg font-semibold mb-2">No Phone Numbers Found</h3>
@@ -247,89 +235,83 @@ export default function PathwayListingPage() {
       ) : (
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {phoneNumbers.map((phone) => {
-            // Use pathway info from phone_numbers table directly
             const hasPathway = phone.pathway_id
 
             return (
-              <Card key={phone.id} className="border-0 shadow-sm hover:shadow-md transition-shadow">
-                <CardContent className="p-6 pb-4">
-                  <div className="space-y-4">
-                    {/* Phone Number Header */}
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <Phone className="h-5 w-5 text-blue-600" />
-                        <div>
-                          <span className="font-semibold text-lg">{formatPhoneNumber(phone.number)}</span>
-                          <Badge 
-                            variant={phone.status === "active" ? "default" : "secondary"}
-                            className="ml-3"
-                          >
-                            {phone.status}
-                          </Badge>
-                        </div>
+              <Card key={phone.id} className="shadow-sm hover:shadow-md transition-shadow">
+                <CardHeader className="pb-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <Phone className="h-5 w-5 text-blue-600" />
+                      <div className="flex items-center gap-2">
+                        <CardTitle className="text-lg">{formatPhoneNumber(phone.number)}</CardTitle>
+                        <Badge 
+                          variant={phone.status === "active" ? "default" : "secondary"}
+                        >
+                          {phone.status}
+                        </Badge>
                       </div>
                     </div>
+                  </div>
+                  <CardDescription className="mt-2">
+                    {phone.location} • {phone.type}
+                  </CardDescription>
+                </CardHeader>
 
-                    {/* Location Info */}
-                    <div className="text-sm text-muted-foreground border-b pb-3">
-                      <span className="font-medium">{phone.location}</span> • <span>{phone.type}</span>
-                    </div>
-
-                    {/* Pathway Status */}
-                    {hasPathway ? (
-                      <div className="space-y-3">
-                        <div className="flex items-start gap-3">
-                          <div className="h-2 w-2 bg-green-500 rounded-full mt-2 flex-shrink-0"></div>
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2 mb-1">
-                              <span className="text-sm font-medium text-green-700">
-                                Pathway Connected
-                              </span>
-                            </div>
-                            <h4 className="font-medium mb-2">
-                              {phone.pathway_name}
-                            </h4>
-                            {phone.pathway_description && (
-                              <p className="text-sm text-muted-foreground mb-3 leading-relaxed">
-                                {phone.pathway_description}
-                              </p>
-                            )}
-                            
-                            {/* Pathway ID Section */}
-                            <div className="bg-muted rounded-lg p-3 border">
-                              <div className="flex items-center justify-between gap-2">
-                                <div className="flex-1 min-w-0">
-                                  <p className="text-xs text-gray-500 mb-1">Pathway ID</p>
-                                  <p className="text-sm font-mono text-gray-700 break-all">
-                                    {phone.pathway_id}
-                                  </p>
-                                </div>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  className="h-8 w-8 p-0 flex-shrink-0"
-                                  onClick={() => copyPathwayId(phone.pathway_id!)}
-                                  title="Copy Pathway ID"
-                                >
-                                  <Copy className="h-4 w-4" />
-                                </Button>
+                <CardContent className="pb-4">
+                  {hasPathway ? (
+                    <div className="space-y-3">
+                      <div className="flex items-start gap-3">
+                        <div className="h-2 w-2 bg-green-500 rounded-full mt-2 flex-shrink-0"></div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className="text-sm font-medium text-green-700">
+                              Pathway Connected
+                            </span>
+                          </div>
+                          <h4 className="font-medium mb-2">
+                            {phone.pathway_name}
+                          </h4>
+                          {phone.pathway_description && (
+                            <p className="text-sm text-muted-foreground mb-3 leading-relaxed">
+                              {phone.pathway_description}
+                            </p>
+                          )}
+                          
+                          <div className="bg-muted rounded-lg p-3 border">
+                            <div className="flex items-center justify-between gap-2">
+                              <div className="flex-1 min-w-0">
+                                <p className="text-xs text-muted-foreground mb-1">Pathway ID</p>
+                                <p className="text-sm font-mono text-foreground break-all">
+                                  {phone.pathway_id}
+                                </p>
                               </div>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-8 w-8 p-0 flex-shrink-0"
+                                onClick={() => copyPathwayId(phone.pathway_id!)}
+                                title="Copy Pathway ID"
+                              >
+                                <Copy className="h-4 w-4" />
+                              </Button>
                             </div>
                           </div>
                         </div>
                       </div>
-                    ) : (
-                      <div className="flex items-center gap-3 py-2">
-                        <div className="h-2 w-2 bg-gray-400 rounded-full flex-shrink-0"></div>
-                        <div>
-                          <span className="text-sm font-medium text-gray-500">No pathway configured</span>
-                          <p className="text-xs text-gray-400 mt-1">Create a pathway to handle incoming calls</p>
-                        </div>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-3 py-2">
+                      <div className="h-2 w-2 bg-gray-400 rounded-full flex-shrink-0"></div>
+                      <div>
+                        <span className="text-sm font-medium text-muted-foreground">No pathway configured</span>
+                        <p className="text-xs text-muted-foreground mt-1">Create a pathway to handle incoming calls</p>
                       </div>
-                    )}
-                  </div>
+                    </div>
+                  )}
                 </CardContent>
-                <CardFooter className="px-6 py-4 pt-2 border-t">
+
+                <CardFooter className="pt-4 border-t">
                   <Button
                     variant="outline"
                     size="sm"
