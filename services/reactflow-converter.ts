@@ -164,7 +164,11 @@ export function convertReactFlowToBland(reactFlowData: ReactFlowData): BlandFlow
     }
     
     nodeWithPosition.type = typeMapping[node.type] || 'Default'
-    nodeWithPosition.data = cleanData
+    // Preserve the original ReactFlow type in data for accurate restoration
+    nodeWithPosition.data = {
+      ...cleanData,
+      __reactFlowType: node.type // Store original type for restoration
+    }
     return nodeWithPosition
   })
 
@@ -209,17 +213,50 @@ export function convertReactFlowToBland(reactFlowData: ReactFlowData): BlandFlow
 export function convertBlandToReactFlow(blandData: BlandFlowData): ReactFlowData {
   console.log('🔄 Converting Bland.ai data to ReactFlow format...')
   
+  // Map Bland.ai types back to ReactFlow node types
+  const blandToReactFlowTypeMapping: { [key: string]: string } = {
+    'Default': 'greetingNode', // Default fallback
+    'Webhook': 'webhookNode',
+    'Transfer': 'transferNode',
+    'End Call': 'endCallNode'
+  }
+  
   // Add UI properties to nodes
   const reactFlowNodes: Node[] = blandData.nodes.map((node, index) => {
     // Check if node already has position data saved (from previous saves)
     const savedPosition = (node as any).position
     
+    // First check if we preserved the original ReactFlow type
+    let reactFlowType = node.data.__reactFlowType || blandToReactFlowTypeMapping[node.type] || 'greetingNode'
+    
+    // More intelligent type detection based on node content (fallback)
+    if (!node.data.__reactFlowType && node.type === 'Default') {
+      const nodeData = node.data
+      
+      // Check for specific patterns to determine type
+      if (nodeData.name?.toLowerCase().includes('greeting') || 
+          nodeData.text?.toLowerCase().includes('hello') ||
+          nodeData.text?.toLowerCase().includes('welcome')) {
+        reactFlowType = 'greetingNode'
+      } else if (nodeData.name?.toLowerCase().includes('question') || 
+                 nodeData.text?.includes('?')) {
+        reactFlowType = 'questionNode'
+      } else if (nodeData.name?.toLowerCase().includes('response') || 
+                 nodeData.name?.toLowerCase().includes('customer')) {
+        reactFlowType = 'customerResponseNode'
+      }
+    }
+    
+    // Clean the data to remove internal metadata
+    const cleanedData = { ...node.data }
+    delete cleanedData.__reactFlowType
+    
     return {
       id: node.id,
-      type: node.type,
+      type: reactFlowType,
       // Use saved position if available, otherwise use default positioning
       position: savedPosition || { x: 250 + (index * 50), y: index * 100 },
-      data: node.data,
+      data: cleanedData,
       selected: false
     }
   })
