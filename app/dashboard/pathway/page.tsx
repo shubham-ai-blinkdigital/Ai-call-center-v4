@@ -196,13 +196,13 @@ export default function PathwayListingPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="container mx-auto py-8 px-6 space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold">My Pathways</h1>
-          <p className="text-gray-600">
+          <h1 className="text-3xl font-bold tracking-tight">My Pathways</h1>
+          <p className="text-muted-foreground mt-1">
             Manage call flow pathways for your phone numbers
-            {user && <span className="text-xs ml-2 text-gray-400">(User: {user.email})</span>}
+            {user && <span className="text-xs ml-2 text-muted-foreground">(User: {user.email})</span>}
           </p>
         </div>
         <Link href="/dashboard/phone-numbers/purchase">
@@ -228,11 +228,11 @@ export default function PathwayListingPage() {
       )}
 
       {!error && phoneNumbers.length === 0 ? (
-        <Card>
-          <CardContent className="flex flex-col items-center justify-center py-12">
-            <Phone className="h-12 w-12 text-gray-400 mb-4" />
+        <Card className="border-0 shadow-sm">
+          <CardContent className="flex flex-col items-center justify-center py-16">
+            <Phone className="h-12 w-12 text-muted-foreground mb-4" />
             <h3 className="text-lg font-semibold mb-2">No Phone Numbers Found</h3>
-            <p className="text-gray-600 text-center mb-6">
+            <p className="text-muted-foreground text-center mb-6 max-w-md">
               You need to purchase a phone number before creating a pathway. Each phone number gets its own call flow
               pathway.
             </p>
@@ -251,7 +251,7 @@ export default function PathwayListingPage() {
             const hasPathway = phone.pathway_id
 
             return (
-              <Card key={phone.id} className="hover:shadow-md transition-shadow">
+              <Card key={phone.id} className="border-0 shadow-sm hover:shadow-md transition-shadow">
                 <CardContent className="p-6 pb-4">
                   <div className="space-y-4">
                     {/* Phone Number Header */}
@@ -271,7 +271,7 @@ export default function PathwayListingPage() {
                     </div>
 
                     {/* Location Info */}
-                    <div className="text-sm text-gray-600 border-b border-gray-100 pb-3">
+                    <div className="text-sm text-muted-foreground border-b pb-3">
                       <span className="font-medium">{phone.location}</span> • <span>{phone.type}</span>
                     </div>
 
@@ -286,17 +286,17 @@ export default function PathwayListingPage() {
                                 Pathway Connected
                               </span>
                             </div>
-                            <h4 className="font-medium text-gray-900 mb-2">
+                            <h4 className="font-medium mb-2">
                               {phone.pathway_name}
                             </h4>
                             {phone.pathway_description && (
-                              <p className="text-sm text-gray-600 mb-3 leading-relaxed">
+                              <p className="text-sm text-muted-foreground mb-3 leading-relaxed">
                                 {phone.pathway_description}
                               </p>
                             )}
                             
                             {/* Pathway ID Section */}
-                            <div className="bg-gray-50 rounded-lg p-3 border">
+                            <div className="bg-muted rounded-lg p-3 border">
                               <div className="flex items-center justify-between gap-2">
                                 <div className="flex-1 min-w-0">
                                   <p className="text-xs text-gray-500 mb-1">Pathway ID</p>
@@ -329,7 +329,7 @@ export default function PathwayListingPage() {
                     )}
                   </div>
                 </CardContent>
-                <CardFooter className="px-6 py-4 pt-2 border-t border-gray-50">
+                <CardFooter className="px-6 py-4 pt-2 border-t">
                   <Button
                     variant="outline"
                     size="sm"
