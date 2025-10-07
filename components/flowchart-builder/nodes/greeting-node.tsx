@@ -23,7 +23,7 @@ export function GreetingNode({ data, selected }: { data: any; selected?: boolean
       <div className="text-sm text-green-700 mt-2 leading-tight overflow-hidden" style={{ display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical' }} title={data.text || 'Welcome message'}>
         {data.text || 'Welcome message'}
       </div>
-      <Handle type="source" position={Position.Bottom} className="w-3 h-3" />
+      <Handle type="source" position={Position.Bottom} className="w-4 h-4 bg-blue-500 border-2 border-white hover:w-5 hover:h-5 transition-all" />
     </div>
   )
 }

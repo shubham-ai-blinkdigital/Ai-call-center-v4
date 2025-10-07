@@ -27,12 +27,12 @@ export function CustomerResponseNode({ data, selected }: { data: any; selected?:
       <Handle
         type="target"
         position={Position.Top}
-        style={{ background: '#555' }}
+        className="w-4 h-4 bg-blue-500 border-2 border-white hover:w-5 hover:h-5 transition-all"
       />
       <Handle
         type="source"
         position={Position.Bottom}
-        style={{ background: '#555' }}
+        className="w-4 h-4 bg-blue-500 border-2 border-white hover:w-5 hover:h-5 transition-all"
       />
     </div>
   )

@@ -74,7 +74,10 @@ export function SavePathwayModal({ reactFlowData, pathwayId }: SavePathwayModalP
         throw new Error(result.error || 'Failed to save pathway')
       }
 
-      toast.success("Pathway updated successfully!")
+      toast.success("Pathway saved successfully!", {
+        description: "Your flowchart changes have been saved.",
+        duration: 3000,
+      })
       setIsOpen(false)
       router.refresh()
 

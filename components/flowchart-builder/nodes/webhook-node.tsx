@@ -1,4 +1,3 @@
-
 'use client'
 
 import React from 'react'
@@ -34,7 +33,7 @@ export function WebhookNode({ data, selected }: WebhookNodeProps) {
       <Handle
         type="target"
         position={Position.Top}
-        className="w-3 h-3 border-2 border-orange-500 bg-white"
+        className="w-4 h-4 bg-blue-500 border-2 border-white hover:w-5 hover:h-5 transition-all"
       />
 
       {/* Header */}
@@ -51,7 +50,7 @@ export function WebhookNode({ data, selected }: WebhookNodeProps) {
           <div className="font-medium text-gray-900 text-sm truncate" title={data.name || 'Webhook Request'}>
             {data.name || 'Webhook Request'}
           </div>
-          
+
           {data.method && data.url && (
             <div className="text-xs text-gray-600 mt-1">
               <span className="font-mono bg-orange-50 px-1 py-0.5 rounded text-xs">
@@ -66,13 +65,13 @@ export function WebhookNode({ data, selected }: WebhookNodeProps) {
         </div>
       </div>
 
-      
+
 
       {/* Bottom Handle */}
       <Handle
         type="source"
         position={Position.Bottom}
-        className="w-3 h-3 border-2 border-orange-500 bg-white"
+        className="w-4 h-4 bg-blue-500 border-2 border-white hover:w-5 hover:h-5 transition-all"
       />
     </div>
   )

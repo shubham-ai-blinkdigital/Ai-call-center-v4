@@ -1,4 +1,3 @@
-
 'use client'
 
 import React from 'react'
@@ -32,7 +31,7 @@ export function FacebookPixelNode({ data, selected }: FacebookPixelNodeProps) {
       <Handle
         type="target"
         position={Position.Top}
-        className="w-3 h-3 border-2 border-blue-500 bg-white"
+        className="w-4 h-4 bg-blue-500 border-2 border-white hover:w-5 hover:h-5 transition-all"
       />
 
       {/* Header */}
@@ -49,7 +48,7 @@ export function FacebookPixelNode({ data, selected }: FacebookPixelNodeProps) {
           <div className="font-medium text-gray-900 text-sm truncate" title={data.name || 'Facebook Pixel Event'}>
             {data.name || 'Facebook Pixel Event'}
           </div>
-          
+
           {data.eventName && (
             <div className="text-xs text-gray-600 mt-1">
               <span className="font-mono bg-blue-50 px-1 py-0.5 rounded text-xs">
@@ -68,7 +67,7 @@ export function FacebookPixelNode({ data, selected }: FacebookPixelNodeProps) {
       <Handle
         type="source"
         position={Position.Bottom}
-        className="w-3 h-3 border-2 border-blue-500 bg-white"
+        className="w-4 h-4 bg-blue-500 border-2 border-white hover:w-5 hover:h-5 transition-all"
       />
     </div>
   )

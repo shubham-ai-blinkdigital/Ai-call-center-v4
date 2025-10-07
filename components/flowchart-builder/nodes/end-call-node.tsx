@@ -3,6 +3,7 @@
 import React from 'react'
 import { Handle, Position, NodeProps } from 'reactflow'
 import { PhoneOff, Pencil, Trash2 } from 'lucide-react'
+import toast from 'react-hot-toast';
 
 interface EndCallNodeData {
   prompt: string
@@ -23,7 +24,11 @@ export function EndCallNode({ data, selected }: { data: any; selected?: boolean 
       <div className="text-sm text-red-700 mt-2 leading-tight overflow-hidden" style={{ display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical' }} title={data.prompt || data.text || 'End conversation'}>
         {data.prompt || data.text || 'End conversation'}
       </div>
-      <Handle type="target" position={Position.Top} className="w-3 h-3" />
+      <Handle
+        type="target"
+        position={Position.Top}
+        className="w-4 h-4 bg-blue-500 border-2 border-white hover:w-5 hover:h-5 transition-all"
+      />
     </div>
   )
 }
