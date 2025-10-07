@@ -384,8 +384,8 @@ console.log('Call result:', result);`
                 <CardContent className="space-y-4">
                   {/* Phone Number */}
                   <div className="space-y-2">
-                    <Label htmlFor="phone">Phone Number</Label>
-                    <div className="flex gap-2">
+                    <Label htmlFor="phone">Phone Number *</Label>
+                    <div className="flex">
                       <Select 
                         value={selectedCountryCode} 
                         onValueChange={(value) => {
@@ -1019,6 +1019,8 @@ console.log('Call result:', result);`
               </pre>
             </CardContent>
           </Card>
+
+          
         </div>
       </div>
     </div>
