@@ -11,15 +11,6 @@ interface TransferNodeData {
 }
 
 export function TransferNode({ data, selected }: { data: any; selected?: boolean }) {
-
-  // Placeholder for save functionality - actual implementation would involve
-  // calling a save API and then showing the toast.
-  const handleSavePathway = () => {
-    // Simulate saving
-    console.log("Pathway saved!");
-    toast.success("Pathway saved successfully!");
-  };
-
   return (
     <div className={`px-4 py-3 shadow-md rounded-md bg-purple-100 border-2 w-[250px] h-[120px] transition-all duration-200 relative overflow-hidden ${
       selected ? 'border-purple-500 shadow-lg scale-105' : 'border-purple-300 hover:border-purple-400'
@@ -39,16 +30,8 @@ export function TransferNode({ data, selected }: { data: any; selected?: boolean
         position={Position.Top}
         className="w-4 h-4 bg-blue-500 border-2 border-white hover:w-5 hover:h-5 transition-all"
       />
-      <Handle
-        type="source"
-        position={Position.Bottom}
-        className="w-4 h-4 bg-blue-500 border-2 border-white hover:w-5 hover:h-5 transition-all"
-      />
-      {/* This button is a placeholder to demonstrate the save confirmation.
-          In a real application, this would likely be part of a control panel or menu. */}
-      <button onClick={handleSavePathway} className="absolute bottom-2 right-2 bg-green-500 text-white px-2 py-1 rounded hover:bg-green-600 text-xs">
-        Save
-      </button>
+      {/* No source handle - Transfer node is terminal */}
+      
     </div>
   )
 }

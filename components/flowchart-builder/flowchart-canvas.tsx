@@ -180,6 +180,14 @@ export function FlowchartCanvas({
 
   const onConnect = useCallback(
     (params: Connection) => {
+      // Check if the source node is a Transfer node
+      const sourceNode = nodes.find(node => node.id === params.source)
+      
+      if (sourceNode?.type === 'transferNode') {
+        toast.error('Cannot connect after Transfer node. Transfer ends the call flow.')
+        return
+      }
+
       const newEdge: Edge = {
         ...params,
         id: `edge_${params.source}_${params.target}_${Date.now()}`,
@@ -190,7 +198,7 @@ export function FlowchartCanvas({
       }
       setEdges((eds) => addEdge(newEdge, eds))
     },
-    [setEdges],
+    [setEdges, nodes],
   )
 
   const onDragOver = useCallback((event: React.DragEvent) => {
