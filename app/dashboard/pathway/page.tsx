@@ -159,9 +159,17 @@ export default function PathwayListingPage() {
     router.push(`/dashboard/pathway/${cleanNumber}`)
   }
 
+  const [copiedId, setCopiedId] = useState<string | null>(null)
+
   const copyPathwayId = (pathwayId: string) => {
     navigator.clipboard.writeText(pathwayId)
+    setCopiedId(pathwayId)
     toast.success("Pathway ID copied to clipboard")
+    
+    // Reset the copied state after 2 seconds
+    setTimeout(() => {
+      setCopiedId(null)
+    }, 2000)
   }
 
   if (loading) {
@@ -289,11 +297,15 @@ export default function PathwayListingPage() {
                               <Button
                                 variant="ghost"
                                 size="sm"
-                                className="h-8 w-8 p-0 flex-shrink-0"
+                                className="h-8 w-8 p-0 flex-shrink-0 relative"
                                 onClick={() => copyPathwayId(phone.pathway_id!)}
-                                title="Copy Pathway ID"
+                                title={copiedId === phone.pathway_id ? "Copied!" : "Copy Pathway ID"}
                               >
-                                <Copy className="h-4 w-4" />
+                                {copiedId === phone.pathway_id ? (
+                                  <span className="text-xs font-medium text-green-600">✓</span>
+                                ) : (
+                                  <Copy className="h-4 w-4" />
+                                )}
                               </Button>
                             </div>
                           </div>
