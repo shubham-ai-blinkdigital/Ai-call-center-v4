@@ -85,7 +85,7 @@ export function DashboardSidebar() {
     <aside className="group fixed left-0 top-0 z-40 h-screen w-16 hover:w-60 bg-background border-r border-border transition-all duration-300 ease-in-out overflow-hidden">
       {/* Header */}
       <div className="flex h-16 items-center border-b border-border px-4">
-        <div className="flex items-center min-w-0">
+        <Link href="/dashboard" className="flex items-center min-w-0 cursor-pointer">
           <div className="flex-shrink-0">
             <img
               src="/ConvLogoG.png"
@@ -105,7 +105,7 @@ export function DashboardSidebar() {
           <div className="ml-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300 delay-100 overflow-hidden whitespace-nowrap">
             <span className="text-xl font-bold text-foreground">Conversation</span>
           </div>
-        </div>
+        </Link>
       </div>
 
       {/* Navigation - Takes up remaining space except for profile section */}
