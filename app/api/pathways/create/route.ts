@@ -1,4 +1,3 @@
-
 import { NextRequest, NextResponse } from "next/server"
 import { cookies } from "next/headers"
 import { validateAuthToken } from "@/lib/auth-utils"
@@ -62,83 +61,6 @@ export async function POST(request: NextRequest) {
     console.error("[CREATE-PATHWAY] Error:", error)
     return NextResponse.json(
       { error: "Internal server error" },
-      { status: 500 }
-    )
-  }
-}
-import { NextRequest, NextResponse } from 'next/server'
-import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs'
-import { cookies } from 'next/headers'
-
-export async function POST(req: NextRequest) {
-  try {
-    const supabase = createRouteHandlerClient({ cookies })
-    
-    // Get current user
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-    
-    if (authError || !user) {
-      console.error('❌ [CREATE-PATHWAY] Auth error:', authError)
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      )
-    }
-
-    const { name, description, flowchart_data, nodes, edges } = await req.json()
-
-    if (!name || !flowchart_data) {
-      return NextResponse.json(
-        { error: 'Name and flowchart data are required' },
-        { status: 400 }
-      )
-    }
-
-    console.log('💾 [CREATE-PATHWAY] Creating pathway for user:', user.id)
-    console.log('📊 [CREATE-PATHWAY] Pathway data:', { name, description, nodesCount: nodes?.length, edgesCount: edges?.length })
-
-    // Create pathway in database
-    const { data: pathway, error: createError } = await supabase
-      .from('pathways')
-      .insert({
-        user_id: user.id,
-        name: name.trim(),
-        description: description?.trim() || null,
-        flowchart_data,
-        nodes: nodes || [],
-        edges: edges || [],
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      })
-      .select()
-      .single()
-
-    if (createError) {
-      console.error('❌ [CREATE-PATHWAY] Database error:', createError)
-      return NextResponse.json(
-        { 
-          error: 'Failed to create pathway',
-          details: createError.message
-        },
-        { status: 500 }
-      )
-    }
-
-    console.log('✅ [CREATE-PATHWAY] Pathway created successfully:', pathway.id)
-
-    return NextResponse.json({
-      success: true,
-      pathway,
-      message: 'Pathway created successfully'
-    })
-
-  } catch (error) {
-    console.error('❌ [CREATE-PATHWAY] Unexpected error:', error)
-    return NextResponse.json(
-      { 
-        error: 'Internal server error',
-        message: error instanceof Error ? error.message : String(error)
-      },
       { status: 500 }
     )
   }
