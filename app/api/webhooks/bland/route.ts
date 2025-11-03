@@ -1,18 +1,23 @@
-
 import { NextRequest, NextResponse } from "next/server"
-import { CallCostService } from "@/services/call-cost-service"
 
 export const dynamic = "force-dynamic"
 
+/**
+ * Bland AI Webhook (DISABLED FOR BILLING)
+ * 
+ * This webhook is now DISABLED for billing purposes.
+ * All billing is handled by the scheduled sync endpoint at /api/calls/scheduled-sync
+ * 
+ * This endpoint now only logs webhook events for debugging purposes.
+ */
 export async function POST(request: NextRequest) {
   try {
-    console.log("🔔 [BLAND-WEBHOOK] ==================== BLAND WEBHOOK CALLED ====================")
+    console.log("🔔 [BLAND-WEBHOOK] ==================== BLAND WEBHOOK CALLED (BILLING DISABLED) ====================")
     console.log("🔔 [BLAND-WEBHOOK] Timestamp:", new Date().toISOString())
-    
+
     const body = await request.json()
-    console.log("🔔 [BLAND-WEBHOOK] Received webhook:", JSON.stringify(body, null, 2))
-    
-    // Extract call data from Bland.ai webhook
+    console.log("🔔 [BLAND-WEBHOOK] Received webhook (logging only):", JSON.stringify(body, null, 2))
+
     const { 
       call_id, 
       c_id, 
@@ -21,107 +26,41 @@ export async function POST(request: NextRequest) {
       call_length,
       duration,
       corrected_duration,
-      completed,
-      user_id,
-      to_number,
-      from_number,
-      phone_number
+      completed
     } = body
-    
-    // Determine the actual call ID (Bland.ai uses different field names)
+
     const actualCallId = call_id || c_id || id
-    
+
     if (!actualCallId) {
       console.log("⚠️ [BLAND-WEBHOOK] No call ID found in webhook")
-      return NextResponse.json({ error: "No call ID provided" }, { status: 400 })
-    }
-    
-    // Check if call is completed
-    const isCompleted = completed || status === 'completed' || status === 'ended'
-    
-    if (!isCompleted) {
-      console.log(`⚠️ [BLAND-WEBHOOK] Call ${actualCallId} not completed yet, status: ${status}`)
-      return NextResponse.json({ message: "Call not completed yet" })
-    }
-    
-    // Get call duration (Bland.ai uses different field names)
-    const durationSeconds = corrected_duration || call_length || duration || 0
-    
-    if (durationSeconds <= 0) {
-      console.log(`⚠️ [BLAND-WEBHOOK] Call ${actualCallId} has no duration, skipping cost calculation`)
-      return NextResponse.json({ message: "No duration to bill" })
-    }
-    
-    // Try to extract user ID from webhook or lookup from phone number
-    let actualUserId = user_id
-    
-    if (!actualUserId) {
-      // Look up user by phone number
-      const phoneToCheck = to_number || from_number || phone_number
-      if (phoneToCheck) {
-        console.log(`🔍 [BLAND-WEBHOOK] Looking up user by phone: ${phoneToCheck}`)
-        
-        const { Client } = await import('pg')
-        const client = new Client({
-          connectionString: process.env.DATABASE_URL
-        })
-        
-        try {
-          await client.connect()
-          const result = await client.query(
-            'SELECT user_id FROM phone_numbers WHERE phone_number = $1 LIMIT 1',
-            [phoneToCheck]
-          )
-          
-          if (result.rows.length > 0) {
-            actualUserId = result.rows[0].user_id
-            console.log(`✅ [BLAND-WEBHOOK] Found user ${actualUserId} for phone ${phoneToCheck}`)
-          }
-        } finally {
-          await client.end()
-        }
-      }
-    }
-    
-    if (!actualUserId) {
-      console.log(`❌ [BLAND-WEBHOOK] Could not determine user for call ${actualCallId}`)
-      return NextResponse.json({ error: "Could not determine user for call" }, { status: 400 })
-    }
-    
-    // Process the call billing
-    console.log(`💰 [BLAND-WEBHOOK] Processing call billing for:`)
-    console.log(`   - Call ID: ${actualCallId}`)
-    console.log(`   - User ID: ${actualUserId}`)
-    console.log(`   - Duration: ${durationSeconds} seconds`)
-    
-    const { CallBillingService } = await import('@/services/call-billing-service')
-    const result = await CallBillingService.billCall(
-      actualCallId,
-      actualUserId,
-      parseInt(durationSeconds.toString())
-    )
-    
-    if (result.success) {
-      console.log(`✅ [BLAND-WEBHOOK] ${result.message}`)
       return NextResponse.json({ 
-        success: true, 
-        message: result.message,
-        callId: actualCallId,
-        costCents: result.costCents 
+        message: "Webhook received (billing disabled - sync-based billing active)" 
       })
-    } else {
-      console.log(`❌ [BLAND-WEBHOOK] ${result.message}`)
-      return NextResponse.json({ 
-        success: false, 
-        message: result.message 
-      }, { status: 400 })
     }
-    
+
+    const isCompleted = completed || status === 'completed' || status === 'ended'
+    const durationSeconds = corrected_duration || call_length || duration || 0
+
+    console.log(`📝 [BLAND-WEBHOOK] Call logged:`)
+    console.log(`   - Call ID: ${actualCallId}`)
+    console.log(`   - Status: ${status}`)
+    console.log(`   - Duration: ${durationSeconds} seconds`)
+    console.log(`   - Completed: ${isCompleted}`)
+    console.log(`⚠️ [BLAND-WEBHOOK] BILLING DISABLED - Call will be billed by scheduled sync`)
+
+    return NextResponse.json({ 
+      success: true,
+      message: "Webhook received and logged (billing handled by scheduled sync)",
+      callId: actualCallId,
+      note: "Billing is now handled by the scheduled sync endpoint at /api/calls/scheduled-sync"
+    })
+
   } catch (error: any) {
     console.error("❌ [BLAND-WEBHOOK] Error processing webhook:", error)
     return NextResponse.json({ 
       error: "Internal server error", 
-      message: error.message 
+      message: error.message,
+      note: "Webhook is disabled for billing - using scheduled sync instead"
     }, { status: 500 })
   }
 }

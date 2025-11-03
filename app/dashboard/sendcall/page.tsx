@@ -45,11 +45,12 @@ interface Pathway {
 }
 
 interface Voice {
-  voice_id: string
+  id: string
   name: string
   preview_url?: string
-  id: string; // Added for key
-  description?: string; // Added for display
+  description?: string
+  public?: boolean
+  tags?: string[]
 }
 
 interface CallData {
@@ -176,10 +177,12 @@ export default function SendCallPage() {
         if (voicesResponse.ok) {
           const voicesData = await voicesResponse.json()
           setVoices(voicesData.voices || [])
-          // Set default voice to first available or "June"
-          if (voicesData.voices?.length > 0) {
-            const juneVoice = voicesData.voices.find((v: Voice) => v.name === "June")
-            const defaultVoice = juneVoice?.voice_id || voicesData.voices[0].voice_id
+          // Set default voice to first available or "ravi" (Indian voice)
+          if (voicesData.voices?.length > 0 && !callData.voice) {
+            const raviVoice = voicesData.voices.find((v: Voice) => v.name === "ravi")
+            const indianVoice = voicesData.voices.find((v: Voice) => v.name.toLowerCase().includes("indian"))
+            const defaultVoice = raviVoice?.id || indianVoice?.id || voicesData.voices[0].id
+            console.log("Setting default voice:", defaultVoice, "from voice:", raviVoice?.name || indianVoice?.name || voicesData.voices[0].name)
             updateCallData('voice', defaultVoice)
           }
         }
@@ -206,6 +209,12 @@ export default function SendCallPage() {
       return
     }
 
+    // Validate voice selection
+    if (!callData.voice) {
+      toast.error('Please select a voice')
+      return
+    }
+
     setIsLoading(true)
 
     try {
@@ -213,6 +222,9 @@ export default function SendCallPage() {
       const cleanCallData = Object.fromEntries(
         Object.entries(callData).filter(([_, v]) => v !== undefined && v !== "" && v !== null)
       )
+
+      console.log("Final call data before sending:", cleanCallData)
+      console.log("Voice ID being sent:", cleanCallData.voice)
 
       const response = await fetch('/api/bland-ai/send-test-call', {
         method: 'POST',
@@ -328,15 +340,9 @@ console.log('Call result:', result);`
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">Send Call</h1>
-          <p className="text-muted-foreground">Configure and send calls using the complete Bland.ai API</p>
+          <p className="text-muted-foreground">Configure and send calls using the complete API</p>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="outline" asChild>
-            <a href="https://docs.bland.ai" target="_blank" className="flex items-center gap-2">
-              Read Docs
-              <ArrowUpRight className="h-4 w-4" />
-            </a>
-          </Button>
           <Button variant="outline" onClick={() => {
             Object.keys(openSections).forEach(section => {
               setOpenSections(prev => ({ ...prev, [section]: false }))
@@ -404,12 +410,6 @@ console.log('Call result:', result);`
                             <SelectItem 
                               key={country.code}
                               value={country.code}
-                              onSelect={(value) => {
-                                setSelectedCountryCode(value);
-                                if (phoneNumberInput) {
-                                  updateCallData('phone_number', value + phoneNumberInput);
-                                }
-                              }}
                             >
                               <div className="flex items-center gap-2">
                                 <span className="text-lg">{country.flag}</span>
@@ -447,11 +447,23 @@ console.log('Call result:', result);`
                     <Select 
                       value={callData.voice || ""} 
                       onValueChange={(value) => {
+                        console.log("Voice selected:", value)
                         updateCallData('voice', value)
                       }}
                     >
                       <SelectTrigger className="w-full" id="voice">
-                        <SelectValue placeholder="Select a voice" />
+                        <SelectValue placeholder="Select a voice">
+                          {callData.voice && voices.find(v => v.id === callData.voice) ? (
+                            <div className="flex items-center gap-2">
+                              <div className="w-6 h-6 rounded-full bg-orange-500 flex items-center justify-center text-xs text-white flex-shrink-0">
+                                {voices.find(v => v.id === callData.voice)?.name.charAt(0)}
+                              </div>
+                              <span>{voices.find(v => v.id === callData.voice)?.name}</span>
+                            </div>
+                          ) : (
+                            "Select a voice"
+                          )}
+                        </SelectValue>
                       </SelectTrigger>
                       <SelectContent 
                         className="max-h-[200px] overflow-y-auto z-50" 
@@ -461,13 +473,10 @@ console.log('Call result:', result);`
                       >
                         {voices.map((voice) => (
                           <SelectItem 
-                            key={voice.voice_id} 
-                            value={voice.voice_id}
-                            onSelect={(value) => {
-                              updateCallData('voice', value)
-                            }}
+                            key={voice.id} 
+                            value={voice.id}
                           >
-                            <div className="flex items-center gap-2 pointer-events-none">
+                            <div className="flex items-center gap-2">
                               <div className="w-6 h-6 rounded-full bg-orange-500 flex items-center justify-center text-xs text-white flex-shrink-0">
                                 {voice.name.charAt(0)}
                               </div>
@@ -477,6 +486,16 @@ console.log('Call result:', result);`
                         ))}
                       </SelectContent>
                     </Select>
+                    {/* Show selected voice info */}
+                    {callData.voice && voices.find(v => v.id === callData.voice) && (
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <div className="w-5 h-5 rounded-full bg-orange-500 flex items-center justify-center text-xs text-white flex-shrink-0">
+                          {voices.find(v => v.id === callData.voice)?.name.charAt(0)}
+                        </div>
+                        <span className="font-medium">{voices.find(v => v.id === callData.voice)?.name}</span>
+                        <span className="text-xs">({callData.voice})</span>
+                      </div>
+                    )}
                   </div>
 
                   {/* Prompt or Pathway Selection */}
@@ -1001,26 +1020,7 @@ console.log('Call result:', result);`
             </CardContent>
           </Card>
 
-          {/* API Documentation Link */}
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <FileText className="h-5 w-5 text-blue-500" />
-                <div>
-                  <h4 className="font-medium">Need Help?</h4>
-                  <p className="text-sm text-muted-foreground">
-                    Check the Bland.ai API documentation for detailed parameter descriptions.
-                  </p>
-                  <Button variant="link" className="p-0 h-auto mt-1" asChild>
-                    <a href="https://docs.bland.ai/api-reference/calls" target="_blank">
-                      View API Reference
-                      <ArrowUpRight className="h-3 w-3 ml-1" />
-                    </a>
-                  </Button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          
         </div>
       </div>
     </div>

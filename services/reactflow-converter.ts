@@ -33,9 +33,65 @@ export interface ReactFlowData {
 export function convertReactFlowToBland(reactFlowData: ReactFlowData): BlandFlowData {
   console.log('🔄 Converting ReactFlow data to Bland.ai format...')
   
-  // Clean nodes - remove UI-specific properties and handle webhook nodes specially
+  // Clean nodes - preserve position but remove other UI-specific properties
   const cleanNodes: BlandNode[] = reactFlowData.nodes.map(node => {
     let cleanData = { ...node.data }
+    
+    // Preserve position for proper layout restoration
+    const nodeWithPosition: any = {
+      id: node.id,
+      type: '',
+      data: cleanData,
+      position: node.position // Preserve position data
+    }
+    
+    // Special handling for Facebook Pixel nodes - convert to Webhook with preset config
+    if (node.type === 'facebookPixelNode') {
+      const pixelId = cleanData.pixelId || ''
+      const accessToken = cleanData.accessToken || ''
+      const eventName = cleanData.eventName || 'Lead'
+      
+      // Build Facebook Conversions API URL
+      const url = `https://graph.facebook.com/v13.0/${pixelId}/events?access_token=${accessToken}`
+      
+      // Build Facebook CAPI payload
+      const body = JSON.stringify({
+        data: [
+          {
+            event_name: eventName,
+            event_time: Math.floor(Date.now() / 1000),
+            action_source: 'phone_call',
+            event_id: '{{call.call_id}}',
+            user_data: {
+              ph: '{{call.from}}',
+              em: '{{email}}'
+            },
+            custom_data: {
+              call_duration: '{{call.call_length}}',
+              call_status: '{{call.status}}'
+            }
+          }
+        ]
+      })
+      
+      return {
+        id: node.id,
+        type: 'Webhook',
+        data: {
+          name: cleanData.name || 'Facebook Pixel Event',
+          text: cleanData.text || 'Tracking conversion event...',
+          url: url,
+          method: 'POST',
+          headers: [
+            {
+              key: 'Content-Type',
+              value: 'application/json'
+            }
+          ],
+          body: body
+        }
+      }
+    }
     
     // Special handling for webhook nodes - generate responsePathways from edges
     if (node.type === 'webhookNode') {
@@ -72,21 +128,48 @@ export function convertReactFlowToBland(reactFlowData: ReactFlowData): BlandFlow
         rerouteServer: undefined
       }
       
-      // Ensure webhook-specific structure for Bland.ai
-      if (node.type === 'webhookNode') {
-        return {
-          id: node.id,
-          type: 'Webhook',
-          data: cleanData
-        }
-      }
+      nodeWithPosition.type = 'Webhook'
+      nodeWithPosition.data = cleanData
+      return nodeWithPosition
     }
     
-    return {
-      id: node.id,
-      type: node.type || 'Default',
-      data: cleanData
+    // Special handling for End Call nodes
+    if (node.type === 'endCallNode') {
+      nodeWithPosition.type = 'End Call'
+      nodeWithPosition.data = {
+        prompt: cleanData.prompt || cleanData.text || 'Thank you for calling. Goodbye!',
+        name: cleanData.name || 'End Call'
+      }
+      return nodeWithPosition
     }
+    
+    // Special handling for Transfer nodes
+    if (node.type === 'transferNode') {
+      nodeWithPosition.type = 'Transfer'
+      nodeWithPosition.data = {
+        transferNumber: cleanData.transferNumber || cleanData.transfer_phone_number,
+        name: cleanData.name || 'Transfer Call',
+        text: cleanData.text || 'Transferring call...'
+      }
+      return nodeWithPosition
+    }
+    
+    // Default nodes (greeting, question, customer response)
+    // Map ReactFlow node types to Bland.ai node types
+    const typeMapping: { [key: string]: string } = {
+      'greetingNode': 'Default',
+      'questionNode': 'Default',
+      'customerResponseNode': 'Default',
+      'Default': 'Default'
+    }
+    
+    nodeWithPosition.type = typeMapping[node.type] || 'Default'
+    // Preserve the original ReactFlow type in data for accurate restoration
+    nodeWithPosition.data = {
+      ...cleanData,
+      __reactFlowType: node.type // Store original type for restoration
+    }
+    return nodeWithPosition
   })
 
   // Clean edges - remove UI-specific properties and color, but keep type: "custom"
@@ -116,6 +199,9 @@ export function convertReactFlowToBland(reactFlowData: ReactFlowData): BlandFlow
     originalEdges: reactFlowData.edges.length,
     cleanEdges: cleanEdges.length
   })
+  
+  // Log each node type for debugging
+  console.log('📋 Converted node types:', cleanNodes.map(n => ({ id: n.id, type: n.type, hasData: !!n.data })))
 
   return result
 }
@@ -127,14 +213,53 @@ export function convertReactFlowToBland(reactFlowData: ReactFlowData): BlandFlow
 export function convertBlandToReactFlow(blandData: BlandFlowData): ReactFlowData {
   console.log('🔄 Converting Bland.ai data to ReactFlow format...')
   
+  // Map Bland.ai types back to ReactFlow node types
+  const blandToReactFlowTypeMapping: { [key: string]: string } = {
+    'Default': 'greetingNode', // Default fallback
+    'Webhook': 'webhookNode',
+    'Transfer': 'transferNode',
+    'End Call': 'endCallNode'
+  }
+  
   // Add UI properties to nodes
-  const reactFlowNodes: Node[] = blandData.nodes.map((node, index) => ({
-    id: node.id,
-    type: node.type,
-    position: { x: 250 + (index * 50), y: index * 100 }, // Default positioning
-    data: node.data,
-    selected: false
-  }))
+  const reactFlowNodes: Node[] = blandData.nodes.map((node, index) => {
+    // Check if node already has position data saved (from previous saves)
+    const savedPosition = (node as any).position
+    
+    // First check if we preserved the original ReactFlow type
+    let reactFlowType = node.data.__reactFlowType || blandToReactFlowTypeMapping[node.type] || 'greetingNode'
+    
+    // More intelligent type detection based on node content (fallback)
+    if (!node.data.__reactFlowType && node.type === 'Default') {
+      const nodeData = node.data
+      
+      // Check for specific patterns to determine type
+      if (nodeData.name?.toLowerCase().includes('greeting') || 
+          nodeData.text?.toLowerCase().includes('hello') ||
+          nodeData.text?.toLowerCase().includes('welcome')) {
+        reactFlowType = 'greetingNode'
+      } else if (nodeData.name?.toLowerCase().includes('question') || 
+                 nodeData.text?.includes('?')) {
+        reactFlowType = 'questionNode'
+      } else if (nodeData.name?.toLowerCase().includes('response') || 
+                 nodeData.name?.toLowerCase().includes('customer')) {
+        reactFlowType = 'customerResponseNode'
+      }
+    }
+    
+    // Clean the data to remove internal metadata
+    const cleanedData = { ...node.data }
+    delete cleanedData.__reactFlowType
+    
+    return {
+      id: node.id,
+      type: reactFlowType,
+      // Use saved position if available, otherwise use default positioning
+      position: savedPosition || { x: 250 + (index * 50), y: index * 100 },
+      data: cleanedData,
+      selected: false
+    }
+  })
 
   // Add UI properties to edges
   const reactFlowEdges: Edge[] = blandData.edges.map(edge => ({

@@ -3,56 +3,35 @@
 import React from 'react'
 import { Handle, Position, NodeProps } from 'reactflow'
 import { PhoneForwarded, Pencil, Trash2 } from 'lucide-react'
+import { toast } from 'sonner'; // Assuming sonner is used for toasts
 
 interface TransferNodeData {
   text: string
   transferNumber?: string
 }
 
-export function TransferNode({ data, selected, onEdit, onDelete }: { data: any; selected?: boolean; onEdit?: () => void; onDelete?: () => void }) {
-  const handleEdit = (e: React.MouseEvent) => {
-    e.stopPropagation()
-    onEdit?.()
-  }
-
-  const handleDelete = (e: React.MouseEvent) => {
-    e.stopPropagation()
-    if (window.confirm('Are you sure you want to delete this node?')) {
-      onDelete?.()
-    }
-  }
-
+export function TransferNode({ data, selected }: { data: any; selected?: boolean }) {
   return (
-    <div className={`px-4 py-2 shadow-md rounded-md bg-purple-100 border-2 min-w-[200px] transition-all duration-200 relative group ${
+    <div className={`px-4 py-3 shadow-md rounded-md bg-purple-100 border-2 w-[250px] h-[120px] transition-all duration-200 relative overflow-hidden ${
       selected ? 'border-purple-500 shadow-lg scale-105' : 'border-purple-300 hover:border-purple-400'
     }`}>
-      {/* Pencil Icon - appears on hover */}
-      <button
-        onClick={handleEdit}
-        className="absolute -top-1 -right-1 p-1 bg-white rounded-full shadow-md border border-gray-200 opacity-0 group-hover:opacity-100 transition-opacity duration-200 hover:bg-gray-50 z-10"
-      >
-        <Pencil className="w-3 h-3 text-gray-600" />
-      </button>
-      
-      {/* Delete Icon - appears on hover */}
-      <button
-        onClick={handleDelete}
-        className="absolute -top-1 -right-8 p-1 bg-red-500 rounded-full shadow-md border border-gray-200 opacity-0 group-hover:opacity-100 transition-opacity duration-200 hover:bg-red-600 z-10"
-      >
-        <Trash2 className="w-3 h-3 text-white" />
-      </button>
-      
+
       <div className="flex items-center space-x-2">
         <PhoneForwarded className="w-4 h-4 text-purple-600" />
         <div className="font-bold text-purple-800">
           {data.name || 'Transfer Call'}
         </div>
       </div>
-      <div className="text-sm text-purple-700 mt-1">
+      <div className="text-sm text-purple-700 mt-2 leading-tight overflow-hidden" style={{ display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical' }} title={data.transferNumber || '+1234567890'}>
         {data.transferNumber || '+1234567890'}
       </div>
-      <Handle type="target" position={Position.Top} className="w-3 h-3" />
-      <Handle type="source" position={Position.Bottom} className="w-3 h-3" />
+      <Handle
+        type="target"
+        position={Position.Top}
+        className="w-4 h-4 bg-blue-500 border-2 border-white hover:w-5 hover:h-5 transition-all"
+      />
+      {/* No source handle - Transfer node is terminal */}
+      
     </div>
   )
 }

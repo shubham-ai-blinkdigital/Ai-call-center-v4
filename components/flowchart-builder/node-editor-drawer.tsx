@@ -133,6 +133,83 @@ export function NodeEditorDrawer({ isOpen, onClose, selectedNode, onUpdateNode }
           </div>
         )
 
+      case 'facebookPixelNode':
+        return (
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="name">Node Name</Label>
+              <Input
+                id="name"
+                value={selectedNode.data.name || ''}
+                onChange={(e) => handleFieldChange('name', e.target.value)}
+                placeholder="Facebook Pixel Event"
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="text">Display Message</Label>
+              <Textarea
+                id="text"
+                value={selectedNode.data.text || ''}
+                onChange={(e) => handleFieldChange('text', e.target.value)}
+                placeholder="Tracking conversion event..."
+                rows={2}
+              />
+            </div>
+
+            <div className="bg-blue-50 p-3 rounded-lg border border-blue-200">
+              <h4 className="text-sm font-semibold text-blue-900 mb-3">Facebook Pixel Configuration</h4>
+              
+              <div className="space-y-3">
+                <div>
+                  <Label htmlFor="pixelId">Pixel ID *</Label>
+                  <Input
+                    id="pixelId"
+                    value={selectedNode.data.pixelId || ''}
+                    onChange={(e) => handleFieldChange('pixelId', e.target.value)}
+                    placeholder="123456789012345"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">Your Facebook Pixel ID</p>
+                </div>
+
+                <div>
+                  <Label htmlFor="accessToken">Access Token *</Label>
+                  <Input
+                    id="accessToken"
+                    type="password"
+                    value={selectedNode.data.accessToken || ''}
+                    onChange={(e) => handleFieldChange('accessToken', e.target.value)}
+                    placeholder="EAAG..."
+                  />
+                  <p className="text-xs text-gray-500 mt-1">Facebook Pixel Access Token</p>
+                </div>
+
+                <div>
+                  <Label htmlFor="eventName">Event Name *</Label>
+                  <Input
+                    id="eventName"
+                    value={selectedNode.data.eventName || ''}
+                    onChange={(e) => handleFieldChange('eventName', e.target.value)}
+                    placeholder="Lead"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">Standard events: Lead, Purchase, Contact, etc.</p>
+                </div>
+
+                <div className="bg-white p-2 rounded border border-blue-100">
+                  <p className="text-xs text-blue-700 font-medium">✓ Pre-configured Settings:</p>
+                  <ul className="text-xs text-gray-600 mt-1 space-y-1">
+                    <li>• Method: POST</li>
+                    <li>• Content-Type: application/json</li>
+                    <li>• Auto SHA-256 hashing for PII</li>
+                    <li>• Auto timestamp generation</li>
+                    <li>• Action source: voice_call</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        )
+
       case 'webhookNode':
         return (
           <div className="space-y-4">
